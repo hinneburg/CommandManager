@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<catalog>
-<command className="cc.commandmanager.main.DummyCommand1" name="DummyCommand1"/>
-<command className="cc.commandmanager.main.DummyCommand2" name="DummyCommand2"/>
-<command className="cc.commandmanager.main.DummyCommand3" name="DummyCommand3"/>
-<command className="cc.commandmanager.main.DummyCommand4" name="DummyCommand4"/>
-<command className="cc.commandmanager.main.DummyCommand5" name="DummyCommand5"/>
-</catalog>
