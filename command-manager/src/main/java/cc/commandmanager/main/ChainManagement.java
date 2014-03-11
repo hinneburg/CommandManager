@@ -1,6 +1,5 @@
 package cc.commandmanager.main;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -10,10 +9,7 @@ import org.apache.commons.chain.Catalog;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.config.ConfigParser;
 import org.apache.commons.chain.impl.CatalogFactoryBase;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -91,46 +87,6 @@ public class ChainManagement {
 				// to parse()-signature
 	    logger.error("There is no valid catalog at the given path: " + catalogLocation, e);
 	    throw new CatalogNotInstantiableException();
-	}
-    }
-
-/**
-	 * Executes the commands, needed for initialization. It contains commands
-	 * that should be executed before other commands or tasks. Information is
-	 * saved in the databaseContext.
-	 * 
-	 * @throws RuntimeException
-	 *             if one of command, needed for initialization, throws a
-	 *             {@link RuntimeException
-	 * @throws IOException
-	 *             if there are problems handling the file
-	 *             'logs/Preprocessing.log'
-	 */
-    public void init() {
-	try {
-	    initializeLogger("logs/Preprocessing.log");
-	    Command propertiesCommand = new cc.topicexplorer.chain.commands.PropertiesCommand();
-	    Command dbConnectionCommand = new cc.topicexplorer.chain.commands.DbConnectionCommand();
-
-	    propertiesCommand.execute(this.communicationContext);
-	    dbConnectionCommand.execute(this.communicationContext);
-	} catch (RuntimeException e1) {
-	    logger.error("Initialization abborted, due to a critical exception");
-	    throw e1;
-	} catch (Exception e2) {// Exception type cannot be more specified, due
-				// to Command signature
-	    logger.warn("Initialization caused a non critical exception", e2);
-	}
-    }
-
-    private void initializeLogger(String logfileName) {
-	try {
-	    logger.addAppender(new FileAppender(new PatternLayout("%d-%p-%C-%M-%m%n"), logfileName, false));
-	    logger.setLevel(Level.INFO); // ALL | DEBUG | INFO | WARN | ERROR |
-					 // FATAL | OFF:
-	} catch (IOException e) {
-	    logger.error("FileAppender with log file " + logfileName + " could not be constructed.");
-	    throw new RuntimeException(e);
 	}
     }
 
@@ -212,31 +168,5 @@ public class ChainManagement {
 
     public CommunicationContext getCommunicationContext() {
 	return this.communicationContext;
-    }
-
-    public static void main(String[] args) {
-	ChainManagement chainManager = new ChainManagement();
-	cc.topicexplorer.chain.ChainCommandLineParser commandLineParser;
-
-	try {
-	    commandLineParser = new cc.topicexplorer.chain.ChainCommandLineParser(args);
-	} catch (RuntimeException e) {
-	    logger.error("Problems occured while parsing the command line tokens.");
-	    throw e;
-	}
-
-	List<String> orderedCommands;
-	String catalogLocation;
-	chainManager.init();
-
-	catalogLocation = commandLineParser.getCatalogLocation();
-	chainManager.setCatalog(catalogLocation);
-	orderedCommands = chainManager.getOrderedCommands(commandLineParser.getStartCommands(),
-		commandLineParser.getEndCommands());
-
-	logger.info("ordered commands: " + orderedCommands);
-	if (!commandLineParser.getOnlyDrawGraph()) {
-	    chainManager.executeCommands(orderedCommands);
-	}
     }
 }
