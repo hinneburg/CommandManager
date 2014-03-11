@@ -102,11 +102,11 @@ public class DependencyCollectorTest {
 	// move to cvs)
 	if (!(new File("/home/user/workspace-2014-02-17/command-manager/etc/graph.dot").delete() && new File(
 		"/home/user/workspace-2014-02-17/command-manager/etc").delete())) {
-	    System.err.println("NOTE: A file or directory created for testing issues could not be removed.");
+	    System.out.println("NOTE: A file or directory created for testing issues could not be removed.");
 	}
     }
 
-    private static Catalog initializeNewCatalog(String url) {
+    private Catalog initializeNewCatalog(String url) {
 	try {
 	    CatalogFactoryBase.clear();
 	    new ConfigParser().parse(DependencyCollectorTest.class.getResource(url));
