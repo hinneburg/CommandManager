@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.chain.Catalog;
+import org.apache.commons.chain.Command;
 import org.apache.commons.chain.config.ConfigParser;
 import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This class is used for the controlled execution of commands. Commands to be
@@ -25,49 +25,64 @@ import com.google.common.base.Strings;
  * 
  */
 public class CommandManagement {
-	private static final Logger logger = Logger.getLogger(CommandManagement.class);
-
+	@VisibleForTesting
+	public Catalog catalog;
 	private final CommunicationContext communicationContext;
-	private final Catalog catalog;
 	private DependencyCollector dependencyCollector;
+	private static Logger logger = Logger.getRootLogger();
 
-	// TODO builder pattern anwenden
-	public CommandManagement(String catalogLocation) {
-		this(new CommunicationContext(), catalogLocation);
+	/**
+	 * Keys {@code path_logFile} and {@code path_dotFile} will be set to
+	 * defaults. Defaults are {@code path_logFile = logs/Preprocessing.log}
+	 * respectively {@code path_dotFile =
+	 * etc/graph.dot}.
+	 */
+	public CommandManagement() {
+		this(new CommunicationContext());
 	}
 
-	public CommandManagement(CommunicationContext context, String catalogLocation) {
-		this(context, loadCatalogFromResource(catalogLocation));
+	/**
+	 * @param context
+	 *            will be checked for keys {@code path_logFile} and key
+	 *            {@code path_dotFile}. If not found they will be set to
+	 *            defaults. Defaults are
+	 *            {@code path_logFile = logs/Preprocessing.log} respectively
+	 *            {@code path_dotFile = etc/graph.dot}.
+	 */
+	public CommandManagement(CommunicationContext context) {
+		this.communicationContext = context;
+		context = ensurePreconditions(context);
 	}
 
-	public CommandManagement(Catalog catalog) {
-		this(new CommunicationContext(), catalog);
-	}
-
-	// WAS ENTHÄLT catalog?
-	public CommandManagement(CommunicationContext context, Catalog catalog) {
-		communicationContext = context;
-		this.catalog = catalog;
+	private CommunicationContext ensurePreconditions(CommunicationContext context) {
+		if (!context.containsKey("path_logFile") || context.get("path_logFile") == null) {
+			context.put("path_logFile", "logs/Preprocessing.log");
+		}
+		if (!context.containsKey("path_dotFile") || context.get("path_dotFile") == null) {
+			context.put("path_dotFile", "etc/graph.dot");
+		}
+		return context;
 	}
 
 	/**
 	 * This method takes a location to retrieve a catalog. If there is a valid
-	 * catalog at the given location, this catalog will be set as the class
-	 * variable in this instance of {@link CommandManagement}.
+	 * catalog at the given location, it will set the global catalog variable in
+	 * this class.
 	 * 
 	 * @param catalogLocation
 	 * @throws CatalogNotInstantiableException
 	 *             if problems occur while translating the catalog file at the
 	 *             specified location
 	 */
-	public static Catalog loadCatalogFromResource(String catalogLocation) {
-		Preconditions.checkArgument(!Strings.isNullOrEmpty(catalogLocation));
+	public void setCatalog(String catalogLocation) {
 		ConfigParser configParser = new ConfigParser();
+
 		try {
-			logger.info("Loading catalog resource from location: "
-					+ CommandManagement.class.getResource(catalogLocation));
-			configParser.parse(CommandManagement.class.getResource(catalogLocation));
-			return CatalogFactoryBase.getInstance().getCatalog();
+			logger.info("this.getClass().getResource(catalogLocation)" + this.getClass().getResource(catalogLocation));
+
+			configParser.parse(this.getClass().getResource(catalogLocation));
+			this.catalog = CatalogFactoryBase.getInstance().getCatalog();
+
 		} catch (Exception e) { // Exception type cannot be more specified, due
 			// to parse()-signature
 			logger.error("There is no valid catalog at the given path: " + catalogLocation, e);
@@ -75,12 +90,8 @@ public class CommandManagement {
 		}
 	}
 
-	public Catalog getCatalog() {
-		return catalog;
-	}
-
 	public Map<String, Set<String>> getDependencies() {
-		return dependencyCollector.getDependencies();
+		return this.dependencyCollector.getDependencies();
 	}
 
 	/**
@@ -107,24 +118,24 @@ public class CommandManagement {
 	 * dependencies in an ordered sequence.
 	 */
 	public List<String> getOrderedCommands(Set<String> startCommands, Set<String> endCommands) {
-		dependencyCollector = new DependencyCollector(catalog);
+		this.dependencyCollector = new DependencyCollector(this.catalog);
 
 		Map<String, Set<String>> dependencies = getDependencies();
 
-		Map<String, Set<String>> strongComponents = dependencyCollector.getStrongComponents(dependencies,
+		Map<String, Set<String>> strongComponents = this.dependencyCollector.getStrongComponents(dependencies,
 				startCommands, endCommands);
 
-		return dependencyCollector.orderCommands(strongComponents);
+		return this.dependencyCollector.orderCommands(strongComponents);
 	}
 
 	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands,
 			Set<String> endCommands) {
 
-		dependencyCollector = new DependencyCollector();
+		this.dependencyCollector = new DependencyCollector();
 
-		dependencies = dependencyCollector.getStrongComponents(dependencies, startCommands, endCommands);
+		dependencies = this.dependencyCollector.getStrongComponents(dependencies, startCommands, endCommands);
 
-		return dependencyCollector.orderCommands(dependencies);
+		return this.dependencyCollector.orderCommands(dependencies);
 	}
 
 	/**
@@ -132,7 +143,7 @@ public class CommandManagement {
 	 * sequence
 	 */
 	public void executeCommands(List<String> commands) {
-		executeCommands(commands, communicationContext);
+		this.executeCommands(commands, this.communicationContext);
 	}
 
 	/**
@@ -142,8 +153,8 @@ public class CommandManagement {
 	public void executeCommands(List<String> commands, CommunicationContext localCommunicationContext) {
 		for (String commandName : commands) {
 			try {
-				DependencyCommand command;
-				command = (DependencyCommand) catalog.getCommand(commandName);
+				Command command;
+				command = this.catalog.getCommand(commandName);
 				command.execute(localCommunicationContext);
 			} catch (RuntimeException e1) {
 				logger.error(String.format("The current command %s caused a critical exception", commandName));
@@ -156,10 +167,6 @@ public class CommandManagement {
 	}
 
 	public CommunicationContext getCommunicationContext() {
-		return communicationContext;
-	}
-
-	public void executeAllCommands() {
-		executeCommands(getOrderedCommands());
+		return this.communicationContext;
 	}
 }
