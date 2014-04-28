@@ -33,11 +33,11 @@ import org.apache.log4j.Logger;
 
 public abstract class DependencyCommand implements Command {
 
-    protected Set<String> afterDependencies = new HashSet<String>();
-    protected Set<String> beforeDependencies = new HashSet<String>();
-    protected Set<String> optionalAfterDependencies = new HashSet<String>();
-    protected Set<String> optionalBeforeDependencies = new HashSet<String>();
-    protected Logger logger = Logger.getRootLogger();
+	protected Set<String> afterDependencies = new HashSet<String>();
+	protected Set<String> beforeDependencies = new HashSet<String>();
+	protected Set<String> optionalAfterDependencies = new HashSet<String>();
+	protected Set<String> optionalBeforeDependencies = new HashSet<String>();
+	protected final Logger logger = Logger.getLogger(getClass());
 
     /*
      * (non-Javadoc)
