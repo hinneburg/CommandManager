@@ -29,7 +29,7 @@ public class CommandManagement {
 	public Catalog catalog;
 	private final CommunicationContext communicationContext;
 	private DependencyCollector dependencyCollector;
-	private static Logger logger = Logger.getRootLogger();
+	private static final Logger logger = Logger.getLogger(CommandManagement.class);
 
 	/**
 	 * Keys {@code path_logFile} and {@code path_dotFile} will be set to
