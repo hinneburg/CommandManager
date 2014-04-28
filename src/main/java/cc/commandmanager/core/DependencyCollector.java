@@ -31,7 +31,7 @@ import com.google.common.base.Preconditions;
 public class DependencyCollector {
 
 	private Catalog catalog;
-	private final Logger logger = Logger.getRootLogger();
+	private final Logger logger = Logger.getLogger(DependencyCollector.class);
 
 	/**
 	 * Class constructor taking the catalog argument and sets it in this class.
