@@ -15,7 +15,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 /**
  * This class is used for the controlled execution of commands. Commands to be
- * executed are declared in an catalog. Those commands will be ordered and then
+ * executed are declared in a catalog. Those commands will be ordered and then
  * executed.
  * <p>
  * This class executes specified initial commands needed for further tasks.
