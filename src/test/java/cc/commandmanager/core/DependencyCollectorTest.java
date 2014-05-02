@@ -112,6 +112,7 @@ public class DependencyCollectorTest {
 			new ConfigParser().parse(DependencyCollectorTest.class.getResource(url));
 		} catch (Exception e) {// Exception type cannot be more specified, due
 			// to parse()-signature
+			// TODO use logger
 			e.printStackTrace();
 		}
 		return CatalogFactoryBase.getInstance().getCatalog();
