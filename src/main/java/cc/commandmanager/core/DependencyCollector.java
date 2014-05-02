@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.sf.qualitycheck.Check;
+
 import org.apache.commons.chain.Catalog;
 import org.apache.log4j.Logger;
 
@@ -21,12 +23,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /**
- * Collects dependencies of commands mentioned in the catalog and gets them
- * ordered.
+ * Collects dependencies of commands mentioned in the catalog and gets them ordered.
  * <p>
- * Each map follows the semantic that a key of a map is dependent of the
- * correspondent value (respectively dependent of each element of the values
- * ArrayList).
+ * Each map follows the semantic that a key of a map is dependent of the correspondent value (respectively dependent of
+ * each element of the values ArrayList).
  */
 public class DependencyCollector {
 
@@ -35,11 +35,11 @@ public class DependencyCollector {
 
 	/**
 	 * Class constructor taking the catalog argument and sets it in this class.
-	 * 
+	 *
 	 * @param catalog
 	 */
 	public DependencyCollector(Catalog catalog) {
-		this.catalog = catalog;
+		this.catalog = Check.notNull(catalog, "catalog");
 	}
 
 	public DependencyCollector() {
@@ -47,13 +47,17 @@ public class DependencyCollector {
 	}
 
 	/**
-	 * Creates a file in dot format. A -> B means that A depends of B. A dashed
-	 * line represents an optional dependency. It accesses the global dependency
-	 * maps, so it must be executed before the maps are changed, e.g. before
-	 * executing the orderCommands method because it changes the maps.
+	 * Creates a file in dot format. A -> B means that A depends of B. A dashed line represents an optional dependency.
+	 * It accesses the global dependency maps, so it must be executed before the maps are changed, e.g. before executing
+	 * the orderCommands method because it changes the maps.
 	 */
-	private void makeDotFile(Map<String, Set<String>> composedDependencies,
+	private static void makeDotFile(Map<String, Set<String>> composedDependencies,
 			Map<String, Set<String>> optionalDependencies, String name) {
+		Check.notNull(composedDependencies, "composedDependencies");
+		Check.notNull(optionalDependencies, "optionalDependencies");
+		Check.notNull(name, "name");
+
+		// TODO StringBuilder
 		String dotContent = "digraph G { \n";
 		dotContent += "rankdir = BT; \n";
 		dotContent += "node [shape=record]; \n";
@@ -88,30 +92,32 @@ public class DependencyCollector {
 			bufferedWriter.write(dotContent);
 			bufferedWriter.close();
 		} catch (IOException e) {
+			// TODO use logger
 			e.printStackTrace();
 		}
 	}
 
 	/**
-	 * Checks if the name is contained as key in the dependecies map. If it is,
-	 * it takes the value of the key (an arrayList) and merges it with the given
-	 * beforeDependencies. After merging, the compoundBeforeList is set as new
-	 * value of the key. Otherwise the name and the beforeDependencies are added
-	 * as new key-value-pair to the dependencies.
+	 * Checks if the name is contained as key in the dependencies map. If it is, it takes the value of the key (an
+	 * arrayList) and merges it with the given beforeDependencies. After merging, the compoundBeforeList is set as new
+	 * value of the key. Otherwise the name and the beforeDependencies are added as new key-value-pair to the
+	 * dependencies.
 	 * <p>
-	 * If there is an element in the afterDependencies, each element of the list
-	 * must be added to the dependencies as key with the name as correspondent
-	 * value. If that pair is contained the old and the new list have to be
-	 * merged, otherwise only the new key-value-pair is added.
-	 * 
+	 * If there is an element in the afterDependencies, each element of the list must be added to the dependencies as
+	 * key with the name as correspondent value. If that pair is contained the old and the new list have to be merged,
+	 * otherwise only the new key-value-pair is added.
+	 *
 	 * @param name
 	 * @param dependencies
 	 * @param afterDependencies
 	 * @param beforeDependencies
 	 */
 	@VisibleForTesting
-	void updateDependencies(String name, Map<String, Set<String>> dependencies, Set<String> afterDependencies,
+	static void updateDependencies(String name, Map<String, Set<String>> dependencies, Set<String> afterDependencies,
 			Set<String> beforeDependencies) {
+		Check.notNull(dependencies, "dependencies");
+		Check.notNull(afterDependencies, "afterDependencies");
+		Check.notNull(beforeDependencies, "beforeDependencies");
 
 		if (dependencies.containsKey(name)) {
 			dependencies.get(name).addAll(beforeDependencies);
@@ -130,7 +136,8 @@ public class DependencyCollector {
 		}
 	}
 
-	private class Dependencies {
+	private static class Dependencies {
+
 		public Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
 		public Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
 
@@ -142,11 +149,11 @@ public class DependencyCollector {
 	}
 
 	/**
-	 * Every command of the catalog will be executed with the dependencyContext.
-	 * Then a command should set its dependencies in the dependencyContext.
+	 * Every command of the catalog will be executed with the dependencyContext. Then a command should set its
+	 * dependencies in the dependencyContext.
 	 * <p>
-	 * Then those per command set dependencies and optional dependencies will be
-	 * read out and processed by the updateDependencies method.
+	 * Then those per command set dependencies and optional dependencies will be read out and processed by the
+	 * updateDependencies method.
 	 */
 	public Map<String, Set<String>> getDependencies() {
 		@SuppressWarnings("unchecked")
@@ -157,9 +164,8 @@ public class DependencyCollector {
 		Map<String, Set<String>> optionalDependencies = dependencies.optionalDependencies;
 
 		/*
-		 * TODO Folgender Code enthält zu überarbeitende Abschnitte. Sie wurden
-		 * eingefügt, um die korrekte Arbeitsweise des DependencyCollectors
-		 * hinsichtlich der Ordnung optionaler Dependencies eingefügt.
+		 * TODO Folgender Code enthält zu überarbeitende Abschnitte. Sie wurden eingefügt, um die korrekte Arbeitsweise
+		 * des DependencyCollectors hinsichtlich der Ordnung optionaler Dependencies eingefügt.
 		 */
 		logger.info("Necessary dependencies " + necessaryDependencies);
 		logger.info("Optional dependencies " + optionalDependencies);
@@ -258,10 +264,11 @@ public class DependencyCollector {
 	}
 
 	/**
-	 * Topologically sorts the composedDependencies and sets the orderedCommands
-	 * variable.
+	 * Topologically sorts the composedDependencies and sets the orderedCommands variable.
 	 */
 	public List<String> orderCommands(Map<String, Set<String>> dependencies) {
+		Check.notNull(dependencies, "dependencies");
+
 		Map<String, Set<String>> concurrentDependencies = new ConcurrentHashMap<String, Set<String>>(dependencies);
 		List<String> orderedCommands = new ArrayList<String>();
 		List<String> helpList = new ArrayList<String>();
@@ -316,6 +323,9 @@ public class DependencyCollector {
 
 	public Map<String, Set<String>> getStrongComponents(Map<String, Set<String>> dependencies,
 			Set<String> startCommands, Set<String> endCommands) {
+		Check.notNull(dependencies, "dependencies");
+		Check.notNull(startCommands, "startCommands");
+		Check.notNull(endCommands, "endCommands");
 
 		Map<String, Set<String>> newDependencies = new HashMap<String, Set<String>>();
 
@@ -349,7 +359,8 @@ public class DependencyCollector {
 	}
 
 	private void iterateDependenciesUp(String command) {
-		// to be done
+		// TODO implement
+		throw new UnsupportedOperationException();
 	}
 
 	private void iterateDependenciesDown(Map<String, Set<String>> dependencies,

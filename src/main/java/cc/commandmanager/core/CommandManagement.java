@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.qualitycheck.Check;
+
 import org.apache.commons.chain.Catalog;
 import org.apache.commons.chain.Command;
 import org.apache.commons.chain.config.ConfigParser;
@@ -14,17 +16,14 @@ import org.apache.log4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 /**
- * This class is used for the controlled execution of commands. Commands to be
- * executed are declared in a catalog. Those commands will be ordered and then
- * executed.
+ * This class is used for the controlled execution of commands. Commands to be executed are declared in a catalog. Those
+ * commands will be ordered and then executed.
  * <p>
- * This class executes specified initial commands needed for further tasks.
- * Arguments will be parsed from command line and may then be accessed.
- * 
- * @author Sebastian Baer
- * 
+ * This class executes specified initial commands needed for further tasks. Arguments will be parsed from command line
+ * and may then be accessed.
  */
 public class CommandManagement {
+
 	@VisibleForTesting
 	public Catalog catalog;
 	private final CommunicationContext communicationContext;
@@ -32,9 +31,8 @@ public class CommandManagement {
 	private static final Logger logger = Logger.getLogger(CommandManagement.class);
 
 	/**
-	 * Keys {@code path_logFile} and {@code path_dotFile} will be set to
-	 * defaults. Defaults are {@code path_logFile = logs/Preprocessing.log}
-	 * respectively {@code path_dotFile =
+	 * Keys {@code path_logFile} and {@code path_dotFile} will be set to defaults. Defaults are
+	 * {@code path_logFile = logs/Preprocessing.log} respectively {@code path_dotFile =
 	 * etc/graph.dot}.
 	 */
 	public CommandManagement() {
@@ -43,18 +41,16 @@ public class CommandManagement {
 
 	/**
 	 * @param context
-	 *            will be checked for keys {@code path_logFile} and key
-	 *            {@code path_dotFile}. If not found they will be set to
-	 *            defaults. Defaults are
-	 *            {@code path_logFile = logs/Preprocessing.log} respectively
+	 *            will be checked for keys {@code path_logFile} and key {@code path_dotFile}. If not found they will be
+	 *            set to defaults. Defaults are {@code path_logFile = logs/Preprocessing.log} respectively
 	 *            {@code path_dotFile = etc/graph.dot}.
 	 */
 	public CommandManagement(CommunicationContext context) {
-		this.communicationContext = context;
-		context = ensurePreconditions(context);
+		communicationContext = Check.notNull(context, "context");
+		context = ensureAtLeastDefaultLogFileProperties(context);
 	}
 
-	private CommunicationContext ensurePreconditions(CommunicationContext context) {
+	private CommunicationContext ensureAtLeastDefaultLogFileProperties(CommunicationContext context) {
 		if (!context.containsKey("path_logFile") || context.get("path_logFile") == null) {
 			context.put("path_logFile", "logs/Preprocessing.log");
 		}
@@ -65,16 +61,16 @@ public class CommandManagement {
 	}
 
 	/**
-	 * This method takes a location to retrieve a catalog. If there is a valid
-	 * catalog at the given location, it will set the global catalog variable in
-	 * this class.
-	 * 
+	 * This method takes a location to retrieve a catalog. If there is a valid catalog at the given location, it will
+	 * set the global catalog variable in this class.
+	 *
 	 * @param catalogLocation
 	 * @throws CatalogNotInstantiableException
-	 *             if problems occur while translating the catalog file at the
-	 *             specified location
+	 *             if problems occur while translating the catalog file at the specified location
 	 */
 	public void setCatalog(String catalogLocation) {
+		Check.notNull(catalogLocation, "catalogLocation");
+
 		ConfigParser configParser = new ConfigParser();
 
 		try {
@@ -91,66 +87,71 @@ public class CommandManagement {
 	}
 
 	public Map<String, Set<String>> getDependencies() {
-		return this.dependencyCollector.getDependencies();
+		return dependencyCollector.getDependencies();
 	}
 
 	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of
-	 * dependencies in an ordered sequence.
-	 * 
-	 * @return An ordered {@linkplain List<String>} containing the commands of
-	 *         the catalog.
+	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
+	 *
+	 * @return An ordered {@linkplain List<String>} containing the commands of the catalog.
 	 */
 	public List<String> getOrderedCommands() {
 		return getOrderedCommands(new HashSet<String>(), new HashSet<String>());
 	}
 
 	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of
-	 * dependencies in an ordered sequence.
+	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
 	 */
 	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies) {
+		Check.notNull(dependencies, "dependencies");
 		return getOrderedCommands(dependencies, new HashSet<String>(), new HashSet<String>());
 	}
 
 	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of
-	 * dependencies in an ordered sequence.
+	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
 	 */
 	public List<String> getOrderedCommands(Set<String> startCommands, Set<String> endCommands) {
-		this.dependencyCollector = new DependencyCollector(this.catalog);
+		Check.notNull(startCommands, "startCommand");
+		Check.notNull(endCommands, "endCommands");
+
+		dependencyCollector = new DependencyCollector(catalog);
 
 		Map<String, Set<String>> dependencies = getDependencies();
 
-		Map<String, Set<String>> strongComponents = this.dependencyCollector.getStrongComponents(dependencies,
+		Map<String, Set<String>> strongComponents = dependencyCollector.getStrongComponents(dependencies,
 				startCommands, endCommands);
 
-		return this.dependencyCollector.orderCommands(strongComponents);
+		return dependencyCollector.orderCommands(strongComponents);
 	}
 
 	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands,
 			Set<String> endCommands) {
+		Check.notNull(dependencies, "dependencies");
+		Check.notNull(startCommands, "startCommands");
 
-		this.dependencyCollector = new DependencyCollector();
+		dependencyCollector = new DependencyCollector();
 
-		dependencies = this.dependencyCollector.getStrongComponents(dependencies, startCommands, endCommands);
+		dependencies = dependencyCollector.getStrongComponents(dependencies, startCommands, endCommands);
 
-		return this.dependencyCollector.orderCommands(dependencies);
+		return dependencyCollector.orderCommands(dependencies);
 	}
 
 	/**
-	 * Takes a {@linkplain List} of commands and executes them in the list's
-	 * sequence
+	 * Takes a {@linkplain List} of commands and executes them in the list's sequence
 	 */
 	public void executeCommands(List<String> commands) {
-		this.executeCommands(commands, this.communicationContext);
+		Check.notNull(commands, "commands");
+		this.executeCommands(commands, communicationContext);
 	}
 
 	/**
-	 * Takes a {@linkplain List} of commands and executes them in the list's
-	 * sequence, using the specified {@linkplain CommunicationContext}
+	 * Takes a {@linkplain List} of commands and executes them in the list's sequence, using the specified
+	 * {@linkplain CommunicationContext}
 	 */
 	public void executeCommands(List<String> commands, CommunicationContext localCommunicationContext) {
+		Check.notNull(commands, "commands");
+		Check.notNull(localCommunicationContext, "localCommunicationContext");
+
 		for (String commandName : commands) {
 			try {
 				Command command;
