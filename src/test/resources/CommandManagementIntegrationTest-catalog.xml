@@ -2,5 +2,5 @@
 <catalog>
 	<command className="cc.commandmanager.core.DummyCommand1" name="DummyCommand1" />
 	<command className="cc.commandmanager.core.DummyCommand2" name="DummyCommand2" />
-	<command className="cc.commandmanager.core.DummyCommand4" name="DummyCommand4" />
+	<command className="cc.commandmanager.core.DummyCommand3" name="DummyCommand3" />
 </catalog>

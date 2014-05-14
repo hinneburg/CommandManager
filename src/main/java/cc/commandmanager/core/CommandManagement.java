@@ -63,7 +63,7 @@ public class CommandManagement {
 	/**
 	 * This method takes a location to retrieve a catalog. If there is a valid catalog at the given location, it will
 	 * set the global catalog variable in this class.
-	 *
+	 * 
 	 * @param catalogLocation
 	 * @throws CatalogNotInstantiableException
 	 *             if problems occur while translating the catalog file at the specified location
@@ -92,7 +92,7 @@ public class CommandManagement {
 
 	/**
 	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 *
+	 * 
 	 * @return An ordered {@linkplain List<String>} containing the commands of the catalog.
 	 */
 	public List<String> getOrderedCommands() {
@@ -156,7 +156,10 @@ public class CommandManagement {
 			try {
 				Command command;
 				command = this.catalog.getCommand(commandName);
+				logger.info("Execute current command : [ " + command.getClass() + " ]");
+				long startTime = System.currentTimeMillis();
 				command.execute(localCommunicationContext);
+				logger.info(System.currentTimeMillis() - startTime + " ms");
 			} catch (RuntimeException e1) {
 				logger.error(String.format("The current command %s caused a critical exception", commandName));
 				throw e1;
