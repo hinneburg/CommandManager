@@ -35,7 +35,7 @@ public class DependencyCollector {
 
 	/**
 	 * Class constructor taking the catalog argument and sets it in this class.
-	 *
+	 * 
 	 * @param catalog
 	 */
 	public DependencyCollector(Catalog catalog) {
@@ -106,7 +106,7 @@ public class DependencyCollector {
 	 * If there is an element in the afterDependencies, each element of the list must be added to the dependencies as
 	 * key with the name as correspondent value. If that pair is contained the old and the new list have to be merged,
 	 * otherwise only the new key-value-pair is added.
-	 *
+	 * 
 	 * @param name
 	 * @param dependencies
 	 * @param afterDependencies
@@ -243,23 +243,20 @@ public class DependencyCollector {
 
 		Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
 		Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
-		DependencyContext dependencyContext = new DependencyContext();
-		String command;
 
 		while (commands.hasNext()) {
-			command = commands.next();
-			writeCurrentDependenciesIntoContext(command, dependencyContext);
-			updateDependencies(command, necessaryDependencies, dependencyContext.getAfterDependencies(),
-					dependencyContext.getBeforeDependencies());
-			updateDependencies(command, optionalDependencies, dependencyContext.getOptionalAfterDependencies(),
-					dependencyContext.getOptionalBeforeDependencies());
+			Command command = catalog.getCommand(commands.next());
+			updateDependencies(command, necessaryDependencies, command.getAfterDependencies(),
+					command.getBeforeDependencies());
+			updateDependencies(command, optionalDependencies, command.getOptionalAfterDependencies(),
+					command.getOptionalBeforeDependencies());
 		}
 
 		return new Dependencies(necessaryDependencies, optionalDependencies);
 	}
 
 	private void writeCurrentDependenciesIntoContext(String name, DependencyContext dependencyContext) {
-		DependencyCommand command = (DependencyCommand) catalog.getCommand(name);
+		Command command = (Command) catalog.getCommand(name);
 		command.execute(dependencyContext);
 	}
 

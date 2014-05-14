@@ -10,24 +10,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.chain.Catalog;
-import org.apache.commons.chain.config.ConfigParser;
-import org.apache.commons.chain.impl.CatalogFactoryBase;
+import org.apache.commons.chain.impl.CatalogBase;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Maps;
+
 public class DependencyCollectorTest {
 
 	private DependencyCollector dependencyCollector;
+	private Map<String, Command> catalog;
 
 	@Before
 	public void init() {
-		this.dependencyCollector = new DependencyCollector(initializeNewCatalog("/DummyCatalog1.xml"));
+		catalog = Maps.newHashMap();
 	}
 
 	@Test
 	public void testUpdateDependencies() {
+		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand2", new DummyCommand2());
+		catalog.put("DummyCommand3", new DummyCommand3());
+		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
 		Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
 
 		Set<String> afterDependencies = new HashSet<String>(Arrays.asList("after1", "after2"));
@@ -42,26 +47,31 @@ public class DependencyCollectorTest {
 	@Test
 	public void testUpdateDependenciesWithExistingDependencies() {
 		Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
-		dependencies.put("command_allready1", new HashSet<String>());
-		dependencies.put("command_allready2", new HashSet<String>(Arrays.asList("before1")));
-		dependencies.put("command_allreadyA",
-				new HashSet<String>(Arrays.asList("command_allready1", "command_allready3", "command_allready4")));
+		dependencies.put("command_already1", new HashSet<String>());
+		dependencies.put("command_already2", new HashSet<String>(Arrays.asList("before1")));
+		dependencies.put("command_alreadyA",
+				new HashSet<String>(Arrays.asList("command_already1", "command_already3", "command_already4")));
 
-		Set<String> afterDependencies = new HashSet<String>(Arrays.asList("command_allreadyA"));
+		Set<String> afterDependencies = new HashSet<String>(Arrays.asList("command_alreadyA"));
 		Set<String> beforeDependencies = new HashSet<String>(Arrays.asList("before2", "before3"));
 
-		DependencyCollector
-				.updateDependencies("command_allready2", dependencies, afterDependencies, beforeDependencies);
+		DependencyCollector.updateDependencies("command_already2", dependencies, afterDependencies, beforeDependencies);
 
-		assertThat(dependencies.get("command_allready1")).contains();
-		assertThat(dependencies.get("command_allready2")).containsOnly("before1", "before2", "before3");
-		assertThat(dependencies.get("command_allreadyA")).containsOnly("command_allready1", "command_allready2",
-				"command_allready3", "command_allready4");
+		assertThat(dependencies.get("command_already1")).contains();
+		assertThat(dependencies.get("command_already2")).containsOnly("before1", "before2", "before3");
+		assertThat(dependencies.get("command_alreadyA")).containsOnly("command_already1", "command_already2",
+				"command_already3", "command_already4");
 	}
 
 	@Test
 	public void testGetDependencies_beforeDependencies() {
-		Map<String, Set<String>> dependencies = this.dependencyCollector.getDependencies();
+		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand2", new DummyCommand2());
+		catalog.put("DummyCommand3", new DummyCommand3());
+
+		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
+		Map<String, Set<String>> dependencies = dependencyCollector.getDependencies();
+
 		assertThat(dependencies.get("DummyCommand1")).contains();
 		assertThat(dependencies.get("DummyCommand2")).containsOnly("DummyCommand1");
 		assertThat(dependencies.get("DummyCommand3")).containsOnly("DummyCommand2", "DummyCommand1");
@@ -69,53 +79,59 @@ public class DependencyCollectorTest {
 
 	@Test
 	public void testGetDependencies_optionalBeforeDependencies() {
-		this.dependencyCollector = new DependencyCollector(initializeNewCatalog("/DummyCatalog2.xml"));
-		assertThat(this.dependencyCollector.getDependencies().get("DummyCommand3")).containsOnly("DummyCommand1");
+		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand3", new DummyCommand3());
+
+		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
+		Map<String, Set<String>> dependencies = dependencyCollector.getDependencies();
+
+		assertThat(dependencies.get("DummyCommand3")).containsOnly("DummyCommand1");
 	}
 
 	@Test
 	public void testGetDependencies_afterDependencies() {
-		this.dependencyCollector = new DependencyCollector(initializeNewCatalog("/DummyCatalog3.xml"));
-		assertThat(this.dependencyCollector.getDependencies().get("DummyCommand2")).containsOnly("DummyCommand1",
+		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand2", new DummyCommand2());
+		catalog.put("DummyCommand4", new DummyCommand4());
+		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
+		assertThat(dependencyCollector.getDependencies().get("DummyCommand2")).containsOnly("DummyCommand1",
 				"DummyCommand4");
 	}
 
 	@Test
 	public void testGetDependencies_optionalAfterDependencies() {
-		this.dependencyCollector = new DependencyCollector(initializeNewCatalog("/DummyCatalog4.xml"));
-		assertThat(this.dependencyCollector.getDependencies().get("DummyCommand3")).contains("DummyCommand4");
+		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand2", new DummyCommand2());
+		catalog.put("DummyCommand3", new DummyCommand3());
+		catalog.put("DummyCommand4", new DummyCommand4());
+		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
+		assertThat(dependencyCollector.getDependencies().get("DummyCommand3")).contains("DummyCommand4");
 	}
 
 	@Test
 	public void testOrderCommands() {
-		this.dependencyCollector = new DependencyCollector(initializeNewCatalog("/DummyCatalog_for_ordering.xml"));
-		final List<String> orderedCommands = this.dependencyCollector.orderCommands(this.dependencyCollector
-				.getDependencies());
+		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand2", new DummyCommand2());
+		catalog.put("DummyCommand3", new DummyCommand3());
+		catalog.put("DummyCommand4", new DummyCommand4());
+		catalog.put("DummyCommand5", new DummyCommand5());
+		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
+		final List<String> orderedCommands = dependencyCollector.orderCommands(dependencyCollector.getDependencies());
 		orderedCommands.remove(("DummyCommand5"));
 		assertThat(orderedCommands)
-		.containsSequence("DummyCommand1", "DummyCommand4", "DummyCommand2", "DummyCommand3");
+				.containsSequence("DummyCommand1", "DummyCommand4", "DummyCommand2", "DummyCommand3");
 	}
 
 	@AfterClass
-	public static void removeDotFile() {
-		// TODO configure path to fit relatively (before that the project has to
-		// move to cvs)
-		if (!(new File("/home/user/workspace-2014-02-17/command-manager/etc/graph.dot").delete() && new File(
-				"/home/user/workspace-2014-02-17/command-manager/etc").delete())) {
-			System.out.println("NOTE: A file or directory created for testing issues could not be removed.");
+	public static void removeFleAndDirCreatedForTests() {
+		if (dotFileExists()) {
+			new File("./etc/graph.dot").delete();
+			new File("./etc").delete();
 		}
 	}
 
-	private Catalog initializeNewCatalog(String url) {
-		try {
-			CatalogFactoryBase.clear();
-			new ConfigParser().parse(DependencyCollectorTest.class.getResource(url));
-		} catch (Exception e) {// Exception type cannot be more specified, due
-			// to parse()-signature
-			// TODO use logger
-			e.printStackTrace();
-		}
-		return CatalogFactoryBase.getInstance().getCatalog();
+	private static boolean dotFileExists() {
+		return new File("./etc/graph.dot").exists();
 	}
 
 }
