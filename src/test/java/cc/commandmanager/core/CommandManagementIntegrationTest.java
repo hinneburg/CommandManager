@@ -16,7 +16,7 @@ public class CommandManagementIntegrationTest {
 
 	@Before
 	public void setUp() {
-		CommunicationContext context = new CommunicationContext();
+		Context context = new Context();
 		context.put(EXECUTED_COMMANDS, Lists.newArrayList());
 		_commandManagement = new CommandManagement(context, "/CommandManagementIntegrationTest-catalog.xml");
 	}
@@ -25,7 +25,7 @@ public class CommandManagementIntegrationTest {
 	public void test() {
 		_commandManagement.executeAllCommands();
 		List<Class<? extends Command>> executedCommands = (List<Class<? extends Command>>) _commandManagement
-				.getCommunicationContext().get(EXECUTED_COMMANDS);
+				.getContext().get(EXECUTED_COMMANDS);
 		assertThat(executedCommands).containsExactly(DummyCommand1.class, DummyCommand2.class, DummyCommand3.class);
 	}
 
