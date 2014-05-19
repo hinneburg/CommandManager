@@ -123,16 +123,19 @@ public class DependencyCollectorTest {
 				.containsSequence("DummyCommand1", "DummyCommand4", "DummyCommand2", "DummyCommand3");
 	}
 
+	private static final String DOT_DIRECTORY = "./etc";
+	private static final String DOT_FILE = "graph.dot";
+
 	@AfterClass
 	public static void removeFleAndDirCreatedForTests() {
 		if (dotFileExists()) {
-			new File("./etc/graph.dot").delete();
-			new File("./etc").delete();
+			new File(DOT_DIRECTORY + "/" + DOT_FILE).delete();
+			new File(DOT_DIRECTORY).delete();
 		}
 	}
 
 	private static boolean dotFileExists() {
-		return new File("./etc/graph.dot").exists();
+		return new File(DOT_DIRECTORY + "/" + DOT_FILE).exists();
 	}
 
 }
