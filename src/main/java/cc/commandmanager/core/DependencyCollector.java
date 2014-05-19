@@ -255,11 +255,6 @@ public class DependencyCollector {
 		return new Dependencies(necessaryDependencies, optionalDependencies);
 	}
 
-	private void writeCurrentDependenciesIntoContext(String name, DependencyContext dependencyContext) {
-		Command command = (Command) catalog.getCommand(name);
-		command.execute(dependencyContext);
-	}
-
 	/**
 	 * Topologically sorts the composedDependencies and sets the orderedCommands variable.
 	 */
