@@ -80,12 +80,13 @@ public class DependencyCollectorTest {
 	@Test
 	public void testGetDependencies_optionalBeforeDependencies() {
 		catalog.put("DummyCommand1", new DummyCommand1());
+		catalog.put("DummyCommand2", new DummyCommand2());
 		catalog.put("DummyCommand3", new DummyCommand3());
 
 		dependencyCollector = new DependencyCollector(new CatalogBase(catalog));
 		Map<String, Set<String>> dependencies = dependencyCollector.getDependencies();
 
-		assertThat(dependencies.get("DummyCommand3")).containsOnly("DummyCommand1");
+		assertThat(dependencies.get("DummyCommand3")).contains("DummyCommand1", "DummyCommand2");
 	}
 
 	@Test
