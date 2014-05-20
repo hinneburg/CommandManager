@@ -47,57 +47,6 @@ public class DependencyCollector {
 	}
 
 	/**
-	 * Creates a file in dot format. A -> B means that A depends of B. A dashed line represents an optional dependency.
-	 * It accesses the global dependency maps, so it must be executed before the maps are changed, e.g. before executing
-	 * the orderCommands method because it changes the maps.
-	 */
-	private static void makeDotFile(Map<String, Set<String>> composedDependencies,
-			Map<String, Set<String>> optionalDependencies, String name) {
-		Check.notNull(composedDependencies, "composedDependencies");
-		Check.notNull(optionalDependencies, "optionalDependencies");
-		Check.notNull(name, "name");
-
-		// TODO StringBuilder
-		String dotContent = "digraph G { \n";
-		dotContent += "rankdir = BT; \n";
-		dotContent += "node [shape=record]; \n";
-		dotContent += "edge [arrowhead=vee]; \n";
-
-		for (String key : composedDependencies.keySet()) {
-			if (composedDependencies.get(key).isEmpty()) {
-				dotContent += key + "; \n";
-			} else {
-				for (String value : composedDependencies.get(key)) {
-					dotContent += (key + " -> " + value + "; \n");
-				}
-			}
-		}
-		for (String key : optionalDependencies.keySet()) {
-			if (!optionalDependencies.get(key).isEmpty()) {
-				for (String value : optionalDependencies.get(key)) {
-					dotContent += (key + " -> " + value + " [style = dotted] " + "; \n");
-				}
-			}
-		}
-
-		dotContent += "}";
-
-		try {
-			File dir = new File("etc");
-			if (!dir.exists()) {
-				dir.mkdir();
-			}
-
-			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("etc/graph" + name + ".dot"));
-			bufferedWriter.write(dotContent);
-			bufferedWriter.close();
-		} catch (IOException e) {
-			// TODO use logger
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Checks if the name is contained as key in the dependencies map. If it is, it takes the value of the key (an
 	 * arrayList) and merges it with the given beforeDependencies. After merging, the compoundBeforeList is set as new
 	 * value of the key. Otherwise the name and the beforeDependencies are added as new key-value-pair to the
@@ -253,6 +202,57 @@ public class DependencyCollector {
 		}
 
 		return new Dependencies(necessaryDependencies, optionalDependencies);
+	}
+
+	/**
+	 * Creates a file in dot format. A -> B means that A depends of B. A dashed line represents an optional dependency.
+	 * It accesses the global dependency maps, so it must be executed before the maps are changed, e.g. before executing
+	 * the orderCommands method because it changes the maps.
+	 */
+	private static void makeDotFile(Map<String, Set<String>> composedDependencies,
+			Map<String, Set<String>> optionalDependencies, String name) {
+		Check.notNull(composedDependencies, "composedDependencies");
+		Check.notNull(optionalDependencies, "optionalDependencies");
+		Check.notNull(name, "name");
+
+		// TODO StringBuilder
+		String dotContent = "digraph G { \n";
+		dotContent += "rankdir = BT; \n";
+		dotContent += "node [shape=record]; \n";
+		dotContent += "edge [arrowhead=vee]; \n";
+
+		for (String key : composedDependencies.keySet()) {
+			if (composedDependencies.get(key).isEmpty()) {
+				dotContent += key + "; \n";
+			} else {
+				for (String value : composedDependencies.get(key)) {
+					dotContent += (key + " -> " + value + "; \n");
+				}
+			}
+		}
+		for (String key : optionalDependencies.keySet()) {
+			if (!optionalDependencies.get(key).isEmpty()) {
+				for (String value : optionalDependencies.get(key)) {
+					dotContent += (key + " -> " + value + " [style = dotted] " + "; \n");
+				}
+			}
+		}
+
+		dotContent += "}";
+
+		try {
+			File dir = new File("etc");
+			if (!dir.exists()) {
+				dir.mkdir();
+			}
+
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("etc/graph" + name + ".dot"));
+			bufferedWriter.write(dotContent);
+			bufferedWriter.close();
+		} catch (IOException e) {
+			// TODO use logger
+			e.printStackTrace();
+		}
 	}
 
 	/**
