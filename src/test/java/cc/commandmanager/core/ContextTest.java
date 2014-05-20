@@ -72,6 +72,18 @@ public class ContextTest {
 		assertThat(actual).isEqualTo(expected);
 	}
 
-	// TODO cover equals' functionality with test case
+	@Test
+	public void testEquals() {
+		assertThat(context.equals(42)).isFalse();
+		assertThat(context.equals(null)).isFalse();
+		assertThat(context.equals(context)).isTrue();
+
+		Context equalContext = new Context();
+
+		context.put("one", 1);
+		equalContext.put("one", 1);
+
+		assertThat(context.equals(equalContext)).isTrue();
+	}
 
 }
