@@ -45,4 +45,9 @@ public class Context {
 		return context instanceof Context && items.equals(((Context) context).items);
 	}
 
+	@Override
+	public int hashCode() {
+		return items.hashCode();
+	}
+
 }

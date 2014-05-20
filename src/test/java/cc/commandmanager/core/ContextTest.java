@@ -86,4 +86,24 @@ public class ContextTest {
 		assertThat(context.equals(equalContext)).isTrue();
 	}
 
+	@Test
+	public void testHashCode_equalHashCode() {
+		Context equalContext = new Context();
+
+		context.put("one", 1);
+		equalContext.put("one", 1);
+
+		assertThat(context.hashCode()).isEqualTo(equalContext.hashCode());
+	}
+
+	@Test
+	public void testHashCode_differingHashCode() {
+		Context otherContext = new Context();
+
+		context.put("one", 1);
+		otherContext.put("two", 2);
+
+		assertThat(context.hashCode()).isNotEqualTo(otherContext.hashCode());
+	}
+
 }
