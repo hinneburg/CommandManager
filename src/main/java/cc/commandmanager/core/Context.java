@@ -5,7 +5,11 @@ import java.util.Map;
 
 import net.sf.qualitycheck.Check;
 
-// TODO add some javadoc
+/**
+ * Represents a naming context, which consists of a set of string-to-object bindings. It contains methods for
+ * investigating and updating these bindings. The bindings are represented with a map, so all provided methods
+ * correspond to the map's equivalents.
+ */
 public class Context {
 
 	private final Map<String, Object> items;
