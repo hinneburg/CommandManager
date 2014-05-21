@@ -52,10 +52,10 @@ public class CommandManagement {
 
 	private CommunicationContext ensureAtLeastDefaultLogFileProperties(CommunicationContext context) {
 		if (!context.containsKey("path_logFile") || context.get("path_logFile") == null) {
-			context.put("path_logFile", "logs/Preprocessing.log");
+			context.bind("path_logFile", "logs/Preprocessing.log");
 		}
 		if (!context.containsKey("path_dotFile") || context.get("path_dotFile") == null) {
-			context.put("path_dotFile", "etc/graph.dot");
+			context.bind("path_dotFile", "etc/graph.dot");
 		}
 		return context;
 	}

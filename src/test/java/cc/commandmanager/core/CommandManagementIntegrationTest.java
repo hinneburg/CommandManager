@@ -17,7 +17,7 @@ public class CommandManagementIntegrationTest {
 	@Before
 	public void setUp() {
 		Context context = new Context();
-		context.put(EXECUTED_COMMANDS, Lists.newArrayList());
+		context.bind(EXECUTED_COMMANDS, Lists.newArrayList());
 		_commandManagement = new CommandManagement(context, "/CommandManagementIntegrationTest-catalog.xml");
 	}
 

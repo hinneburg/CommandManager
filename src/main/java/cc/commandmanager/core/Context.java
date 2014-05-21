@@ -15,6 +15,9 @@ import com.google.common.collect.Maps;
  */
 public class Context {
 
+	// TODO #18 rebind and containsKey
+	// TODO #18 require map to contain the key when calling get
+
 	private final Map<String, Object> items;
 
 	public Context() {
@@ -26,8 +29,21 @@ public class Context {
 		items.putAll(Check.notNull(context).items);
 	}
 
-	public void put(String name, @Nullable Object object) {
-		items.put(Check.notNull(name), object);
+	/**
+	 * Binds the given value to the given key.
+	 *
+	 * @param name
+	 * @param value
+	 * @throws KeyAlreadyBoundException
+	 *             if there is already a value bound to the key
+	 */
+	public void bind(String name, @Nullable Object value) {
+		Check.notNull(name);
+		if (items.containsKey(name)) {
+			throw new KeyAlreadyBoundException(name);
+		}
+
+		items.put(name, value);
 	}
 
 	/**
@@ -40,12 +56,32 @@ public class Context {
 		return items.get(Check.notNull(name));
 	}
 
-	public void remove(String name) {
-		items.remove(Check.notNull(name));
+	/**
+	 * Unbinds the value bound to the specified key.
+	 *
+	 * @param name
+	 * @throws KeyNotBoundException
+	 *             if there is no value bound to that key
+	 */
+	public void unbind(String name) {
+		Check.notNull(name);
+		if (items.remove(name) == null) {
+			throw new KeyNotBoundException(name);
+		}
 	}
 
-	public void putAll(Map<? extends String, ? extends Object> map) {
-		items.putAll(Check.notNull(map));
+	/**
+	 * Binds all values of the given map to their given key.
+	 *
+	 * @param map
+	 * @throws KeyAlreadyBoundException
+	 *             if there is at least one of the given keys has already bound values
+	 */
+	public void bindAll(Map<? extends String, ? extends Object> map) {
+		Check.notNull(map);
+		for (String key : map.keySet()) {
+			bind(key, map.get(key));
+		}
 	}
 
 	/**
