@@ -1,9 +1,10 @@
 package cc.commandmanager.core;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.qualitycheck.Check;
+
+import com.google.common.collect.Maps;
 
 /**
  * Represents a naming context, which consists of a set of string-to-object bindings. It contains methods for
@@ -15,11 +16,11 @@ public class Context {
 	private final Map<String, Object> items;
 
 	public Context() {
-		items = new HashMap<String, Object>();
+		items = Maps.newHashMap();
 	}
 
 	public Context(Context context) {
-		items = new HashMap<String, Object>();
+		this();
 		Check.notNull(context);
 		items.putAll(context.items);
 	}
