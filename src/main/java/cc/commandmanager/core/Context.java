@@ -2,6 +2,8 @@ package cc.commandmanager.core;
 
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import net.sf.qualitycheck.Check;
 
 import com.google.common.collect.Maps;
@@ -21,12 +23,11 @@ public class Context {
 
 	public Context(Context context) {
 		this();
-		Check.notNull(context);
-		items.putAll(context.items);
+		items.putAll(Check.notNull(context).items);
 	}
 
-	public void put(String name, Object object) {
-		items.put(name, object);
+	public void put(String name, @Nullable Object object) {
+		items.put(Check.notNull(name), object);
 	}
 
 	/**
@@ -36,15 +37,15 @@ public class Context {
 	 * @return value bound to that key
 	 */
 	public Object get(String name) {
-		return items.get(name);
+		return items.get(Check.notNull(name));
 	}
 
 	public void remove(String name) {
-		items.remove(name);
+		items.remove(Check.notNull(name));
 	}
 
 	public void putAll(Map<? extends String, ? extends Object> map) {
-		items.putAll(map);
+		items.putAll(Check.notNull(map));
 	}
 
 	/**

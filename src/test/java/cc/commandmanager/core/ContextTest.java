@@ -4,6 +4,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Map;
 
+import net.sf.qualitycheck.exception.IllegalNullArgumentException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,7 +14,7 @@ import com.google.common.collect.Maps;
 
 public class ContextTest {
 
-	Context context;
+	private Context context;
 
 	@Before
 	public void setUp() {
@@ -36,14 +38,9 @@ public class ContextTest {
 	}
 
 	@Test
-	public void testPutWithNulls() {
-		Object expected = new Object();
-		context.put(null, expected);
-		assertThat(context.get(null)).isSameAs(expected);
-
-		String actual = "new Object";
-		context.put(actual, null);
-		assertThat(context.get(actual)).isNull();
+	public void testPut_nullValue() {
+		context.put("key", null);
+		assertThat(context.get("key")).isNull();
 	}
 
 	@Test
@@ -145,6 +142,26 @@ public class ContextTest {
 	public void testGetIterable_typeMismatch() {
 		context.put("Iterable", "noIterable");
 		context.getIterable("Iterable");
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testPut_nullKey() {
+		context.put(null, "a");
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testGet_nullKey() {
+		context.get(null);
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testRemove_nullKey() {
+		context.remove(null);
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testPutAll_nullKey() {
+		context.putAll(null);
 	}
 
 	@Test
