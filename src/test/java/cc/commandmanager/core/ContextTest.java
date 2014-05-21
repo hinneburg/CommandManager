@@ -7,6 +7,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class ContextTest {
@@ -70,6 +71,80 @@ public class ContextTest {
 		actual.put("two", context.get("two"));
 		actual.put("three", context.get("three"));
 		assertThat(actual).isEqualTo(expected);
+	}
+
+	@Test
+	public void testGet_typeSafe() {
+		context.put("int", 1);
+		context.put("string", "foo");
+		assertThat(context.get("int", Integer.class)).isEqualTo(1);
+		assertThat(context.get("string", String.class)).isEqualTo("foo");
+	}
+
+	@Test(expected = ResultTypeMismatchException.class)
+	public void testGet_typeSafe_typeMismatch() {
+		context.put("int", "foo");
+		context.get("int", Integer.class);
+	}
+
+	@Test
+	public void testGetInteger() {
+		context.put("Integer", 1);
+		assertThat(context.getInteger("Integer")).isEqualTo(1);
+	}
+
+	@Test(expected = ResultTypeMismatchException.class)
+	public void testGetInteger_typeMismatch() {
+		context.put("Integer", "noInt");
+		context.getInteger("Integer");
+	}
+
+	@Test
+	public void testGetDouble() {
+		context.put("Double", 1d);
+		assertThat(context.getDouble("Double")).isEqualTo(1d);
+	}
+
+	@Test(expected = ResultTypeMismatchException.class)
+	public void testGetDouble_typeMismatch() {
+		context.put("Double", "noDouble");
+		context.getDouble("Double");
+	}
+
+	@Test
+	public void testGetBoolean() {
+		context.put("Boolean", Boolean.TRUE);
+		assertThat(context.getBoolean("Boolean")).isEqualTo(Boolean.TRUE);
+	}
+
+	@Test(expected = ResultTypeMismatchException.class)
+	public void testGetBoolean_typeMismatch() {
+		context.put("Boolean", 5);
+		context.getBoolean("Boolean");
+	}
+
+	@Test
+	public void testGetString() {
+		context.put("String", "String");
+		assertThat(context.getString("String")).isEqualTo("String");
+	}
+
+	@Test(expected = ResultTypeMismatchException.class)
+	public void testGetString_typeMismatch() {
+		context.put("String", 5);
+		context.getString("String");
+	}
+
+	@Test
+	public void testGetIterable() {
+		context.put("Iterable", Lists.newArrayList(1, 2, 3));
+		assertThat(context.getIterable("Iterable")).containsOnly(1, 2, 3);
+	}
+
+	@Test(expected = ResultTypeMismatchException.class)
+	public void testGetIterable_typeMismatch() {
+		context.put("Iterable", "noIterable");
+		context.getIterable("Iterable");
 	}
 
 	@Test

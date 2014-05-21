@@ -28,6 +28,12 @@ public class Context {
 		items.put(name, object);
 	}
 
+	/**
+	 * Retrieves the value bound to the given key.
+	 *
+	 * @param name
+	 * @return value bound to that key
+	 */
 	public Object get(String name) {
 		return items.get(name);
 	}
@@ -38,6 +44,90 @@ public class Context {
 
 	public void putAll(Map<? extends String, ? extends Object> map) {
 		items.putAll(map);
+	}
+
+	/**
+	 * Retrieves the value bound to the given key having the given type.
+	 *
+	 * @param key
+	 * @param clazz
+	 *            of the returned value
+	 * @return value bound to the key
+	 *
+	 * @throws ResultTypeMismatchException
+	 *             if the bound value does not have the specified type.
+	 */
+	public <T> T get(String key, Class<T> clazz) {
+		Object value = get(key);
+		if (!clazz.isInstance(value)) {
+			throw new ResultTypeMismatchException(value.getClass(), clazz);
+		}
+		return clazz.cast(value);
+	}
+
+	/**
+	 * Returns the {@linkplain Integer} bound to the given key.
+	 *
+	 * @param key
+	 * @return value bound to the key
+	 * @throws ResultTypeMismatchException
+	 *             if the bound value is no {@linkplain Integer}
+	 */
+	public Integer getInteger(String key) {
+		return get(key, Integer.class);
+	}
+
+	/**
+	 * Returns the {@linkplain Double} bound to the given key.
+	 *
+	 * @param key
+	 * @return value bound to the key
+	 * @throws ResultTypeMismatchException
+	 *             if the bound value is no {@linkplain Double}
+	 */
+	public Double getDouble(String key) {
+		return get(key, Double.class);
+	}
+
+	/**
+	 * Returns the {@linkplain Boolean} bound to the given key.
+	 *
+	 * @param key
+	 * @return value bound to the key
+	 * @throws ResultTypeMismatchException
+	 *             if the bound value is no {@linkplain Boolean}
+	 */
+	public Boolean getBoolean(String key) {
+		return get(key, Boolean.class);
+	}
+
+	/**
+	 * Returns the {@linkplain String} bound to the given key.
+	 *
+	 * @param key
+	 * @return value bound to the key
+	 * @throws ResultTypeMismatchException
+	 *             if the bound value is no {@linkplain String}
+	 */
+	public String getString(String key) {
+		return get(key, String.class);
+	}
+
+	/**
+	 * Returns the {@linkplain Iterable} bound to the given key.
+	 * <p>
+	 * The generic type parameter of the {@linkplain Iterable} is being inferred depending on the expected type. Thus it
+	 * may not be correct and this has to be treated carefully to avoid running into a {@linkplain ClassCastException}
+	 * later on.
+	 *
+	 * @param key
+	 * @return value bound to the key
+	 * @throws ResultTypeMismatchException
+	 *             if the bound value is no {@linkplain Iterable}
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> Iterable<T> getIterable(String key) {
+		return get(key, Iterable.class);
 	}
 
 	@Override
