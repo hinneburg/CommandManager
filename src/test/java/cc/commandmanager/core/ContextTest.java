@@ -29,12 +29,8 @@ public class ContextTest {
 
 	@Test
 	public void testPut() {
-		Object expected = new Object();
-		String actual = "new Object";
-
-		context.put(actual, expected);
-
-		assertThat(context.get(actual)).isSameAs(expected);
+		context.put("key", "value");
+		assertThat(context.get("key")).isEqualTo("value");
 	}
 
 	@Test
@@ -45,29 +41,22 @@ public class ContextTest {
 
 	@Test
 	public void testRemove() {
-		String actual = "new Object";
-		context.put(actual, new Object());
-
-		context.remove(actual);
-
-		assertThat(context.get(actual)).isNull();
+		context.put("key", "value");
+		context.remove("key");
+		assertThat(context.get("key")).isNull();
 	}
 
 	@Test
 	public void testPutAll() {
-		Map<String, Object> expected = Maps.newHashMap();
-		Object one = new Object(), two = new Object(), three = new Object();
-		expected.put("one", one);
-		expected.put("two", two);
-		expected.put("three", three);
+		Map<String, Object> numbers = Maps.newHashMap();
+		numbers.put("one", 1);
+		numbers.put("two", 2);
+		numbers.put("three", 3);
 
-		context.putAll(expected);
-
-		Map<String, Object> actual = Maps.newHashMap();
-		actual.put("one", context.get("one"));
-		actual.put("two", context.get("two"));
-		actual.put("three", context.get("three"));
-		assertThat(actual).isEqualTo(expected);
+		context.putAll(numbers);
+		assertThat(context.get("one")).isEqualTo(1);
+		assertThat(context.get("two")).isEqualTo(2);
+		assertThat(context.get("three")).isEqualTo(3);
 	}
 
 	@Test
@@ -171,30 +160,24 @@ public class ContextTest {
 		assertThat(context.equals(context)).isTrue();
 
 		Context equalContext = new Context();
-
 		context.put("one", 1);
 		equalContext.put("one", 1);
-
 		assertThat(context.equals(equalContext)).isTrue();
 	}
 
 	@Test
 	public void testHashCode_equalHashCode() {
 		Context equalContext = new Context();
-
 		context.put("one", 1);
 		equalContext.put("one", 1);
-
 		assertThat(context.hashCode()).isEqualTo(equalContext.hashCode());
 	}
 
 	@Test
 	public void testHashCode_differingHashCode() {
 		Context otherContext = new Context();
-
 		context.put("one", 1);
 		otherContext.put("two", 2);
-
 		assertThat(context.hashCode()).isNotEqualTo(otherContext.hashCode());
 	}
 
