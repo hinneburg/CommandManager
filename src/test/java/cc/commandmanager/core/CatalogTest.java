@@ -1,10 +1,13 @@
 package cc.commandmanager.core;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,9 +44,17 @@ public class CatalogTest {
 
 	@Test
 	public void testGetNames() {
-		// TODO implement test case
+		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
 	}
 
+	@Ignore
+	@Test(expected = MissingDomAttributeException.class)
+	public void testGetNamesThrowsException() {
+		// TODO implement test case
+		// the document must therefore have a command element without the attribute "name"
+	}
+
+	@Ignore
 	@Test
 	public void testGetCommand() {
 		// TODO implement test case
