@@ -126,11 +126,14 @@ public class Catalog {
 	 *            Name for which a Command or Chain should be retrieved
 	 * @return Command associated with the specified name, if any; otherwise, a {@link CommandNotFoundException} will be
 	 *         thrown.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found in this catalog for the given command name.
 	 * @throws IllegalAccessException
-	 *             if the class or its nullary constructor is not accessible.
+	 *             if the command class or its nullary constructor is not accessible.
 	 * @throws InstantiationException
-	 *             if this Class represents an abstract class, an interface, an array class, a primitive type, or void;
-	 *             or if the class has no nullary constructor; or if the instantiation fails for some other reason.
+	 *             if the command class represents an abstract class, an interface, an array class, a primitive type, or
+	 *             void; or if the command class has no nullary constructor; or if the instantiation fails for some
+	 *             other reason.
 	 */
 	public Command getCommand(String commandName) {
 		Check.notEmpty(commandName, "command name");
