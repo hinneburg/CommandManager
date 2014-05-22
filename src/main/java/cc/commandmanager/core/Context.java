@@ -18,7 +18,7 @@ public class Context {
 	// TODO #18 rebind and containsKey
 	// TODO #18 require map to contain the key when calling get
 
-	private final Map<String, Object> items;
+	private final Map<Object, Object> items;
 
 	public Context() {
 		items = Maps.newHashMap();
@@ -32,41 +32,41 @@ public class Context {
 	/**
 	 * Binds the given value to the given key.
 	 *
-	 * @param name
+	 * @param key
 	 * @param value
 	 * @throws KeyAlreadyBoundException
 	 *             if there is already a value bound to the key
 	 */
-	public void bind(String name, @Nullable Object value) {
-		Check.notNull(name);
-		if (items.containsKey(name)) {
-			throw new KeyAlreadyBoundException(name);
+	public void bind(Object key, @Nullable Object value) {
+		Check.notNull(key);
+		if (items.containsKey(key)) {
+			throw new KeyAlreadyBoundException(key);
 		}
 
-		items.put(name, value);
+		items.put(key, value);
 	}
 
 	/**
 	 * Retrieves the value bound to the given key.
 	 *
-	 * @param name
+	 * @param key
 	 * @return value bound to that key
 	 */
-	public Object get(String name) {
-		return items.get(Check.notNull(name));
+	public Object get(Object key) {
+		return items.get(Check.notNull(key));
 	}
 
 	/**
 	 * Unbinds the value bound to the specified key.
 	 *
-	 * @param name
+	 * @param key
 	 * @throws KeyNotBoundException
 	 *             if there is no value bound to that key
 	 */
-	public void unbind(String name) {
-		Check.notNull(name);
-		if (items.remove(name) == null) {
-			throw new KeyNotBoundException(name);
+	public void unbind(Object key) {
+		Check.notNull(key);
+		if (items.remove(key) == null) {
+			throw new KeyNotBoundException(key);
 		}
 	}
 
@@ -77,9 +77,9 @@ public class Context {
 	 * @throws KeyAlreadyBoundException
 	 *             if there is at least one of the given keys has already bound values
 	 */
-	public void bindAll(Map<? extends String, ? extends Object> map) {
+	public void bindAll(Map<? extends Object, ? extends Object> map) {
 		Check.notNull(map);
-		for (String key : map.keySet()) {
+		for (Object key : map.keySet()) {
 			bind(key, map.get(key));
 		}
 	}
@@ -95,7 +95,7 @@ public class Context {
 	 * @throws ResultTypeMismatchException
 	 *             if the bound value does not have the specified type.
 	 */
-	public <T> T get(String key, Class<T> clazz) {
+	public <T> T get(Object key, Class<T> clazz) {
 		Object value = get(key);
 		if (!clazz.isInstance(value)) {
 			throw new ResultTypeMismatchException(value.getClass(), clazz);
@@ -111,7 +111,7 @@ public class Context {
 	 * @throws ResultTypeMismatchException
 	 *             if the bound value is no {@linkplain Integer}
 	 */
-	public Integer getInteger(String key) {
+	public Integer getInteger(Object key) {
 		return get(key, Integer.class);
 	}
 
@@ -123,7 +123,7 @@ public class Context {
 	 * @throws ResultTypeMismatchException
 	 *             if the bound value is no {@linkplain Double}
 	 */
-	public Double getDouble(String key) {
+	public Double getDouble(Object key) {
 		return get(key, Double.class);
 	}
 
@@ -135,7 +135,7 @@ public class Context {
 	 * @throws ResultTypeMismatchException
 	 *             if the bound value is no {@linkplain Boolean}
 	 */
-	public Boolean getBoolean(String key) {
+	public Boolean getBoolean(Object key) {
 		return get(key, Boolean.class);
 	}
 
@@ -147,7 +147,7 @@ public class Context {
 	 * @throws ResultTypeMismatchException
 	 *             if the bound value is no {@linkplain String}
 	 */
-	public String getString(String key) {
+	public String getString(Object key) {
 		return get(key, String.class);
 	}
 
@@ -164,7 +164,7 @@ public class Context {
 	 *             if the bound value is no {@linkplain Iterable}
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Iterable<T> getIterable(String key) {
+	public <T> Iterable<T> getIterable(Object key) {
 		return get(key, Iterable.class);
 	}
 
