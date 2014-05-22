@@ -47,16 +47,6 @@ public class Context {
 	}
 
 	/**
-	 * Retrieves the value bound to the given key.
-	 *
-	 * @param key
-	 * @return value bound to that key
-	 */
-	public Object get(Object key) {
-		return items.get(Check.notNull(key));
-	}
-
-	/**
 	 * Unbinds the value bound to the specified key.
 	 *
 	 * @param key
@@ -96,6 +86,16 @@ public class Context {
 		for (Object key : map.keySet()) {
 			bind(key, map.get(key));
 		}
+	}
+
+	/**
+	 * Retrieves the value bound to the given key.
+	 *
+	 * @param key
+	 * @return value bound to that key
+	 */
+	public Object get(Object key) {
+		return items.get(Check.notNull(key));
 	}
 
 	/**
