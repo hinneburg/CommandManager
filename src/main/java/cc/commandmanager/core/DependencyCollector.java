@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.sf.qualitycheck.Check;
 
-import org.apache.commons.chain.Catalog;
 import org.apache.log4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;

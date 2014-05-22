@@ -7,9 +7,6 @@ import java.util.Set;
 
 import net.sf.qualitycheck.Check;
 
-import org.apache.commons.chain.Catalog;
-import org.apache.commons.chain.config.ConfigParser;
-import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.apache.log4j.Logger;
 
 /**
@@ -32,7 +29,7 @@ public class CommandManagement {
 	}
 
 	public CommandManagement(Context context, String catalogLocation) {
-		this(context, loadCatalogFromResource(catalogLocation));
+		this(context, Catalog.fromXmlFile(catalogLocation));
 	}
 
 	public CommandManagement(Catalog catalog) {
