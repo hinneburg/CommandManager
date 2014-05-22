@@ -48,10 +48,14 @@ public class CatalogTest {
 		return catalogDocument;
 	}
 
-	@Test(expected = MissingDomAttributeException.class)
-	public void testGetNamesThrowsException() {
-		// TODO implement test case
-		// the document must therefore have a command element without the attribute "name"
+	@Test(expected = MissingCatalogAttributeException.class)
+	public void testCreateCatalogThrowsException_MissingCatalogAttributeException() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+		Element commandWithoutNameAttribute = catalogDocument.createElement("command");
+		documentRoot.appendChild(commandWithoutNameAttribute);
+		catalogDocument.appendChild(documentRoot);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
 	}
 
 	@Ignore

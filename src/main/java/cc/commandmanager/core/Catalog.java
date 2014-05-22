@@ -23,24 +23,19 @@ public class Catalog {
 
 	private static Iterable<String> getCommandNamesFromDocument(Document catalogDocument) {
 		Collection<String> commandNames = Sets.newHashSet();
-		final String name = "name";
-		final String command = "command";
+		final String nameAttribute = "name";
+		final String commandTag = "command";
 
-		NodeList nodes = catalogDocument.getElementsByTagName(command);
+		NodeList nodes = catalogDocument.getElementsByTagName(commandTag);
 		for (int currentNode = 0; currentNode < nodes.getLength(); currentNode++) {
 			Node node = nodes.item(currentNode);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 				Element element = (Element) node;
-				if (element.hasAttribute(name)) {
-					String alias = element.getAttribute(name);
-					if (commandNames.contains(alias)) {
-						throw new RuntimeException(String.format(
-								"Duplicate occurency of name attribute \"%s\" in document %s", name,
-								catalogDocument.getDocumentURI()));
-					}
-					commandNames.add(element.getAttribute(name));
+				if (element.hasAttribute(nameAttribute)) {
+					commandNames.add(element.getAttribute(nameAttribute));
 				} else {
-					throw new MissingDomAttributeException(catalogDocument.getDocumentURI(), command, currentNode, name);
+					throw new MissingCatalogAttributeException(catalogDocument.getDocumentURI(), commandTag,
+							currentNode, nameAttribute);
 				}
 			}
 		}
@@ -56,6 +51,8 @@ public class Catalog {
 	 * 
 	 * @param url
 	 *            URL of the XML document to be parsed
+	 * @throws MissingCatalogAttributeException
+	 *             if the name or the className attribute are missing in the given DOM document.
 	 */
 	public static Catalog fromXmlFile(String fileUrl) {
 		Check.notNull(fileUrl);
@@ -69,6 +66,9 @@ public class Catalog {
 	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
 	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
 	 * "className" attribute is the canonical name under which the class loader will look for the given class.
+	 * 
+	 * @throws MissingCatalogAttributeException
+	 *             if the name or the className attribute are missing in the given DOM document.
 	 */
 	public static Catalog fromDomDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument);
