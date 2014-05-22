@@ -15,8 +15,6 @@ import com.google.common.collect.Maps;
  */
 public class Context {
 
-	// TODO #18 require map to contain the key when calling get
-
 	private final Map<Object, Object> items;
 
 	public Context() {
@@ -41,7 +39,6 @@ public class Context {
 		if (items.containsKey(key)) {
 			throw new KeyAlreadyBoundException(key);
 		}
-
 		items.put(key, value);
 	}
 
@@ -54,9 +51,8 @@ public class Context {
 	 */
 	public void unbind(Object key) {
 		Check.notNull(key);
-		if (items.remove(key) == null) {
-			throw new KeyNotBoundException(key);
-		}
+		checkMapContainsKey(items, key);
+		items.remove(key);
 	}
 
 	/**
@@ -104,7 +100,9 @@ public class Context {
 	 * @return value bound to that key
 	 */
 	public Object get(Object key) {
-		return items.get(Check.notNull(key));
+		Check.notNull(key);
+		checkMapContainsKey(items, key);
+		return items.get(key);
 	}
 
 	/**
@@ -199,6 +197,12 @@ public class Context {
 	@Override
 	public int hashCode() {
 		return items.hashCode();
+	}
+
+	private static void checkMapContainsKey(Map<Object, Object> map, Object key) {
+		if (!map.containsKey(key)) {
+			throw new KeyNotBoundException(key);
+		}
 	}
 
 }

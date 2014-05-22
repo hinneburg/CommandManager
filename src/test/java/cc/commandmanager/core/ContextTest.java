@@ -106,6 +106,17 @@ public class ContextTest {
 	}
 
 	@Test
+	public void testGet() {
+		context.bind("key", "value");
+		assertThat(context.get("key")).isEqualTo("value");
+	}
+
+	@Test(expected = KeyNotBoundException.class)
+	public void testGet_nothingBound() {
+		context.get("key");
+	}
+
+	@Test
 	public void testGet_typeSafe() {
 		context.bind("int", 1);
 		context.bind("string", "foo");
