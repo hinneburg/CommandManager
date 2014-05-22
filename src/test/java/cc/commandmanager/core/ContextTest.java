@@ -58,6 +58,18 @@ public class ContextTest {
 	}
 
 	@Test
+	public void testRebind() {
+		context.bind("key", "value");
+		context.rebind("key", "newValue");
+		assertThat(context.get("key")).isEqualTo("newValue");
+	}
+
+	@Test(expected = KeyNotBoundException.class)
+	public void testRebind_nothingBound() {
+		context.rebind("key", "newValue");
+	}
+
+	@Test
 	public void testBindAll() {
 		Map<String, Object> numbers = Maps.newHashMap();
 		numbers.put("one", 1);

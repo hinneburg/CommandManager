@@ -71,6 +71,20 @@ public class Context {
 	}
 
 	/**
+	 * Rebinds a different value to a key with an already bound value. This will give the same result as successive
+	 * calls of {@linkplain Context#unbind(Object)} and {@linkplain Context#bind(Object, Object)}.
+	 *
+	 * @param key
+	 * @param value
+	 * @throws KeyNotBoundException
+	 *             if there is no value bound to the key
+	 */
+	public void rebind(Object key, @Nullable Object value) {
+		unbind(key);
+		bind(key, value);
+	}
+
+	/**
 	 * Binds all values of the given map to their given key.
 	 *
 	 * @param map
