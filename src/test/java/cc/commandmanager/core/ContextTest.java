@@ -49,7 +49,7 @@ public class ContextTest {
 	public void testUnbind() {
 		context.bind("key", "value");
 		context.unbind("key");
-		assertThat(context.get("key")).isNull();
+		assertThat(context.containsKey("key")).isFalse();
 	}
 
 	@Test(expected = KeyNotBoundException.class)
@@ -91,6 +91,18 @@ public class ContextTest {
 
 		context.bind("one", 1.0D);
 		context.bindAll(numbers);
+	}
+
+	@Test
+	public void testContainsKey() {
+		assertThat(context.containsKey("key")).isFalse();
+		context.bind("key", "value");
+		assertThat(context.containsKey("key")).isTrue();
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testContainsKey_nullKey() {
+		context.containsKey(null);
 	}
 
 	@Test

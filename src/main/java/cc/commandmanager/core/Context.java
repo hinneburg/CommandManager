@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
  */
 public class Context {
 
-	// TODO #18 rebind and containsKey
 	// TODO #18 require map to contain the key when calling get
 
 	private final Map<Object, Object> items;
@@ -86,6 +85,16 @@ public class Context {
 		for (Object key : map.keySet()) {
 			bind(key, map.get(key));
 		}
+	}
+
+	/**
+	 * Checks whether the given key has some value bound to in the context.
+	 *
+	 * @param key
+	 * @return if a value is bound to the key
+	 */
+	public boolean containsKey(Object key) {
+		return items.containsKey(Check.notNull(key));
 	}
 
 	/**
