@@ -128,12 +128,10 @@ public class Catalog {
 	 *         thrown.
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this catalog for the given command name.
-	 * @throws IllegalAccessException
-	 *             if the command class or its nullary constructor is not accessible.
-	 * @throws InstantiationException
-	 *             if the command class represents an abstract class, an interface, an array class, a primitive type, or
-	 *             void; or if the command class has no nullary constructor; or if the instantiation fails for some
-	 *             other reason.
+	 * @throws CommandNotInstantiableException
+	 *             if the command class or its nullary constructor is not accessible; or if the command class represents
+	 *             an abstract class, an interface, an array class, a primitive type, or void; or if the command class
+	 *             has no nullary constructor; or if the instantiation fails for some other reason.
 	 */
 	public Command getCommand(String commandName) {
 		Check.notEmpty(commandName, "command name");
@@ -144,15 +142,11 @@ public class Catalog {
 
 		try {
 			return commands.get(commandName).newInstance();
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Class " + commands.get(commandName)
-					+ " or its nullary constructor is not accessible.", e);
-		} catch (InstantiationException e) {
-			throw new RuntimeException(
-					"Class "
-							+ commands.get(commandName)
-							+ " represents an abstract class, an interface, an array class, a primitive type, or void; or if the class has no nullary constructor; or the instantiation fails for some other reason.",
-					e);
+		} catch (IllegalAccessException exception) {
+			throw new CommandNotInstantiableException(commands.get(commandName), exception);
+		} catch (InstantiationException exception) {
+			throw new CommandNotInstantiableException(commands.get(commandName), exception);
 		}
 	}
+
 }
