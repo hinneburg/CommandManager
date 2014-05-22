@@ -2,6 +2,8 @@ package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Set;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -20,7 +22,7 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
 		catalogDocument.appendChild(documentRoot);
@@ -29,7 +31,7 @@ public class CatalogTest {
 		assertThat(catalog.getCommandNames()).containsOnly("Command1");
 
 		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
+		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command2");
 		command2.setAttribute("name", "Command2");
 		documentRoot.appendChild(command2);
 
@@ -64,12 +66,12 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
 
 		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
+		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command2");
 		command2.setAttribute("name", "Command1");
 		documentRoot.appendChild(command2);
 
@@ -83,7 +85,7 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
 
@@ -91,7 +93,7 @@ public class CatalogTest {
 		catalog = Catalog.fromDomDocument(catalogDocument);
 
 		String actual = catalog.getCommand("Command1").getClass().getCanonicalName();
-		assertThat(actual).isEqualTo("cc.commandmanager.core.DummyCommand1");
+		assertThat(actual).isEqualTo("cc.commandmanager.core.CatalogTest.Command1");
 	}
 
 	@Test(expected = CommandNotFoundException.class)
@@ -102,6 +104,62 @@ public class CatalogTest {
 		catalog = Catalog.fromDomDocument(catalogDocument);
 
 		catalog.getCommand("Command");
+	}
+
+	class Command1 implements Command {
+
+		@Override
+		public void execute(Context context) {
+		}
+
+		@Override
+		public Set<String> getBeforeDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getAfterDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getOptionalBeforeDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getOptionalAfterDependencies() {
+			return null;
+		}
+
+	}
+
+	class Command2 implements Command {
+
+		@Override
+		public void execute(Context context) {
+		}
+
+		@Override
+		public Set<String> getBeforeDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getAfterDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getOptionalBeforeDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getOptionalAfterDependencies() {
+			return null;
+		}
+
 	}
 
 }
