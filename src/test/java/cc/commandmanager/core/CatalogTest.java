@@ -12,8 +12,8 @@ import org.w3c.dom.Element;
 
 public class CatalogTest {
 
-	Catalog catalog = null;
-	Document catalogDocument = createBaseCatalogDocument();
+	private Catalog catalog = null;
+	private Document catalogDocument = createBaseCatalogDocument();
 
 	@Test
 	public void testGetNames() throws ParserConfigurationException {
