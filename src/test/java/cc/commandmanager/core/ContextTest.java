@@ -23,6 +23,7 @@ public class ContextTest {
 
 	@Test
 	public void testCopyConstructor() {
+		context.bind("key", "value");
 		assertThat(new Context(context)).isEqualTo(context);
 		assertThat(new Context(context)).isNotSameAs(context);
 	}
