@@ -16,9 +16,43 @@ public class Catalog {
 	private final Document catalogDocument;
 	private final Iterable<String> commandNames;
 
+	/**
+	 * Create a new Catalog. Parse the XML document at the specified URL, registering named commands as they are
+	 * encountered in the XML catalog file. Required node tag in the XML file is "command". Under those nodes the
+	 * attributes "name" and "className" are required. "name" attribute represents the String alias under which a
+	 * command can be found via {@link #getCommand(String)}. "className" attribute is the canonical name under which the
+	 * class loader will look for the given class.
+	 * 
+	 * @param url
+	 *            URL of the XML document to be parsed
+	 * @throws MissingElementAttributeException
+	 *             if the name or the className attribute are missing in the given DOM document.
+	 */
+	public static Catalog fromXmlFile(String fileUrl) {
+		Check.notEmpty(fileUrl, "file url");
+		// TODO Parse fileUrl to XML Document
+		Document catalogDocument = null;
+		return new Catalog(catalogDocument);
+	}
+
+	/**
+	 * Create a new Catalog. Register named commands as they are encountered in the catalogDocument. Required node tag
+	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
+	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
+	 * "className" attribute is the canonical name under which the class loader will look for the given class.
+	 * 
+	 * @throws MissingElementAttributeException
+	 *             if the name or the className attribute are missing in the given DOM document.
+	 */
+	public static Catalog fromDomDocument(Document catalogDocument) {
+		Check.notNull(catalogDocument);
+		return new Catalog(catalogDocument);
+	}
+
 	private Catalog(Document catalogDocument) {
 		this.catalogDocument = catalogDocument;
 		commandNames = getCommandNamesFromDocument(this.catalogDocument);
+		commands = getClassNamesFromDocument(this.catalogDocument);
 	}
 
 	private static Iterable<String> getCommandNamesFromDocument(Document catalogDocument) {
@@ -34,7 +68,7 @@ public class Catalog {
 				if (element.hasAttribute(nameAttribute)) {
 					commandNames.add(element.getAttribute(nameAttribute));
 				} else {
-					throw new MissingCatalogAttributeException(catalogDocument.getDocumentURI(), commandTag,
+					throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), commandTag,
 							currentNode, nameAttribute);
 				}
 			}
@@ -42,37 +76,10 @@ public class Catalog {
 		return commandNames;
 	}
 
-	/**
-	 * Create a new Catalog. Parse the XML document at the specified URL, registering named commands as they are
-	 * encountered in the XML catalog file. Required node tag in the XML file is "command". Under those nodes the
-	 * attributes "name" and "className" are required. "name" attribute represents the String alias under which a
-	 * command can be found via {@link #getCommand(String)}. "className" attribute is the canonical name under which the
-	 * class loader will look for the given class.
-	 * 
-	 * @param url
-	 *            URL of the XML document to be parsed
-	 * @throws MissingCatalogAttributeException
-	 *             if the name or the className attribute are missing in the given DOM document.
-	 */
-	public static Catalog fromXmlFile(String fileUrl) {
-		Check.notNull(fileUrl);
-		// TODO Parse fileUrl to XML Document
-		Document catalogDocument = null;
-		return new Catalog(catalogDocument);
-	}
-
-	/**
-	 * Create a new Catalog. Register named commands as they are encountered in the catalogDocument. Required node tag
-	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
-	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
-	 * "className" attribute is the canonical name under which the class loader will look for the given class.
-	 * 
-	 * @throws MissingCatalogAttributeException
-	 *             if the name or the className attribute are missing in the given DOM document.
-	 */
-	public static Catalog fromDomDocument(Document catalogDocument) {
-		Check.notNull(catalogDocument);
-		return new Catalog(catalogDocument);
+	private Map<String, Class<? extends Command>> getClassNamesFromDocument(Document catalogDocument2) {
+		// TODO Implement method
+		// TODO prevent multiple classNames for the same name
+		return Maps.newHashMap();
 	}
 
 	/**

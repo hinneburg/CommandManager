@@ -48,8 +48,8 @@ public class CatalogTest {
 		return catalogDocument;
 	}
 
-	@Test(expected = MissingCatalogAttributeException.class)
-	public void testCreateCatalogThrowsException_MissingCatalogAttributeException() {
+	@Test(expected = MissingElementAttributeException.class)
+	public void testCreateCatalogThrowsException_MissingElementAttributeException() {
 		Element documentRoot = catalogDocument.createElement("catalog");
 		Element commandWithoutNameAttribute = catalogDocument.createElement("command");
 		documentRoot.appendChild(commandWithoutNameAttribute);
