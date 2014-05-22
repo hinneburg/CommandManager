@@ -20,18 +20,20 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.Command1");
+		command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
+		catalogDocument.appendChild(documentRoot);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
+		assertThat(catalog.getCommandNames()).containsOnly("Command1");
 
 		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.Command2");
+		command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
 		command2.setAttribute("name", "Command2");
 		documentRoot.appendChild(command2);
 
-		catalogDocument.appendChild(documentRoot);
 		catalog = Catalog.fromDomDocument(catalogDocument);
-
 		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
 	}
 
