@@ -41,29 +41,6 @@ public class CommandManagement {
 		this.catalog = catalog;
 	}
 
-	/**
-	 * This method takes a location to retrieve a catalog. If there is a valid catalog at the given location, this
-	 * catalog will be set as the class variable in this instance of {@link CommandManagement}.
-	 * 
-	 * @param catalogLocation
-	 * @throws CatalogNotInstantiableException
-	 *             if problems occur while translating the catalog file at the specified location
-	 */
-	public static Catalog loadCatalogFromResource(String catalogLocation) {
-		Check.notEmpty(catalogLocation, "catalogLocation");
-		ConfigParser configParser = new ConfigParser();
-		try {
-			logger.info("Loading catalog resource from location: "
-					+ CommandManagement.class.getResource(catalogLocation));
-			configParser.parse(CommandManagement.class.getResource(catalogLocation));
-			return CatalogFactoryBase.getInstance().getCatalog();
-		} catch (Exception e) { // Exception type cannot be more specified, due
-			// to parse()-signature
-			logger.error("There is no valid catalog at the given path: " + catalogLocation, e);
-			throw new CatalogNotInstantiableException();
-		}
-	}
-
 	public Catalog getCatalog() {
 		return catalog;
 	}
