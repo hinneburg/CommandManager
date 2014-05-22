@@ -9,18 +9,27 @@ import net.sf.qualitycheck.Check;
 import com.google.common.collect.Maps;
 
 /**
- * Represents a naming context, which consists of a set of string-to-object bindings. It contains methods for
- * investigating and updating these bindings. The bindings are represented with a map, so all provided methods
- * correspond to the map's equivalents.
+ * Execution context of the {@linkplain CommandManagement}. {@linkplain Command}s can use this context to store or read
+ * values during their execution. The context will be passed along the execution graph. Values bound to keys of the
+ * context must be unique, i.e. a {@linkplain Command} cannot accidently overwrite an existing key value binding.
  */
 public class Context {
 
 	private final Map<Object, Object> items;
 
+	/**
+	 * Creates a new empty {@linkplain Context}.
+	 */
 	public Context() {
 		items = Maps.newHashMap();
 	}
 
+	/**
+	 * Creates a new context and immediately binds all values bound to the given context.
+	 *
+	 * @param context
+	 *            whose bound values will also be bound in the new context
+	 */
 	public Context(Context context) {
 		this();
 		items.putAll(Check.notNull(context).items);
