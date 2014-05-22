@@ -6,7 +6,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,10 +57,49 @@ public class CatalogTest {
 		catalog = Catalog.fromDomDocument(catalogDocument);
 	}
 
-	@Ignore
+	@Test(expected = IllegalMultipleClassNamesInCatalogException.class)
+	public void testCreateCatalogThrowsException_IllegalMultipleClassNamesInCatalogException() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command1 = catalogDocument.createElement("command");
+		command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
+		command1.setAttribute("name", "Command1");
+		documentRoot.appendChild(command1);
+
+		Element command2 = catalogDocument.createElement("command");
+		command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
+		command2.setAttribute("name", "Command1");
+		documentRoot.appendChild(command2);
+
+		catalogDocument.appendChild(documentRoot);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
+	}
+
 	@Test
 	public void testGetCommand() {
-		// TODO implement test case
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command1 = catalogDocument.createElement("command");
+		command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
+		command1.setAttribute("name", "Command1");
+		documentRoot.appendChild(command1);
+
+		catalogDocument.appendChild(documentRoot);
+		catalog = Catalog.fromDomDocument(catalogDocument);
+
+		String actual = catalog.getCommand("Command1").getClass().getCanonicalName();
+		assertThat(actual).isEqualTo("cc.commandmanager.core.DummyCommand1");
+	}
+
+	@Test(expected = CommandNotFoundException.class)
+	public void testGetCommandThrowsException() {
+		Element documentRootWithoutAnyCommandChilds = catalogDocument.createElement("catalog");
+
+		catalogDocument.appendChild(documentRootWithoutAnyCommandChilds);
+		catalog = Catalog.fromDomDocument(catalogDocument);
+
+		catalog.getCommand("Command");
 	}
 
 }

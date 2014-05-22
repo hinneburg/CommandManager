@@ -1,6 +1,7 @@
 package cc.commandmanager.core;
 
 import java.util.Collection;
+import java.util.Map;
 
 import net.sf.qualitycheck.Check;
 
@@ -9,12 +10,17 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class Catalog {
 
+	static final String NAME_ATTRIBUTE = "name";
+	static final String CLASS_NAME_ATTRIBUTE = "className";
+
+	private static final String COMMAND_TAG = "command";
 	private final Document catalogDocument;
-	private final Iterable<String> commandNames;
+	private final Map<String, Class<? extends Command>> commands;
 
 	/**
 	 * Create a new Catalog. Parse the XML document at the specified URL, registering named commands as they are
@@ -51,35 +57,56 @@ public class Catalog {
 
 	private Catalog(Document catalogDocument) {
 		this.catalogDocument = catalogDocument;
-		commandNames = getCommandNamesFromDocument(this.catalogDocument);
-		commands = getClassNamesFromDocument(this.catalogDocument);
+		commands = getCommandClassesAndNamesFromDocument(this.catalogDocument);
 	}
 
-	private static Iterable<String> getCommandNamesFromDocument(Document catalogDocument) {
-		Collection<String> commandNames = Sets.newHashSet();
-		final String nameAttribute = "name";
-		final String commandTag = "command";
+	private static Map<String, Class<? extends Command>> getCommandClassesAndNamesFromDocument(Document catalogDocument) {
+		final Map<String, Class<? extends Command>> commands = Maps.newHashMap();
 
-		NodeList nodes = catalogDocument.getElementsByTagName(commandTag);
+		Iterable<Element> commandElements = getCommandElements(catalogDocument);
+		int elementCount = 0;
+		for (Element commandElement : commandElements) {
+			elementCount++;
+			if (!commandElement.hasAttribute(NAME_ATTRIBUTE)) {
+				throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG, elementCount,
+						NAME_ATTRIBUTE);
+			}
+			String commandAlias = commandElement.getAttribute(NAME_ATTRIBUTE);
+
+			if (!commandElement.hasAttribute(CLASS_NAME_ATTRIBUTE)) {
+				throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG, elementCount,
+						CLASS_NAME_ATTRIBUTE);
+			}
+			String commandClassName = commandElement.getAttribute(CLASS_NAME_ATTRIBUTE);
+
+			Class<? extends Command> commandClass;
+			try {
+				// TODO check for accordance explicitly
+				commandClass = (Class<? extends Command>) Class.forName(commandClassName);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException("Cannot locate command class for name " + commandClassName, e);
+			}
+
+			if (commands.containsKey(commandAlias) && !commands.get(commandAlias).equals(commandClass)) {
+				throw new IllegalMultipleClassNamesInCatalogException(commandAlias, catalogDocument.getDocumentURI());
+			}
+			commands.put(commandAlias, commandClass);
+		}
+		return commands;
+	}
+
+	private static Iterable<Element> getCommandElements(Document catalogDocument) {
+		Collection<Element> commandElements = Lists.newArrayList();
+
+		NodeList nodes = catalogDocument.getElementsByTagName(COMMAND_TAG);
 		for (int currentNode = 0; currentNode < nodes.getLength(); currentNode++) {
 			Node node = nodes.item(currentNode);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				if (element.hasAttribute(nameAttribute)) {
-					commandNames.add(element.getAttribute(nameAttribute));
-				} else {
-					throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), commandTag,
-							currentNode, nameAttribute);
-				}
+				commandElements.add((Element) node);
 			}
 		}
-		return commandNames;
-	}
 
-	private Map<String, Class<? extends Command>> getClassNamesFromDocument(Document catalogDocument2) {
-		// TODO Implement method
-		// TODO prevent multiple classNames for the same name
-		return Maps.newHashMap();
+		return commandElements;
 	}
 
 	/**
@@ -90,16 +117,39 @@ public class Catalog {
 	 * 
 	 */
 	public Iterable<String> getCommandNames() {
-		return commandNames;
+		return commands.keySet();
 	}
 
 	/**
 	 * 
-	 * @param name
+	 * @param commandName
 	 *            Name for which a Command or Chain should be retrieved
-	 * @return Command associated with the specified name, if any; otherwise, return null.
+	 * @return Command associated with the specified name, if any; otherwise, a {@link CommandNotFoundException} will be
+	 *         thrown.
+	 * @throws IllegalAccessException
+	 *             if the class or its nullary constructor is not accessible.
+	 * @throws InstantiationException
+	 *             if this Class represents an abstract class, an interface, an array class, a primitive type, or void;
+	 *             or if the class has no nullary constructor; or if the instantiation fails for some other reason.
 	 */
-	public Command getCommand(String name) {
-		return null;
+	public Command getCommand(String commandName) {
+		Check.notEmpty(commandName, "command name");
+
+		if (!commands.containsKey(commandName)) {
+			throw new CommandNotFoundException(commandName);
+		}
+
+		try {
+			return commands.get(commandName).newInstance();
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException("Class " + commands.get(commandName)
+					+ " or its nullary constructor is not accessible.", e);
+		} catch (InstantiationException e) {
+			throw new RuntimeException(
+					"Class "
+							+ commands.get(commandName)
+							+ " represents an abstract class, an interface, an array class, a primitive type, or void; or if the class has no nullary constructor; or the instantiation fails for some other reason.",
+					e);
+		}
 	}
 }
