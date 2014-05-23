@@ -1,7 +1,13 @@
 package cc.commandmanager.core;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.qualitycheck.Check;
 
@@ -9,6 +15,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -35,12 +42,33 @@ public class Catalog {
 	 *             if the name or the className attribute are missing in the given DOM document.
 	 * @throws IllegalClassNameToCommandAssociationException
 	 *             if the catalog document contains multiple different class names for the same command name.
+	 * @throws CatalogDomFileHandlingException
+	 *             if a {@linkplain javax.xml.parsers.DocumentBuilder} cannot be created which satisfies the
+	 *             configuration requested (see com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl for
+	 *             more details); or If any parse or IO errors occur
 	 */
 	public static Catalog fromXmlFile(String fileUrl) {
 		Check.notEmpty(fileUrl, "file url");
-		// TODO Parse fileUrl to XML Document
-		Document catalogDocument = null;
-		return new Catalog(catalogDocument);
+		DocumentBuilder documentBuilder = tryToCreateNewDocumentBuilder(DocumentBuilderFactory.newInstance());
+		return new Catalog(tryToParseDomFile(fileUrl, documentBuilder));
+	}
+
+	private static DocumentBuilder tryToCreateNewDocumentBuilder(DocumentBuilderFactory dbFactory) {
+		try {
+			return dbFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			throw new CatalogDomFileHandlingException(e);
+		}
+	}
+
+	private static Document tryToParseDomFile(String fileUrl, DocumentBuilder dBuilder) {
+		try {
+			return dBuilder.parse(new File(fileUrl));
+		} catch (SAXException e) {
+			throw new CatalogDomFileHandlingException(fileUrl, e);
+		} catch (IOException e) {
+			throw new CatalogDomFileHandlingException(fileUrl, e);
+		}
 	}
 
 	/**
