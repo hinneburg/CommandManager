@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,8 +103,7 @@ public class DependencyCollector {
 	 * updateDependencies method.
 	 */
 	public Map<String, Set<String>> getDependencies() {
-		@SuppressWarnings("unchecked")
-		Dependencies dependencies = composeDependencies(catalog.getNames());
+		Dependencies dependencies = composeDependencies(catalog.getCommandNames());
 		Preconditions.checkNotNull(dependencies.necessaryDependencies);
 
 		Map<String, Set<String>> necessaryDependencies = dependencies.necessaryDependencies;
@@ -113,7 +111,7 @@ public class DependencyCollector {
 
 		/*
 		 * TODO Folgender Code enthält zu überarbeitende Abschnitte. Sie wurden eingefügt, um die korrekte Arbeitsweise
-		 * des DependencyCollectors hinsichtlich der Ordnung optionaler Dependencies eingefügt.
+		 * des DependencyCollectors hinsichtlich der Ordnung optionaler Dependencies zu gewährleisten.
 		 */
 		logger.info("Necessary dependencies " + necessaryDependencies);
 		logger.info("Optional dependencies " + optionalDependencies);
@@ -186,17 +184,17 @@ public class DependencyCollector {
 		return composedDependencies;
 	}
 
-	private Dependencies composeDependencies(Iterator<String> commands) {
-		Preconditions.checkArgument(commands.hasNext(), "The number of commands must not be 0.");
+	private Dependencies composeDependencies(Iterable<String> commandNames) {
+		Check.noNullElements(commandNames, "command names");
 
 		Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
 		Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
 
-		while (commands.hasNext()) {
-			Command command = catalog.getCommand(commands.next());
-			updateDependencies(command, necessaryDependencies, command.getAfterDependencies(),
+		for (String commandName : commandNames) {
+			Command command = catalog.getCommand(commandName);
+			updateDependencies(commandName, necessaryDependencies, command.getAfterDependencies(),
 					command.getBeforeDependencies());
-			updateDependencies(command, optionalDependencies, command.getOptionalAfterDependencies(),
+			updateDependencies(commandName, optionalDependencies, command.getOptionalAfterDependencies(),
 					command.getOptionalBeforeDependencies());
 		}
 
