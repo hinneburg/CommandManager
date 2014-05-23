@@ -22,7 +22,7 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command1");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
 		catalogDocument.appendChild(documentRoot);
@@ -31,7 +31,7 @@ public class CatalogTest {
 		assertThat(catalog.getCommandNames()).containsOnly("Command1");
 
 		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command2");
+		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command2");
 		command2.setAttribute("name", "Command2");
 		documentRoot.appendChild(command2);
 
@@ -66,12 +66,12 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command1");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
 
 		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command2");
+		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command2");
 		command2.setAttribute("name", "Command1");
 		documentRoot.appendChild(command2);
 
@@ -85,15 +85,15 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest.Command1");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
 		command1.setAttribute("name", "Command1");
 		documentRoot.appendChild(command1);
 
 		catalogDocument.appendChild(documentRoot);
 		catalog = Catalog.fromDomDocument(catalogDocument);
 
-		String actual = catalog.getCommand("Command1").getClass().getCanonicalName();
-		assertThat(actual).isEqualTo("cc.commandmanager.core.CatalogTest.Command1");
+		String actual = catalog.getCommand("Command1").getClass().getName();
+		assertThat(actual).isEqualTo("cc.commandmanager.core.CatalogTest$Command1");
 	}
 
 	@Test(expected = CommandNotFoundException.class)
@@ -106,7 +106,7 @@ public class CatalogTest {
 		catalog.getCommand("Command");
 	}
 
-	class Command1 implements Command {
+	public static class Command1 implements Command {
 
 		@Override
 		public void execute(Context context) {
@@ -134,7 +134,7 @@ public class CatalogTest {
 
 	}
 
-	class Command2 implements Command {
+	public static class Command2 implements Command {
 
 		@Override
 		public void execute(Context context) {
