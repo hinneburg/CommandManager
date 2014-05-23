@@ -27,7 +27,7 @@ public class Catalog {
 	 * encountered in the XML catalog file. Required node tag in the XML file is "command". Under those nodes the
 	 * attributes "name" and "className" are required. "name" attribute represents the String alias under which a
 	 * command can be found via {@link #getCommand(String)}. "className" attribute is the canonical name under which the
-	 * class loader will look for the given class. Class names must be represented by the canonical class name.
+	 * class loader will look for the given class. Both text nodes must not be empty.
 	 * 
 	 * @param url
 	 *            URL of the XML document to be parsed
@@ -47,8 +47,8 @@ public class Catalog {
 	 * Create a new Catalog. Register named commands as they are encountered in the catalogDocument. Required node tag
 	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
 	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
-	 * "className" attribute is the canonical name under which the class loader will look for the given class. Class
-	 * names must be represented by the canonical class name.
+	 * "className" attribute is the canonical name under which the class loader will look for the given class. Both text
+	 * nodes must not be empty.
 	 * 
 	 * @throws MissingElementAttributeException
 	 *             if the name or the className attribute are missing in the given DOM document.
@@ -62,37 +62,24 @@ public class Catalog {
 
 	private Catalog(Document catalogDocument) {
 		this.catalogDocument = catalogDocument;
-		commands = getCommandClassesAndNamesFromDocument(this.catalogDocument);
+		commands = getCommandsFromCatalogDocument();
 	}
 
-	private static Map<String, Class<? extends Command>> getCommandClassesAndNamesFromDocument(Document catalogDocument) {
+	private Map<String, Class<? extends Command>> getCommandsFromCatalogDocument() {
 		final Map<String, Class<? extends Command>> commands = Maps.newHashMap();
 
-		Iterable<Element> commandElements = getCommandElements(catalogDocument);
-		int elementCount = 0;
+		Iterable<Element> commandElements = getDomCommandElementsFromCatalogDocument();
+		int positionInElementList = 0;
 		for (Element commandElement : commandElements) {
-			elementCount++;
-			if (!commandElement.hasAttribute(NAME_ATTRIBUTE)) {
-				throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG, elementCount,
-						NAME_ATTRIBUTE);
-			}
-			String commandAlias = commandElement.getAttribute(NAME_ATTRIBUTE);
+			positionInElementList++;
 
-			if (!commandElement.hasAttribute(CLASS_NAME_ATTRIBUTE)) {
-				throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG, elementCount,
-						CLASS_NAME_ATTRIBUTE);
-			}
-			String commandClassName = commandElement.getAttribute(CLASS_NAME_ATTRIBUTE);
+			ensureCurrentElementHasAttributes(commandElement, positionInElementList);
+			String commandAlias = Check.notEmpty(commandElement.getAttribute(NAME_ATTRIBUTE), NAME_ATTRIBUTE);
+			String commandClassName = Check.notEmpty(commandElement.getAttribute(CLASS_NAME_ATTRIBUTE),
+					CLASS_NAME_ATTRIBUTE);
 
-			Class<? extends Command> commandClass;
-			try {
-				// TODO check for accordance explicitly
-				commandClass = (Class<? extends Command>) Class.forName(commandClassName);
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException("Cannot locate command class for name " + commandClassName, e);
-			}
-
-			if (commands.containsKey(commandAlias) && !commands.get(commandAlias).equals(commandClass)) {
+			Class<? extends Command> commandClass = tryToGetClassForName(commandClassName);
+			if (isMappingAnotherClassAlready(commands, commandAlias, commandClass)) {
 				throw new IllegalClassNameToCommandAssociationException(commandAlias, catalogDocument.getDocumentURI());
 			}
 			commands.put(commandAlias, commandClass);
@@ -100,7 +87,7 @@ public class Catalog {
 		return commands;
 	}
 
-	private static Iterable<Element> getCommandElements(Document catalogDocument) {
+	private Iterable<Element> getDomCommandElementsFromCatalogDocument() {
 		Collection<Element> commandElements = Lists.newArrayList();
 
 		NodeList nodes = catalogDocument.getElementsByTagName(COMMAND_TAG);
@@ -112,6 +99,31 @@ public class Catalog {
 		}
 
 		return commandElements;
+	}
+
+	private void ensureCurrentElementHasAttributes(Element commandElement, int positionOfElementInElementList) {
+		if (!commandElement.hasAttribute(NAME_ATTRIBUTE)) {
+			throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG,
+					positionOfElementInElementList, NAME_ATTRIBUTE);
+		}
+		if (!commandElement.hasAttribute(CLASS_NAME_ATTRIBUTE)) {
+			throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG,
+					positionOfElementInElementList, CLASS_NAME_ATTRIBUTE);
+		}
+	}
+
+	private static Class<? extends Command> tryToGetClassForName(String commandClassName) {
+		try {
+			// TODO check for accordance explicitly
+			return (Class<? extends Command>) Class.forName(commandClassName);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Cannot locate command class for name " + commandClassName, e);
+		}
+	}
+
+	private static boolean isMappingAnotherClassAlready(Map<String, Class<? extends Command>> commands,
+			String commandAlias, Class<? extends Command> commandClass) {
+		return commands.containsKey(commandAlias) && !commands.get(commandAlias).equals(commandClass);
 	}
 
 	/**

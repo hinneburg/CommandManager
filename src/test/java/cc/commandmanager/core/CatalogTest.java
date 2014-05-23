@@ -8,6 +8,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.qualitycheck.exception.IllegalEmptyArgumentException;
+
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,6 +58,32 @@ public class CatalogTest {
 		Element documentRoot = catalogDocument.createElement("catalog");
 		Element commandWithoutNameAttribute = catalogDocument.createElement("command");
 		documentRoot.appendChild(commandWithoutNameAttribute);
+		catalogDocument.appendChild(documentRoot);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
+	}
+
+	@Test(expected = IllegalEmptyArgumentException.class)
+	public void testCreateCatalog_illegalEmptyClassName() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command1 = catalogDocument.createElement("command");
+		command1.setAttribute("className", "");
+		command1.setAttribute("name", "Command1");
+		documentRoot.appendChild(command1);
+		catalogDocument.appendChild(documentRoot);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
+	}
+
+	@Test(expected = IllegalEmptyArgumentException.class)
+	public void testCreateCatalog_illegalEmptyName() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command1 = catalogDocument.createElement("command");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
+		command1.setAttribute("name", "");
+		documentRoot.appendChild(command1);
 		catalogDocument.appendChild(documentRoot);
 
 		catalog = Catalog.fromDomDocument(catalogDocument);
