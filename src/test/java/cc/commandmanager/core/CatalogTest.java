@@ -19,28 +19,6 @@ public class CatalogTest {
 	private Catalog catalog = null;
 	private Document catalogDocument = createBaseCatalogDocument();
 
-	@Test
-	public void testGetNames() throws ParserConfigurationException {
-		Element documentRoot = catalogDocument.createElement("catalog");
-
-		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
-		command1.setAttribute("name", "Command1");
-		documentRoot.appendChild(command1);
-		catalogDocument.appendChild(documentRoot);
-
-		catalog = Catalog.fromDomDocument(catalogDocument);
-		assertThat(catalog.getCommandNames()).containsOnly("Command1");
-
-		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command2");
-		command2.setAttribute("name", "Command2");
-		documentRoot.appendChild(command2);
-
-		catalog = Catalog.fromDomDocument(catalogDocument);
-		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
-	}
-
 	private static Document createBaseCatalogDocument() {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder;
@@ -54,7 +32,7 @@ public class CatalogTest {
 	}
 
 	@Test(expected = MissingElementAttributeException.class)
-	public void testCreateCatalogThrowsException_MissingElementAttributeException() {
+	public void testCreateCatalog_missingElementAttributeException() {
 		Element documentRoot = catalogDocument.createElement("catalog");
 		Element commandWithoutNameAttribute = catalogDocument.createElement("command");
 		documentRoot.appendChild(commandWithoutNameAttribute);
@@ -109,6 +87,28 @@ public class CatalogTest {
 	}
 
 	@Test
+	public void testGetNames() throws ParserConfigurationException {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command1 = catalogDocument.createElement("command");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
+		command1.setAttribute("name", "Command1");
+		documentRoot.appendChild(command1);
+		catalogDocument.appendChild(documentRoot);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
+		assertThat(catalog.getCommandNames()).containsOnly("Command1");
+
+		Element command2 = catalogDocument.createElement("command");
+		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command2");
+		command2.setAttribute("name", "Command2");
+		documentRoot.appendChild(command2);
+
+		catalog = Catalog.fromDomDocument(catalogDocument);
+		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
+	}
+
+	@Test
 	public void testGetCommand() {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
@@ -125,7 +125,7 @@ public class CatalogTest {
 	}
 
 	@Test(expected = CommandNotFoundException.class)
-	public void testGetCommandThrowsException() {
+	public void testGetCommand_commandNotFound() {
 		Element documentRootWithoutAnyCommandChilds = catalogDocument.createElement("catalog");
 
 		catalogDocument.appendChild(documentRootWithoutAnyCommandChilds);
