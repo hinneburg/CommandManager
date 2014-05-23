@@ -106,6 +106,36 @@ public class CatalogTest {
 		catalog.getCommand("Command");
 	}
 
+	@Test(expected = CommandNotInstantiableException.class)
+	public void testGetCommand_notInstantiableCommand() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command = catalogDocument.createElement("command");
+		command.setAttribute("className", "cc.commandmanager.core.CatalogTest$NotInstantiableCommand");
+		command.setAttribute("name", "NotInstantiableCommand");
+		documentRoot.appendChild(command);
+
+		catalogDocument.appendChild(documentRoot);
+		catalog = Catalog.fromDomDocument(catalogDocument);
+
+		catalog.getCommand("NotInstantiableCommand");
+	}
+
+	@Test(expected = CommandNotInstantiableException.class)
+	public void testGetCommand_notAccessableCommand() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command = catalogDocument.createElement("command");
+		command.setAttribute("className", "cc.commandmanager.core.CatalogTest$NotAccessableCommand");
+		command.setAttribute("name", "NotAccessableCommand");
+		documentRoot.appendChild(command);
+
+		catalogDocument.appendChild(documentRoot);
+		catalog = Catalog.fromDomDocument(catalogDocument);
+
+		catalog.getCommand("NotAccessableCommand");
+	}
+
 	public static class Command1 implements Command {
 
 		@Override
@@ -135,6 +165,42 @@ public class CatalogTest {
 	}
 
 	public static class Command2 implements Command {
+
+		@Override
+		public void execute(Context context) {
+		}
+
+		@Override
+		public Set<String> getBeforeDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getAfterDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getOptionalBeforeDependencies() {
+			return null;
+		}
+
+		@Override
+		public Set<String> getOptionalAfterDependencies() {
+			return null;
+		}
+
+	}
+
+	public static abstract class NotInstantiableCommand implements Command {
+
+	}
+
+	public static class NotAccessableCommand implements Command {
+
+		private NotAccessableCommand() {
+
+		}
 
 		@Override
 		public void execute(Context context) {
