@@ -25,6 +25,7 @@ public class CommandManagementIntegrationTest {
 	@Test
 	public void test() {
 		_commandManagement.executeAllCommands();
+		@SuppressWarnings("unchecked")
 		List<Class<? extends Command>> executedCommands = (List<Class<? extends Command>>) _commandManagement
 				.getContext().get(EXECUTED_COMMANDS);
 		assertThat(executedCommands).containsExactly(DummyCommand1.class, DummyCommand2.class, DummyCommand3.class);
