@@ -27,12 +27,14 @@ public class Catalog {
 	 * encountered in the XML catalog file. Required node tag in the XML file is "command". Under those nodes the
 	 * attributes "name" and "className" are required. "name" attribute represents the String alias under which a
 	 * command can be found via {@link #getCommand(String)}. "className" attribute is the canonical name under which the
-	 * class loader will look for the given class.
+	 * class loader will look for the given class. Class names must be represented by the canonical class name.
 	 * 
 	 * @param url
 	 *            URL of the XML document to be parsed
 	 * @throws MissingElementAttributeException
 	 *             if the name or the className attribute are missing in the given DOM document.
+	 * @throws IllegalClassNameToCommandAssociationException
+	 *             if the catalog document contains multiple different class names for the same command name.
 	 */
 	public static Catalog fromXmlFile(String fileUrl) {
 		Check.notEmpty(fileUrl, "file url");
@@ -45,10 +47,13 @@ public class Catalog {
 	 * Create a new Catalog. Register named commands as they are encountered in the catalogDocument. Required node tag
 	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
 	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
-	 * "className" attribute is the canonical name under which the class loader will look for the given class.
+	 * "className" attribute is the canonical name under which the class loader will look for the given class. Class
+	 * names must be represented by the canonical class name.
 	 * 
 	 * @throws MissingElementAttributeException
 	 *             if the name or the className attribute are missing in the given DOM document.
+	 * @throws IllegalClassNameToCommandAssociationException
+	 *             if the catalog document contains multiple different class names for the same command name.
 	 */
 	public static Catalog fromDomDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument);
@@ -88,7 +93,7 @@ public class Catalog {
 			}
 
 			if (commands.containsKey(commandAlias) && !commands.get(commandAlias).equals(commandClass)) {
-				throw new IllegalMultipleClassNamesInCatalogException(commandAlias, catalogDocument.getDocumentURI());
+				throw new IllegalClassNameToCommandAssociationException(commandAlias, catalogDocument.getDocumentURI());
 			}
 			commands.put(commandAlias, commandClass);
 		}

@@ -61,8 +61,8 @@ public class CatalogTest {
 		catalog = Catalog.fromDomDocument(catalogDocument);
 	}
 
-	@Test(expected = IllegalMultipleClassNamesInCatalogException.class)
-	public void testCreateCatalogThrowsException_IllegalMultipleClassNamesInCatalogException() {
+	@Test(expected = IllegalClassNameToCommandAssociationException.class)
+	public void testCreateCatalogThrowsException_illegalClassNameToCommandAssociationException() {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
