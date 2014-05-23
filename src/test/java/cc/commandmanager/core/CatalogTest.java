@@ -31,6 +31,24 @@ public class CatalogTest {
 		return catalogDocument;
 	}
 
+	@Test
+	public void testCreateCatalogAllowsMultipleCommandNamesForSameClassName() {
+		Element documentRoot = catalogDocument.createElement("catalog");
+
+		Element command1 = catalogDocument.createElement("command");
+		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
+		command1.setAttribute("name", "abc");
+		documentRoot.appendChild(command1);
+
+		Element command2 = catalogDocument.createElement("command");
+		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
+		command2.setAttribute("name", "xyz");
+		documentRoot.appendChild(command2);
+
+		catalogDocument.appendChild(documentRoot);
+		catalog = Catalog.fromDomDocument(catalogDocument);
+	}
+
 	@Test(expected = MissingElementAttributeException.class)
 	public void testCreateCatalog_missingElementAttributeException() {
 		Element documentRoot = catalogDocument.createElement("catalog");
