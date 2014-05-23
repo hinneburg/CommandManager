@@ -83,7 +83,7 @@ public class Context {
 	 *
 	 * @param map
 	 * @throws KeyAlreadyBoundException
-	 *             if there is at least one of the given keys has already bound values
+	 *             if at least one of the given keys has already bound values
 	 */
 	public void bindAll(Map<? extends Object, ? extends Object> map) {
 		Check.notNull(map);
