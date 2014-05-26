@@ -26,7 +26,7 @@ public class Context {
 
 	/**
 	 * Creates a new context and immediately binds all values bound to the given context.
-	 *
+	 * 
 	 * @param context
 	 *            whose bound values will also be bound in the new context
 	 */
@@ -37,7 +37,7 @@ public class Context {
 
 	/**
 	 * Binds the given value to the given key.
-	 *
+	 * 
 	 * @param key
 	 * @param value
 	 * @throws KeyAlreadyBoundException
@@ -53,7 +53,7 @@ public class Context {
 
 	/**
 	 * Unbinds the value bound to the specified key.
-	 *
+	 * 
 	 * @param key
 	 * @throws KeyNotBoundException
 	 *             if there is no value bound to that key
@@ -67,7 +67,7 @@ public class Context {
 	/**
 	 * Rebinds a different value to a key with an already bound value. This will give the same result as successive
 	 * calls of {@linkplain Context#unbind(Object)} and {@linkplain Context#bind(Object, Object)}.
-	 *
+	 * 
 	 * @param key
 	 * @param value
 	 * @throws KeyNotBoundException
@@ -80,7 +80,7 @@ public class Context {
 
 	/**
 	 * Binds all values of the given map to their given key.
-	 *
+	 * 
 	 * @param map
 	 * @throws KeyAlreadyBoundException
 	 *             if at least one of the given keys has already bound values
@@ -94,7 +94,7 @@ public class Context {
 
 	/**
 	 * Checks whether the given key has some value bound to in the context.
-	 *
+	 * 
 	 * @param key
 	 * @return if a value is bound to the key
 	 */
@@ -104,7 +104,7 @@ public class Context {
 
 	/**
 	 * Retrieves the value bound to the given key.
-	 *
+	 * 
 	 * @param key
 	 * @return value bound to that key
 	 */
@@ -116,12 +116,12 @@ public class Context {
 
 	/**
 	 * Retrieves the value bound to the given key having the given type.
-	 *
+	 * 
 	 * @param key
 	 * @param clazz
 	 *            of the returned value
 	 * @return value bound to the key
-	 *
+	 * 
 	 * @throws ResultTypeMismatchException
 	 *             if the bound value does not have the specified type.
 	 */
@@ -136,7 +136,7 @@ public class Context {
 
 	/**
 	 * Returns the {@linkplain Integer} bound to the given key.
-	 *
+	 * 
 	 * @param key
 	 * @return value bound to the key
 	 * @throws ResultTypeMismatchException
@@ -148,7 +148,7 @@ public class Context {
 
 	/**
 	 * Returns the {@linkplain Double} bound to the given key.
-	 *
+	 * 
 	 * @param key
 	 * @return value bound to the key
 	 * @throws ResultTypeMismatchException
@@ -160,7 +160,7 @@ public class Context {
 
 	/**
 	 * Returns the {@linkplain Boolean} bound to the given key.
-	 *
+	 * 
 	 * @param key
 	 * @return value bound to the key
 	 * @throws ResultTypeMismatchException
@@ -172,7 +172,7 @@ public class Context {
 
 	/**
 	 * Returns the {@linkplain String} bound to the given key.
-	 *
+	 * 
 	 * @param key
 	 * @return value bound to the key
 	 * @throws ResultTypeMismatchException
@@ -188,7 +188,7 @@ public class Context {
 	 * The generic type parameter of the {@linkplain Iterable} is being inferred depending on the expected type. Thus it
 	 * may not be correct and this has to be treated carefully to avoid running into a {@linkplain ClassCastException}
 	 * later on.
-	 *
+	 * 
 	 * @param key
 	 * @return value bound to the key
 	 * @throws ResultTypeMismatchException
