@@ -23,7 +23,7 @@ public class CommandManagement {
 	private DependencyCollector dependencyCollector;
 	private static final Logger logger = Logger.getLogger(CommandManagement.class);
 
-	// TODO builder pattern anwenden
+	// TODO apply builder pattern (see #22)
 	public CommandManagement(String catalogLocation) {
 		this(new Context(), catalogLocation);
 	}
