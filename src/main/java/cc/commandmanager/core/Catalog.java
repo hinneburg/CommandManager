@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class Catalog {
 
@@ -161,8 +163,8 @@ public class Catalog {
 	 * @return an {@link Iterable} of the names in this Catalog.
 	 * 
 	 */
-	public Iterable<String> getCommandNames() {
-		return commands.keySet();
+	public Set<String> getCommandNames() {
+		return Sets.newHashSet(commands.keySet());
 	}
 
 	/**
