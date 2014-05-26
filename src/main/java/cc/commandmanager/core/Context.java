@@ -126,6 +126,7 @@ public class Context {
 	 *             if the bound value does not have the specified type.
 	 */
 	public <T> T get(Object key, Class<T> clazz) {
+		Check.notNull(clazz, "clazz");
 		Object value = get(key);
 		if (!clazz.isInstance(value)) {
 			throw new ResultTypeMismatchException(value.getClass(), clazz);
