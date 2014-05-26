@@ -2,6 +2,7 @@ package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -13,6 +14,8 @@ import net.sf.qualitycheck.exception.IllegalEmptyArgumentException;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.google.common.collect.Maps;
 
 public class CatalogTest {
 
@@ -102,6 +105,24 @@ public class CatalogTest {
 		catalogDocument.appendChild(documentRoot);
 
 		catalog = Catalog.fromDomDocument(catalogDocument);
+	}
+
+	@Test
+	public void taodn() {
+		System.out.println(Command1.class.getName());
+	}
+
+	@Test
+	public void testCreateCatalogFromMap() {
+		Map<String, Class<? extends Command>> commands = Maps.newHashMap();
+		commands.put("command1", Command1.class);
+		commands.put("command2", Command2.class);
+
+		Catalog catalog = Catalog.fromMap(commands);
+
+		assertThat(catalog.getCommandNames()).containsOnly("command1", "command2");
+		assertThat(catalog.getCommand("command1").getClass()).isEqualTo(Command1.class);
+		assertThat(catalog.getCommand("command2").getClass()).isEqualTo(Command2.class);
 	}
 
 	@Test
