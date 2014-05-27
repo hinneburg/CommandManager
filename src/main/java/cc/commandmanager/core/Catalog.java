@@ -67,50 +67,6 @@ public class Catalog {
 	}
 
 	/**
-	 * Create a new Catalog. Register named commands as they are encountered in {@linkplain commands}. Under those nodes
-	 * the attributes "name" and "className" are required. "name" attribute represents the String alias under which a
-	 * command can be found via {@link #getCommand(String)}. "className" attribute is the class name under which the
-	 * class loader will look for the given class. Both text nodes must not be empty.
-	 * 
-	 * @param commands
-	 *            maps command names to their corresponding class name. The class to which the command name maps must
-	 *            implement {@link Command}. Neither of them must be null or empty. The command names correspond to the
-	 *            parameter of {@link #getCommand()}.
-	 * @throws MissingElementAttributeException
-	 *             if the name or the className attribute are missing in the given DOM document.
-	 * @throws IllegalClassNameToCommandAssociationException
-	 *             if the catalog document contains multiple different class names for the same command name.
-	 */
-	public static Catalog fromMap(Map<String, Class<? extends Command>> commands) {
-		Check.notEmpty(commands, "commands");
-		return new Catalog(commands);
-	}
-
-	private static Document fillNewDomDocumentWithCommands(Map<String, Class<? extends Command>> commands2) {
-		Document catalog = tryToCreateNewDomDocument();
-		Element documentRoot = catalog.createElement("catalog");
-
-		for (String name : commands2.keySet()) {
-			Element command = catalog.createElement(COMMAND_TAG);
-			command.setAttribute(NAME_ATTRIBUTE, name);
-			command.setAttribute(CLASS_NAME_ATTRIBUTE, commands2.get(name).getName());
-			documentRoot.appendChild(command);
-		}
-
-		catalog.appendChild(documentRoot);
-		return catalog;
-	}
-
-	private static Document tryToCreateNewDomDocument() {
-		try {
-			DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			return documentBuilder.newDocument();
-		} catch (ParserConfigurationException e) {
-			throw new CatalogDomFileHandlingException(e);
-		}
-	}
-
-	/**
 	 * Create a new Catalog. Register named commands as they are encountered in the catalogDocument. Required node tag
 	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
 	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
@@ -124,7 +80,26 @@ public class Catalog {
 	 */
 	public static Catalog fromDomDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument);
-		return new Catalog(getCommandsFromCatalogDocument(catalogDocument));
+		return fromMap(getCommandsFromCatalogDocument(catalogDocument));
+	}
+
+	/**
+	 * Create a new Catalog. Register named commands as they are encountered in {@linkplain commands}.Any key represents
+	 * the String alias under which a command can be found via {@link #getCommand(String)}. The corresponding values are
+	 * the class names under which the class loader will look for a given class. No key nor any value must be empty.
+	 * 
+	 * @param commands
+	 *            maps command names to their corresponding class name. The class to which the command name maps must
+	 *            implement {@link Command}. Neither of them must be null or empty. The command names correspond to the
+	 *            parameter of {@link #getCommand()}.
+	 * @throws MissingElementAttributeException
+	 *             if the name or the className attribute are missing in the given DOM document.
+	 * @throws IllegalClassNameToCommandAssociationException
+	 *             if the catalog document contains multiple different class names for the same command name.
+	 */
+	public static Catalog fromMap(Map<String, Class<? extends Command>> commands) {
+		Check.notNull(commands, "commands");
+		return new Catalog(commands);
 	}
 
 	private Catalog(Map<String, Class<? extends Command>> commands) {
