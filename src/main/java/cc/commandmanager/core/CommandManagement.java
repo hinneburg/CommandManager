@@ -23,30 +23,21 @@ public class CommandManagement {
 	private DependencyCollector dependencyCollector;
 	private static final Logger logger = Logger.getLogger(CommandManagement.class);
 
-	// TODO apply builder pattern (see #22)
 	public CommandManagement(String catalogLocation) {
-		this(new Context(), catalogLocation);
+		this(catalogLocation, new Context());
 	}
 
-	public CommandManagement(Context context, String catalogLocation) {
-		this(context, Catalog.fromXmlFile(catalogLocation));
+	public CommandManagement(String catalogLocation, Context context) {
+		this(Catalog.fromXmlFile(catalogLocation), context);
 	}
 
 	public CommandManagement(Catalog catalog) {
-		this(new Context(), catalog);
+		this(catalog, new Context());
 	}
 
-	public CommandManagement(Context context, Catalog catalog) {
+	public CommandManagement(Catalog catalog, Context context) {
 		this.context = context;
 		this.catalog = catalog;
-	}
-
-	public Catalog getCatalog() {
-		return catalog;
-	}
-
-	public Map<String, Set<String>> getDependencies() {
-		return dependencyCollector.getDependencies();
 	}
 
 	/**
@@ -56,14 +47,6 @@ public class CommandManagement {
 	 */
 	public List<String> getOrderedCommands() {
 		return getOrderedCommands(new HashSet<String>(), new HashSet<String>());
-	}
-
-	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 */
-	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies) {
-		Check.notNull(dependencies, "dependencies");
-		return getOrderedCommands(dependencies, new HashSet<String>(), new HashSet<String>());
 	}
 
 	/**
@@ -81,6 +64,18 @@ public class CommandManagement {
 				startCommands, endCommands);
 
 		return dependencyCollector.orderCommands(strongComponents);
+	}
+
+	public Map<String, Set<String>> getDependencies() {
+		return dependencyCollector.getDependencies();
+	}
+
+	/**
+	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
+	 */
+	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies) {
+		Check.notNull(dependencies, "dependencies");
+		return getOrderedCommands(dependencies, new HashSet<String>(), new HashSet<String>());
 	}
 
 	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands,
@@ -119,18 +114,11 @@ public class CommandManagement {
 				long startTime = System.currentTimeMillis();
 				command.execute(localContext);
 				logger.info(System.currentTimeMillis() - startTime + " ms");
-			} catch (RuntimeException e1) {
+			} catch (RuntimeException e) {
 				logger.error(String.format("The current command %s caused a critical exception", commandName));
-				throw e1;
-			} catch (Exception e2) {// Exception type cannot be more specified,
-				// due to Command-signature
-				logger.warn(String.format("The current command %s caused a non critical exception.", commandName), e2);
+				throw e;
 			}
 		}
-	}
-
-	public Context getContext() {
-		return context;
 	}
 
 	public void executeAllCommands() {
