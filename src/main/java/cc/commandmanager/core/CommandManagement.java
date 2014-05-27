@@ -23,18 +23,49 @@ public class CommandManagement {
 	private DependencyCollector dependencyCollector;
 	private static final Logger logger = Logger.getLogger(CommandManagement.class);
 
+	/**
+	 * Create a new {@link CommandManagement}. Use the catalog, parsed from the XML file at the given catalog location.
+	 * The catalog specifies which commands which will be executed and in which order this will happen. A new
+	 * {@link Context} will be used to execute the commands with.
+	 * 
+	 * @param catalogLocation
+	 *            see {@link Catalog#fromXmlFile(String)} for specifications on the catalog file.
+	 */
 	public CommandManagement(String catalogLocation) {
 		this(catalogLocation, new Context());
 	}
 
+	/**
+	 * Create a new {@link CommandManagement}. Use the catalog, parsed from the XML file at the given catalog location.
+	 * The catalog specifies which commands which will be executed and in which order this will happen.
+	 * 
+	 * @param catalogLocation
+	 *            see {@link Catalog#fromXmlFile(String)} for specifications on the catalog file.
+	 * @param context
+	 *            information in the context will be used to execute the commands with.
+	 */
 	public CommandManagement(String catalogLocation, Context context) {
 		this(Catalog.fromXmlFile(catalogLocation), context);
 	}
 
+	/**
+	 * Create a new {@link CommandManagement}. A new {@link Context} will be used to execute the commands with.
+	 * 
+	 * @param catalog
+	 *            specifies which commands which will be executed and in which order this will happen.
+	 */
 	public CommandManagement(Catalog catalog) {
 		this(catalog, new Context());
 	}
 
+	/**
+	 * Create a new {@link CommandManagement}.
+	 * 
+	 * @param catalog
+	 *            specifies which commands which will be executed and in which order this will happen.
+	 * @param context
+	 *            information in the context will be used to execute the commands with.
+	 */
 	public CommandManagement(Catalog catalog, Context context) {
 		this.context = context;
 		this.catalog = catalog;
