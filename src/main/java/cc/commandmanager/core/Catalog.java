@@ -198,7 +198,7 @@ public class Catalog {
 	 *             has no nullary constructor; or if the instantiation fails for some other reason.
 	 */
 	public Command getCommand(String commandName) {
-		Check.notEmpty(commandName, "command name");
+		Check.notEmpty(commandName, "commandName");
 
 		if (!commands.containsKey(commandName)) {
 			throw new CommandNotFoundException(commandName);
