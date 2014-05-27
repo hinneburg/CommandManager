@@ -129,7 +129,7 @@ public class Context {
 		Check.notNull(clazz, "clazz");
 		Object value = get(key);
 		if (!clazz.isInstance(value)) {
-			throw new ResultTypeMismatchException(value.getClass(), clazz);
+			throw new ResultTypeMismatchException(key, value.getClass(), clazz);
 		}
 		return clazz.cast(value);
 	}
