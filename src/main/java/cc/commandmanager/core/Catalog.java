@@ -28,7 +28,6 @@ public class Catalog {
 	static final String CLASS_NAME_ATTRIBUTE = "className";
 
 	private static final String COMMAND_TAG = "command";
-	private final Document catalogDocument;
 	private final Map<String, Class<? extends Command>> commands;
 
 	/**
@@ -129,19 +128,19 @@ public class Catalog {
 	}
 
 	private Catalog(Document catalogDocument) {
-		this.catalogDocument = catalogDocument;
-		commands = getCommandsFromCatalogDocument();
+		commands = getCommandsFromCatalogDocument(catalogDocument);
 	}
 
-	private Map<String, Class<? extends Command>> getCommandsFromCatalogDocument() {
+	private static Map<String, Class<? extends Command>> getCommandsFromCatalogDocument(Document catalogDocument) {
 		final Map<String, Class<? extends Command>> commands = Maps.newHashMap();
 
-		Iterable<Element> commandElements = getDomCommandElementsFromCatalogDocument();
-		int positionInElementList = 0;
+		Iterable<Element> commandElements = getDomCommandElementsFromCatalogDocument(catalogDocument);
+		int commandElementIndex = 0;
 		for (Element commandElement : commandElements) {
-			positionInElementList++;
+			commandElementIndex++;
 
-			ensureCurrentElementHasAttributes(commandElement, positionInElementList);
+			checkCatalogElementHasNameAttribute(commandElement, commandElementIndex, catalogDocument);
+			checkCatalogElementHasClassNameAttribute(commandElement, commandElementIndex, catalogDocument);
 			String commandAlias = Check.notEmpty(commandElement.getAttribute(NAME_ATTRIBUTE), NAME_ATTRIBUTE);
 			String commandClassName = Check.notEmpty(commandElement.getAttribute(CLASS_NAME_ATTRIBUTE),
 					CLASS_NAME_ATTRIBUTE);
@@ -155,7 +154,7 @@ public class Catalog {
 		return commands;
 	}
 
-	private Iterable<Element> getDomCommandElementsFromCatalogDocument() {
+	private static Iterable<Element> getDomCommandElementsFromCatalogDocument(Document catalogDocument) {
 		Collection<Element> commandElements = Lists.newArrayList();
 
 		NodeList nodes = catalogDocument.getElementsByTagName(COMMAND_TAG);
@@ -169,14 +168,19 @@ public class Catalog {
 		return commandElements;
 	}
 
-	private void ensureCurrentElementHasAttributes(Element commandElement, int positionOfElementInElementList) {
+	private static void checkCatalogElementHasNameAttribute(Element commandElement, int positionOfElementInElementList,
+			Document catalogDocument) {
 		if (!commandElement.hasAttribute(NAME_ATTRIBUTE)) {
 			throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG,
 					positionOfElementInElementList, NAME_ATTRIBUTE);
 		}
+	}
+
+	private static void checkCatalogElementHasClassNameAttribute(Element commandElement, int commandElementIndex,
+			Document catalogDocument) {
 		if (!commandElement.hasAttribute(CLASS_NAME_ATTRIBUTE)) {
 			throw new MissingElementAttributeException(catalogDocument.getDocumentURI(), COMMAND_TAG,
-					positionOfElementInElementList, CLASS_NAME_ATTRIBUTE);
+					commandElementIndex, CLASS_NAME_ATTRIBUTE);
 		}
 	}
 
