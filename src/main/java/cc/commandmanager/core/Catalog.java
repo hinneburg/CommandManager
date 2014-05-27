@@ -35,7 +35,8 @@ public class Catalog {
 	 * encountered in the XML catalog file. Required node tag in the XML file is "command". Under those nodes the
 	 * attributes "name" and "className" are required. "name" attribute represents the String alias under which a
 	 * command can be found via {@link #getCommand(String)}. "className" attribute is the class name under which the
-	 * class loader will look for the given class. Both text nodes must not be empty.
+	 * class loader will look for the given class. Both text nodes must not be empty. Command classes must implement
+	 * cc.commandmanager.core.Command.
 	 * 
 	 * @param url
 	 *            URL of the XML document to be parsed
@@ -46,7 +47,9 @@ public class Catalog {
 	 * @throws CatalogDomFileHandlingException
 	 *             if a {@linkplain javax.xml.parsers.DocumentBuilder} cannot be created which satisfies the
 	 *             configuration requested (see com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl for
-	 *             more details); or If any parse or IO errors occur
+	 *             more details); or If any parse or IO errors occur.
+	 * @throws ClassCastException
+	 *             if a specified command class does not implement cc.commandmanager.core.Command.
 	 */
 	public static Catalog fromXmlFile(String fileUrl) {
 		Check.notEmpty(fileUrl, "file url");
@@ -71,12 +74,14 @@ public class Catalog {
 	 * in the XML file is "command". Under those nodes the attributes "name" and "className" are required. "name"
 	 * attribute represents the String alias under which a command can be found via {@link #getCommand(String)}.
 	 * "className" attribute is the class name under which the class loader will look for the given class. Both text
-	 * nodes must not be empty.
+	 * nodes must not be empty. Command classes must implement cc.commandmanager.core.Command.
 	 * 
 	 * @throws MissingElementAttributeException
 	 *             if the name or the className attribute are missing in the given DOM document.
 	 * @throws IllegalClassNameToCommandAssociationException
 	 *             if the catalog document contains multiple different class names for the same command name.
+	 * @throws ClassCastException
+	 *             if a specified command class does not implement cc.commandmanager.core.Command.
 	 */
 	public static Catalog fromDomDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument);
@@ -87,6 +92,7 @@ public class Catalog {
 	 * Create a new Catalog. Register named commands as they are encountered in {@linkplain commands}.Any key represents
 	 * the String alias under which a command can be found via {@link #getCommand(String)}. The corresponding values are
 	 * the class names under which the class loader will look for a given class. No key nor any value must be empty.
+	 * Command classes must implement cc.commandmanager.core.Command.
 	 * 
 	 * @param commands
 	 *            maps command names to their corresponding class name. The class to which the command name maps must
@@ -96,6 +102,8 @@ public class Catalog {
 	 *             if the name or the className attribute are missing in the given DOM document.
 	 * @throws IllegalClassNameToCommandAssociationException
 	 *             if the catalog document contains multiple different class names for the same command name.
+	 * @throws ClassCastException
+	 *             if a specified command class does not implement cc.commandmanager.core.Command.
 	 */
 	public static Catalog fromMap(Map<String, Class<? extends Command>> commands) {
 		Check.notNull(commands, "commands");
@@ -159,9 +167,9 @@ public class Catalog {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private static Class<? extends Command> tryToGetClassForName(String commandClassName) {
 		try {
-			// TODO check for accordance explicitly
 			return (Class<? extends Command>) Class.forName(commandClassName);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException("Cannot locate command class for name " + commandClassName, e);
