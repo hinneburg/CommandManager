@@ -202,6 +202,12 @@ public class ContextTest {
 	}
 
 	@Test(expected = IllegalNullArgumentException.class)
+	public void testGet_typeSafe_nullKey() {
+		context.bind("key", "value");
+		context.get("key", null);
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
 	public void testRemove_nullKey() {
 		context.unbind(null);
 	}
