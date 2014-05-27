@@ -50,7 +50,7 @@ public class Catalog {
 	 */
 	public static Catalog fromXmlFile(String fileUrl) {
 		Check.notEmpty(fileUrl, "file url");
-		return new Catalog(tryToParseDomDocumentFromFile(fileUrl));
+		return fromDomDocument(tryToParseDomDocumentFromFile(fileUrl));
 	}
 
 	private static Document tryToParseDomDocumentFromFile(String fileUrl) {
@@ -83,7 +83,7 @@ public class Catalog {
 	 */
 	public static Catalog fromMap(Map<String, Class<? extends Command>> commands) {
 		Check.notEmpty(commands, "commands");
-		return new Catalog(fillNewDomDocumentWithCommands(commands));
+		return new Catalog(commands);
 	}
 
 	private static Document fillNewDomDocumentWithCommands(Map<String, Class<? extends Command>> commands2) {
@@ -124,11 +124,11 @@ public class Catalog {
 	 */
 	public static Catalog fromDomDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument);
-		return new Catalog(catalogDocument);
+		return new Catalog(getCommandsFromCatalogDocument(catalogDocument));
 	}
 
-	private Catalog(Document catalogDocument) {
-		commands = getCommandsFromCatalogDocument(catalogDocument);
+	private Catalog(Map<String, Class<? extends Command>> commands) {
+		this.commands = commands;
 	}
 
 	private static Map<String, Class<? extends Command>> getCommandsFromCatalogDocument(Document catalogDocument) {
