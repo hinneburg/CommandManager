@@ -91,6 +91,13 @@ public class CommandManagement {
 	}
 
 	/**
+	 * Executes all commands, previously ordered by the commands' specifications.
+	 */
+	public void executeAllCommands() {
+		executeCommands(getOrderedCommands());
+	}
+
+	/**
 	 * Takes a {@linkplain List} of commands and executes them in the list's sequence
 	 */
 	public void executeCommands(List<String> commands) {
@@ -121,7 +128,4 @@ public class CommandManagement {
 		}
 	}
 
-	public void executeAllCommands() {
-		executeCommands(getOrderedCommands());
-	}
 }
