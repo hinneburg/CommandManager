@@ -1,12 +1,12 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -21,33 +21,88 @@ import com.google.common.collect.Maps;
 
 public class CatalogTest {
 
-	private Catalog catalog = null;
-	private Document catalogDocument = createBaseCatalogDocument();
+	private Catalog catalog;
+	private Document catalogDocument;
 	private Map<String, Class<? extends Command>> catalogMap;
 
 	@Before
 	public void setup() {
 		catalogMap = Maps.newHashMap();
+		catalogDocument = createBaseCatalogDocument();
 	}
 
 	private static Document createBaseCatalogDocument() {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder;
 		try {
-			dBuilder = dbFactory.newDocumentBuilder();
+			return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		} catch (ParserConfigurationException e) {
-			throw new RuntimeException(e);
+			fail("Could not create base catalog document", e);
+			return null;
 		}
-		Document catalogDocument = dBuilder.newDocument();
-		return catalogDocument;
+	}
+
+	@Test
+	public void testCreateCatalogFromMap() {
+		Map<String, Class<? extends Command>> commands = Maps.newHashMap();
+		commands.put("command1", Command1.class);
+		commands.put("command2", Command2.class);
+
+		Catalog catalog = Catalog.fromMap(commands);
+
+		assertThat(catalog.getCommandNames()).containsOnly("command1", "command2");
+		assertThat(catalog.getCommand("command1")).isInstanceOf(Command1.class);
+		assertThat(catalog.getCommand("command2")).isInstanceOf(Command2.class);
+	}
+
+	@Test
+	public void testGetCommandsNames() {
+		catalogMap.put("Command1", Command1.class);
+		catalog = Catalog.fromMap(catalogMap);
+		assertThat(catalog.getCommandNames()).containsOnly("Command1");
+
+		catalogMap.put("Command2", Command2.class);
+		catalog = Catalog.fromMap(catalogMap);
+		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
+	}
+
+	@Test
+	public void testGetCommand() {
+		catalogMap.put("Command1", Command1.class);
+		catalog = Catalog.fromMap(catalogMap);
+
+		assertThat(catalog.getCommand("Command1").getClass()).isEqualTo(Command1.class);
+	}
+
+	@Test(expected = CommandNotFoundException.class)
+	public void testGetCommand_commandNotFound() {
+		catalog = Catalog.fromMap(new HashMap<String, Class<? extends Command>>());
+		catalog.getCommand("Command");
+	}
+
+	@Test(expected = CommandNotInstantiableException.class)
+	public void testGetCommand_notInstantiableCommand() {
+		catalogMap.put("NotInstantiableCommand", NotInstantiableCommand.class);
+		catalog = Catalog.fromMap(catalogMap);
+
+		catalog.getCommand("NotInstantiableCommand");
+	}
+
+	@Test(expected = CommandNotInstantiableException.class)
+	public void testGetCommand_notAccessableCommand() {
+		catalogMap.put("NotAccessableCommand", NotAccessableCommand.class);
+		catalog = Catalog.fromMap(catalogMap);
+
+		catalog.getCommand("NotAccessableCommand");
 	}
 
 	@Test
 	public void testCreateCatalogAllowsMultipleCommandNamesForSameClassName() {
 		catalogMap.put("abc", Command1.class);
 		catalogMap.put("xyz", Command1.class);
-
 		catalog = Catalog.fromMap(catalogMap);
+
+		assertThat(catalog.getCommandNames()).containsOnly("abc", "xyz");
+		assertThat(catalog.getCommand("abc")).isInstanceOf(Command1.class);
+		assertThat(catalog.getCommand("xyz")).isInstanceOf(Command1.class);
 	}
 
 	@Test(expected = MissingElementAttributeException.class)
@@ -103,60 +158,6 @@ public class CatalogTest {
 		catalogDocument.appendChild(documentRoot);
 
 		catalog = Catalog.fromDomDocument(catalogDocument);
-	}
-
-	@Test
-	public void testCreateCatalogFromMap() {
-		Map<String, Class<? extends Command>> commands = Maps.newHashMap();
-		commands.put("command1", Command1.class);
-		commands.put("command2", Command2.class);
-
-		Catalog catalog = Catalog.fromMap(commands);
-
-		assertThat(catalog.getCommandNames()).containsOnly("command1", "command2");
-		assertThat(catalog.getCommand("command1").getClass()).isEqualTo(Command1.class);
-		assertThat(catalog.getCommand("command2").getClass()).isEqualTo(Command2.class);
-	}
-
-	@Test
-	public void testGetNames() {
-		catalogMap.put("Command1", Command1.class);
-		catalog = Catalog.fromMap(catalogMap);
-		assertThat(catalog.getCommandNames()).containsOnly("Command1");
-
-		catalogMap.put("Command2", Command2.class);
-		catalog = Catalog.fromMap(catalogMap);
-		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
-	}
-
-	@Test
-	public void testGetCommand() {
-		catalogMap.put("Command1", Command1.class);
-		catalog = Catalog.fromMap(catalogMap);
-
-		assertThat(catalog.getCommand("Command1").getClass()).isEqualTo(Command1.class);
-	}
-
-	@Test(expected = CommandNotFoundException.class)
-	public void testGetCommand_commandNotFound() {
-		catalog = Catalog.fromMap(new HashMap<String, Class<? extends Command>>());
-		catalog.getCommand("Command");
-	}
-
-	@Test(expected = CommandNotInstantiableException.class)
-	public void testGetCommand_notInstantiableCommand() {
-		catalogMap.put("NotInstantiableCommand", NotInstantiableCommand.class);
-		catalog = Catalog.fromMap(catalogMap);
-
-		catalog.getCommand("NotInstantiableCommand");
-	}
-
-	@Test(expected = CommandNotInstantiableException.class)
-	public void testGetCommand_notAccessableCommand() {
-		catalogMap.put("NotAccessableCommand", NotAccessableCommand.class);
-		catalog = Catalog.fromMap(catalogMap);
-
-		catalog.getCommand("NotAccessableCommand");
 	}
 
 	public static class Command1 implements Command {
