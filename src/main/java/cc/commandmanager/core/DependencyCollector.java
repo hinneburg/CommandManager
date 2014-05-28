@@ -128,7 +128,7 @@ public class DependencyCollector {
 	}
 
 	private Dependencies composeDependencies(Iterable<String> commandNames) {
-		Check.noNullElements(commandNames, "command names");
+		Check.noNullElements(commandNames, "commandNames");
 
 		Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
 		Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
