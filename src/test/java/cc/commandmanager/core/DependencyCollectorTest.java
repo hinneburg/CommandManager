@@ -45,4 +45,21 @@ public class DependencyCollectorTest {
 		assertThat(dependencies.get("command")).contains("additionalBefore");
 	}
 
+	@Test(expected = IllegalStateException.class)
+	public void testOrderCommands_illegalCircularDependency_twoCommands() {
+		dependencies.put("A", Sets.newHashSet("B"));
+		dependencies.put("B", Sets.newHashSet("A"));
+
+		DependencyCollector.orderCommands(dependencies);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testOrderCommands_illegalCircularDependency_threeCommands() {
+		dependencies.put("A", Sets.newHashSet("B"));
+		dependencies.put("B", Sets.newHashSet("C"));
+		dependencies.put("C", Sets.newHashSet("A"));
+
+		DependencyCollector.orderCommands(dependencies);
+	}
+
 }
