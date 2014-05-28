@@ -91,10 +91,10 @@ public class CommandManagement {
 
 		Map<String, Set<String>> dependencies = getDependencies();
 
-		Map<String, Set<String>> strongComponents = dependencyCollector.getStrongComponents(dependencies,
-				startCommands, endCommands);
+		Map<String, Set<String>> strongComponents = DependencyCollector
+				.getStrongComponents(dependencies, startCommands);
 
-		return dependencyCollector.orderCommands(strongComponents);
+		return DependencyCollector.orderCommands(strongComponents);
 	}
 
 	public Map<String, Set<String>> getDependencies() {
@@ -106,19 +106,18 @@ public class CommandManagement {
 	 */
 	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies) {
 		Check.notNull(dependencies, "dependencies");
-		return getOrderedCommands(dependencies, new HashSet<String>(), new HashSet<String>());
+		return getOrderedCommands(dependencies, new HashSet<String>());
 	}
 
-	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands,
-			Set<String> endCommands) {
+	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands) {
 		Check.notNull(dependencies, "dependencies");
 		Check.notNull(startCommands, "startCommands");
 
 		dependencyCollector = new DependencyCollector();
 
-		dependencies = dependencyCollector.getStrongComponents(dependencies, startCommands, endCommands);
+		dependencies = DependencyCollector.getStrongComponents(dependencies, startCommands);
 
-		return dependencyCollector.orderCommands(dependencies);
+		return DependencyCollector.orderCommands(dependencies);
 	}
 
 	/**

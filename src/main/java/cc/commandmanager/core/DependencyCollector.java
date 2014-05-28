@@ -312,11 +312,10 @@ public class DependencyCollector {
 		return orderedCommands;
 	}
 
-	public Map<String, Set<String>> getStrongComponents(Map<String, Set<String>> dependencies,
-			Set<String> startCommands, Set<String> endCommands) {
+	public static Map<String, Set<String>> getStrongComponents(Map<String, Set<String>> dependencies,
+			Set<String> startCommands) {
 		Check.notNull(dependencies, "dependencies");
 		Check.notNull(startCommands, "startCommands");
-		Check.notNull(endCommands, "endCommands");
 
 		Map<String, Set<String>> newDependencies = new HashMap<String, Set<String>>();
 
@@ -338,21 +337,12 @@ public class DependencyCollector {
 			}
 		}
 
-		for (String command : endCommands) {
-			iterateDependenciesUp(command);
-		}
-
 		makeDotFile(newDependencies, new HashMap<String, Set<String>>(), "_strongComponents");
 
 		return newDependencies;
 	}
 
-	private void iterateDependenciesUp(String command) {
-		// TODO implement
-		throw new UnsupportedOperationException();
-	}
-
-	private void iterateDependenciesDown(Map<String, Set<String>> dependencies,
+	private static void iterateDependenciesDown(Map<String, Set<String>> dependencies,
 			Map<String, Set<String>> newDependencies, String command) {
 
 		// check which commands are pointing to the given command, i. e. which commands are dependent on the given
