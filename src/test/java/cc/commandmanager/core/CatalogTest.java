@@ -108,11 +108,6 @@ public class CatalogTest {
 	}
 
 	@Test
-	public void taodn() {
-		System.out.println(Command1.class.getName());
-	}
-
-	@Test
 	public void testCreateCatalogFromMap() {
 		Map<String, Class<? extends Command>> commands = Maps.newHashMap();
 		commands.put("command1", Command1.class);
