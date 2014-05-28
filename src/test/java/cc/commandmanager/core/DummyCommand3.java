@@ -1,18 +1,44 @@
 package cc.commandmanager.core;
 
-import org.apache.commons.chain.Context;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public final class DummyCommand3 extends DependencyCommand {
+import com.google.common.collect.Sets;
 
-    @Override
-    public void specialExecute(Context context) {
-	System.err.println("DummyCommand3 was called.");
-    }
+/**
+ * Dummy {@link Command} implementation with an after dependency on {@link DummyCommand1}. {@link #execute(Context)}
+ * will bind a {@link Class} object corresponding to this class to the context. A {@link ClassCastException} will be
+ * thrown if the context does not have a {@link List<Class<? extends Command>>}. The list should be bound to the context
+ * with the key, specified in the {@link CommandManagementIntegrationTest}.
+ */
+public final class DummyCommand3 implements Command {
 
-    @Override
-    public void addDependencies() {
-	beforeDependencies.add("DummyCommand1");
-	optionalBeforeDependencies.add("DummyCommand2");
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void execute(Context context) {
+		((List<Class<? extends Command>>) context.get(CommandManagementIntegrationTest.EXECUTED_COMMANDS)).add(this
+				.getClass());
+	}
+
+	@Override
+	public Set<String> getBeforeDependencies() {
+		return new HashSet<String>();
+	}
+
+	@Override
+	public Set<String> getAfterDependencies() {
+		return Sets.newHashSet("command");
+	}
+
+	@Override
+	public Set<String> getOptionalBeforeDependencies() {
+		return new HashSet<String>();
+	}
+
+	@Override
+	public Set<String> getOptionalAfterDependencies() {
+		return new HashSet<String>();
+	}
 
 }

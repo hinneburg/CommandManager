@@ -1,4 +1,4 @@
-package cc.commandmanager.core;
+package cc.commandmanager.catalog;
 
 /**
  * This exception is thrown when there is no valid catalog at a given path.

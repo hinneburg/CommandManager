@@ -7,13 +7,9 @@ import java.util.Set;
 
 import net.sf.qualitycheck.Check;
 
-import org.apache.commons.chain.Catalog;
-import org.apache.commons.chain.Command;
-import org.apache.commons.chain.config.ConfigParser;
-import org.apache.commons.chain.impl.CatalogFactoryBase;
 import org.apache.log4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
+import cc.commandmanager.catalog.Catalog;
 
 /**
  * This class is used for the controlled execution of commands. Commands to be executed are declared in a catalog. Those
@@ -24,87 +20,66 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class CommandManagement {
 
-	@VisibleForTesting
-	public Catalog catalog;
-	private final CommunicationContext communicationContext;
+	private final Context context;
+	private final Catalog catalog;
 	private DependencyCollector dependencyCollector;
 	private static final Logger logger = Logger.getLogger(CommandManagement.class);
 
 	/**
-	 * Keys {@code path_logFile} and {@code path_dotFile} will be set to defaults. Defaults are
-	 * {@code path_logFile = logs/Preprocessing.log} respectively {@code path_dotFile =
-	 * etc/graph.dot}.
-	 */
-	public CommandManagement() {
-		this(new CommunicationContext());
-	}
-
-	/**
-	 * @param context
-	 *            will be checked for keys {@code path_logFile} and key {@code path_dotFile}. If not found they will be
-	 *            set to defaults. Defaults are {@code path_logFile = logs/Preprocessing.log} respectively
-	 *            {@code path_dotFile = etc/graph.dot}.
-	 */
-	public CommandManagement(CommunicationContext context) {
-		communicationContext = Check.notNull(context, "context");
-		context = ensureAtLeastDefaultLogFileProperties(context);
-	}
-
-	private CommunicationContext ensureAtLeastDefaultLogFileProperties(CommunicationContext context) {
-		if (!context.containsKey("path_logFile") || context.get("path_logFile") == null) {
-			context.put("path_logFile", "logs/Preprocessing.log");
-		}
-		if (!context.containsKey("path_dotFile") || context.get("path_dotFile") == null) {
-			context.put("path_dotFile", "etc/graph.dot");
-		}
-		return context;
-	}
-
-	/**
-	 * This method takes a location to retrieve a catalog. If there is a valid catalog at the given location, it will
-	 * set the global catalog variable in this class.
-	 *
+	 * Create a new {@link CommandManagement}. Use the catalog, parsed from the XML file at the given catalog location.
+	 * The catalog specifies which commands which will be executed and in which order this will happen. A new
+	 * {@link Context} will be used to execute the commands with.
+	 * 
 	 * @param catalogLocation
-	 * @throws CatalogNotInstantiableException
-	 *             if problems occur while translating the catalog file at the specified location
+	 *            see {@link Catalog#fromXmlFile(String)} for specifications on the catalog file.
 	 */
-	public void setCatalog(String catalogLocation) {
-		Check.notNull(catalogLocation, "catalogLocation");
-
-		ConfigParser configParser = new ConfigParser();
-
-		try {
-			logger.info("this.getClass().getResource(catalogLocation)" + this.getClass().getResource(catalogLocation));
-
-			configParser.parse(this.getClass().getResource(catalogLocation));
-			this.catalog = CatalogFactoryBase.getInstance().getCatalog();
-
-		} catch (Exception e) { // Exception type cannot be more specified, due
-			// to parse()-signature
-			logger.error("There is no valid catalog at the given path: " + catalogLocation, e);
-			throw new CatalogNotInstantiableException();
-		}
+	public CommandManagement(String catalogLocation) {
+		this(catalogLocation, new Context());
 	}
 
-	public Map<String, Set<String>> getDependencies() {
-		return dependencyCollector.getDependencies();
+	/**
+	 * Create a new {@link CommandManagement}. Use the catalog, parsed from the XML file at the given catalog location.
+	 * The catalog specifies which commands which will be executed and in which order this will happen.
+	 * 
+	 * @param catalogLocation
+	 *            see {@link Catalog#fromXmlFile(String)} for specifications on the catalog file.
+	 * @param context
+	 *            information in the context will be used to execute the commands with.
+	 */
+	public CommandManagement(String catalogLocation, Context context) {
+		this(Catalog.fromXmlFile(catalogLocation), context);
+	}
+
+	/**
+	 * Create a new {@link CommandManagement}. A new {@link Context} will be used to execute the commands with.
+	 * 
+	 * @param catalog
+	 *            specifies which commands which will be executed and in which order this will happen.
+	 */
+	public CommandManagement(Catalog catalog) {
+		this(catalog, new Context());
+	}
+
+	/**
+	 * Create a new {@link CommandManagement}.
+	 * 
+	 * @param catalog
+	 *            specifies which commands which will be executed and in which order this will happen.
+	 * @param context
+	 *            information in the context will be used to execute the commands with.
+	 */
+	public CommandManagement(Catalog catalog, Context context) {
+		this.context = context;
+		this.catalog = catalog;
 	}
 
 	/**
 	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 *
+	 * 
 	 * @return An ordered {@linkplain List<String>} containing the commands of the catalog.
 	 */
 	public List<String> getOrderedCommands() {
 		return getOrderedCommands(new HashSet<String>(), new HashSet<String>());
-	}
-
-	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 */
-	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies) {
-		Check.notNull(dependencies, "dependencies");
-		return getOrderedCommands(dependencies, new HashSet<String>(), new HashSet<String>());
 	}
 
 	/**
@@ -118,22 +93,40 @@ public class CommandManagement {
 
 		Map<String, Set<String>> dependencies = getDependencies();
 
-		Map<String, Set<String>> strongComponents = dependencyCollector.getStrongComponents(dependencies,
-				startCommands, endCommands);
+		Map<String, Set<String>> strongComponents = DependencyCollector
+				.getStrongComponents(dependencies, startCommands);
 
-		return dependencyCollector.orderCommands(strongComponents);
+		return DependencyCollector.orderCommands(strongComponents);
 	}
 
-	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands,
-			Set<String> endCommands) {
+	public Map<String, Set<String>> getDependencies() {
+		return dependencyCollector.getDependencies();
+	}
+
+	/**
+	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
+	 */
+	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies) {
+		Check.notNull(dependencies, "dependencies");
+		return getOrderedCommands(dependencies, new HashSet<String>());
+	}
+
+	public List<String> getOrderedCommands(Map<String, Set<String>> dependencies, Set<String> startCommands) {
 		Check.notNull(dependencies, "dependencies");
 		Check.notNull(startCommands, "startCommands");
 
 		dependencyCollector = new DependencyCollector();
 
-		dependencies = dependencyCollector.getStrongComponents(dependencies, startCommands, endCommands);
+		dependencies = DependencyCollector.getStrongComponents(dependencies, startCommands);
 
-		return dependencyCollector.orderCommands(dependencies);
+		return DependencyCollector.orderCommands(dependencies);
+	}
+
+	/**
+	 * Executes all commands, previously ordered by the commands' specifications.
+	 */
+	public void executeAllCommands() {
+		executeCommands(getOrderedCommands());
 	}
 
 	/**
@@ -141,33 +134,30 @@ public class CommandManagement {
 	 */
 	public void executeCommands(List<String> commands) {
 		Check.notNull(commands, "commands");
-		this.executeCommands(commands, communicationContext);
+		executeCommands(commands, context);
 	}
 
 	/**
 	 * Takes a {@linkplain List} of commands and executes them in the list's sequence, using the specified
-	 * {@linkplain CommunicationContext}
+	 * {@linkplain Context}
 	 */
-	public void executeCommands(List<String> commands, CommunicationContext localCommunicationContext) {
+	public void executeCommands(List<String> commands, Context localContext) {
 		Check.notNull(commands, "commands");
-		Check.notNull(localCommunicationContext, "localCommunicationContext");
+		Check.notNull(localContext, "localContext");
 
 		for (String commandName : commands) {
 			try {
 				Command command;
-				command = this.catalog.getCommand(commandName);
-				command.execute(localCommunicationContext);
-			} catch (RuntimeException e1) {
+				command = catalog.getCommand(commandName);
+				logger.info("Execute current command : [ " + command.getClass() + " ]");
+				long startTime = System.currentTimeMillis();
+				command.execute(localContext);
+				logger.info(System.currentTimeMillis() - startTime + " ms");
+			} catch (RuntimeException e) {
 				logger.error(String.format("The current command %s caused a critical exception", commandName));
-				throw e1;
-			} catch (Exception e2) {// Exception type cannot be more specified,
-				// due to Command-signature
-				logger.warn(String.format("The current command %s caused a non critical exception.", commandName), e2);
+				throw e;
 			}
 		}
 	}
 
-	public CommunicationContext getCommunicationContext() {
-		return this.communicationContext;
-	}
 }
