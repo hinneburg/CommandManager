@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 public class DependencyCollector {
 
 	private Catalog catalog;
-	private final Logger logger = Logger.getLogger(DependencyCollector.class);
+	private static final Logger logger = Logger.getLogger(DependencyCollector.class);
 
 	/**
 	 * Class constructor taking the catalog argument and sets it in this class.
@@ -42,6 +42,106 @@ public class DependencyCollector {
 
 	public DependencyCollector() {
 
+	}
+
+	private static class Dependencies {
+
+		public Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
+		public Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
+
+		public Dependencies(Map<String, Set<String>> necessaryDependencies,
+				Map<String, Set<String>> optionalDependencies) {
+			this.necessaryDependencies = necessaryDependencies;
+			this.optionalDependencies = optionalDependencies;
+		}
+	}
+
+	/**
+	 * Every command of the catalog asked for its mandatory and optional before and after dependencies. Then those
+	 * dependencies will be processed by the updateDependencies method.
+	 */
+	public Map<String, Set<String>> getDependencies() {
+		Dependencies dependencies = composeDependencies(catalog.getCommandNames());
+		Preconditions.checkNotNull(dependencies.necessaryDependencies);
+
+		Map<String, Set<String>> necessaryDependencies = dependencies.necessaryDependencies;
+		Map<String, Set<String>> optionalDependencies = dependencies.optionalDependencies;
+
+		/*
+		 * TODO Following code contains parts that must be reworked. They were inserted to ensure that the
+		 * DependencyCollector is working properly. The focus thereby lies on the correct ordering of optional
+		 * dependencies.
+		 */
+		logger.info("Necessary dependencies " + necessaryDependencies);
+		logger.info("Optional dependencies " + optionalDependencies);
+
+		Map<String, Set<String>> composedDependencies = new HashMap<String, Set<String>>(necessaryDependencies);
+		// start
+		try {
+
+			// end
+			for (String key : optionalDependencies.keySet()) {
+				logger.info(key);
+				optionalDependencies.get(key);
+
+				// TODO check whether if block makes sense here. It was inserted as a quick fix.
+				if (composedDependencies.containsKey(key)) {
+					for (String value : optionalDependencies.get(key)) {
+						if (composedDependencies.containsKey(value)) {
+							// start
+							try {
+								// end
+
+								composedDependencies.get(key).add(value);
+								// start
+							} catch (Exception e) {
+								logger.info("Error 3b");
+								logger.info("key " + key);
+								logger.info("value " + value);
+								logger.info("containsKey " + composedDependencies.containsKey(value) + " getKey "
+										+ composedDependencies.get(key));
+								logger.error(e.getStackTrace());
+							}
+							// end
+						}
+					}
+				}
+			}
+			// start
+		} catch (Exception e) {
+			logger.info("Error 3");
+			logger.error(e.getStackTrace());
+		}
+
+		try {
+			// end
+			makeDotFile(composedDependencies, optionalDependencies, "");
+
+		} catch (Exception e) {
+			// start
+			logger.info("Error 4");
+			logger.error(e.getStackTrace());
+			// end
+		}
+
+		return composedDependencies;
+	}
+
+	private Dependencies composeDependencies(Iterable<String> commandNames) {
+		Check.noNullElements(commandNames, "command names");
+
+		Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
+		Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
+
+		for (String commandName : commandNames) {
+			Command command = catalog.getCommand(commandName);
+			updateDependencies(commandName, necessaryDependencies, command.getAfterDependencies(),
+					command.getBeforeDependencies());
+			updateDependencies(commandName, optionalDependencies, command.getOptionalAfterDependencies(),
+					command.getOptionalBeforeDependencies());
+		}
+
+		return new Dependencies(necessaryDependencies, optionalDependencies);
 	}
 
 	/**
@@ -83,124 +183,6 @@ public class DependencyCollector {
 		}
 	}
 
-	private static class Dependencies {
-
-		public Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
-		public Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
-
-		public Dependencies(Map<String, Set<String>> necessaryDependencies,
-				Map<String, Set<String>> optionalDependencies) {
-			this.necessaryDependencies = necessaryDependencies;
-			this.optionalDependencies = optionalDependencies;
-		}
-	}
-
-	/**
-	 * Every command of the catalog will be executed with the dependencyContext. Then a command should set its
-	 * dependencies in the dependencyContext.
-	 * <p>
-	 * Then those per command set dependencies and optional dependencies will be read out and processed by the
-	 * updateDependencies method.
-	 */
-	public Map<String, Set<String>> getDependencies() {
-		Dependencies dependencies = composeDependencies(catalog.getCommandNames());
-		Preconditions.checkNotNull(dependencies.necessaryDependencies);
-
-		Map<String, Set<String>> necessaryDependencies = dependencies.necessaryDependencies;
-		Map<String, Set<String>> optionalDependencies = dependencies.optionalDependencies;
-
-		/*
-		 * TODO Folgender Code enthält zu überarbeitende Abschnitte. Sie wurden eingefügt, um die korrekte Arbeitsweise
-		 * des DependencyCollectors hinsichtlich der Ordnung optionaler Dependencies zu gewährleisten.
-		 */
-		logger.info("Necessary dependencies " + necessaryDependencies);
-		logger.info("Optional dependencies " + optionalDependencies);
-
-		Map<String, Set<String>> composedDependencies = new HashMap<String, Set<String>>(necessaryDependencies);
-		// start
-		try {
-
-			// ende
-
-			for (String key : optionalDependencies.keySet()) {
-
-				// start
-				logger.info(key);
-				try {
-					// ende
-
-					optionalDependencies.get(key);
-
-					// start
-				} catch (Exception e) {
-					logger.info("Error 3a");
-					logger.error(e.getStackTrace());
-				}
-				// ende
-
-				// If anweisung als erster Fix eingefuegt. Bitte pruefen ob das
-				// richtig ist.
-				if (composedDependencies.containsKey(key)) {
-					for (String value : optionalDependencies.get(key)) {
-						if (composedDependencies.containsKey(value)) {
-							// start
-							try {
-								// ende
-
-								composedDependencies.get(key).add(value);
-								// start
-							} catch (Exception e) {
-								logger.info("Error 3b");
-								logger.info("key " + key);
-								logger.info("value " + value);
-								logger.info("containsKey " + composedDependencies.containsKey(value) + " getKey "
-										+ composedDependencies.get(key));
-								logger.error(e.getStackTrace());
-							}
-							// ende
-						}
-					}
-				}
-			}
-			// start
-		} catch (Exception e) {
-			logger.info("Error 3");
-			logger.error(e.getStackTrace());
-		}
-
-		try {
-			// ende
-			makeDotFile(composedDependencies, optionalDependencies, "");
-
-		} catch (Exception e) {
-			// logger.error(e.getMessage());
-
-			// start
-			logger.info("Error 4");
-			logger.error(e.getStackTrace());
-			// ende
-		}
-
-		return composedDependencies;
-	}
-
-	private Dependencies composeDependencies(Iterable<String> commandNames) {
-		Check.noNullElements(commandNames, "command names");
-
-		Map<String, Set<String>> necessaryDependencies = new HashMap<String, Set<String>>();
-		Map<String, Set<String>> optionalDependencies = new HashMap<String, Set<String>>();
-
-		for (String commandName : commandNames) {
-			Command command = catalog.getCommand(commandName);
-			updateDependencies(commandName, necessaryDependencies, command.getAfterDependencies(),
-					command.getBeforeDependencies());
-			updateDependencies(commandName, optionalDependencies, command.getOptionalAfterDependencies(),
-					command.getOptionalBeforeDependencies());
-		}
-
-		return new Dependencies(necessaryDependencies, optionalDependencies);
-	}
-
 	/**
 	 * Creates a file in dot format. A -> B means that A depends of B. A dashed line represents an optional dependency.
 	 * It accesses the global dependency maps, so it must be executed before the maps are changed, e.g. before executing
@@ -237,18 +219,19 @@ public class DependencyCollector {
 
 		dotContent += "}";
 
+		final String etc = "etc";
+		final String dotFile = etc + "/graph" + name + ".dot";
 		try {
-			File dir = new File("etc");
+			File dir = new File(etc);
 			if (!dir.exists()) {
 				dir.mkdir();
 			}
 
-			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("etc/graph" + name + ".dot"));
+			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(dotFile));
 			bufferedWriter.write(dotContent);
 			bufferedWriter.close();
 		} catch (IOException e) {
-			// TODO use logger
-			e.printStackTrace();
+			logger.warn("Dot file could not be created at " + dotFile, e);
 		}
 	}
 
@@ -258,52 +241,53 @@ public class DependencyCollector {
 	public List<String> orderCommands(Map<String, Set<String>> dependencies) {
 		Check.notNull(dependencies, "dependencies");
 
-		Map<String, Set<String>> concurrentDependencies = new ConcurrentHashMap<String, Set<String>>(dependencies);
+		Map<String, Set<String>> dependenciesWithIncomingEdges = new ConcurrentHashMap<String, Set<String>>(
+				dependencies);
 		List<String> orderedCommands = new ArrayList<String>();
-		List<String> helpList = new ArrayList<String>();
+		List<String> commandsToBeOrdered = new ArrayList<String>();
 		String node = "";
 
 		// find all nodes with no dependencies, put into helpList, remove from
 		// HashMap
-		for (String key : concurrentDependencies.keySet()) {
-			Set<String> list = concurrentDependencies.get(key);
+		for (String key : dependenciesWithIncomingEdges.keySet()) {
+			Set<String> list = dependenciesWithIncomingEdges.get(key);
 
 			if (list.isEmpty()) {
-				helpList.add(key);
-				concurrentDependencies.remove(key);
+				commandsToBeOrdered.add(key);
+				dependenciesWithIncomingEdges.remove(key);
 			}
 		}
 
 		// as long as helpList contains a node without dependencies, take one,
 		// remove it from helpList, put into commandList
-		while (!helpList.isEmpty()) {
-			node = helpList.iterator().next();
-			helpList.remove(node);
+		while (!commandsToBeOrdered.isEmpty()) {
+			node = commandsToBeOrdered.iterator().next();
+			commandsToBeOrdered.remove(node);
 			orderedCommands.add(node);
 
 			// check if there is any edge between the node and another one
-			for (String key : concurrentDependencies.keySet()) {
-				Set<String> list = concurrentDependencies.get(key);
+			for (String key : dependenciesWithIncomingEdges.keySet()) {
+				Set<String> list = dependenciesWithIncomingEdges.get(key);
 
 				// if the node is in a value list, remove it
 				if (list.contains(node)) {
 					list.remove(node);
-					concurrentDependencies.put(key, list);
+					dependenciesWithIncomingEdges.put(key, list);
 				}
 
 				// if the node has no other incoming edges, put it into
 				// commandList
-				if (concurrentDependencies.get(key).isEmpty()) {
-					helpList.add(key);
-					concurrentDependencies.remove(key);
+				if (dependenciesWithIncomingEdges.get(key).isEmpty()) {
+					commandsToBeOrdered.add(key);
+					dependenciesWithIncomingEdges.remove(key);
 				}
 			}
 		}
 
 		// only if the dependencyMap is empty the graph was correct, otherwise
 		// there was something wrong with it
-		if (!concurrentDependencies.isEmpty()) {
-			logger.error("The dependencyMap wasn't empty yet but it should have been: " + concurrentDependencies);
+		if (!dependenciesWithIncomingEdges.isEmpty()) {
+			logger.error("The dependencyMap wasn't empty yet but it should have been: " + dependenciesWithIncomingEdges);
 			throw new IllegalStateException();
 		}
 
@@ -324,14 +308,12 @@ public class DependencyCollector {
 			newDependencies.putAll(dependencies);
 		} else {
 			for (String command : startCommands) {
-				// pruefen, ob es sich wirklich um Wurzel handelt
-				// dazu muss command als key mit leerer value-Menge vorhanden
-				// sein
+				// check whether it is actually the root.
+				// Therefore dependencies must not have any values to the key 'command'
 				if (!dependencies.get(command).isEmpty()) {
 					logger.error("Given command seems not to be a root.");
 					throw new IllegalStateException();
 				} else {
-					// fuege aktuelles Element mit leeren values hinzu
 					newDependencies.put(command, new HashSet<String>());
 					iterateDependenciesDown(dependencies, newDependencies, command);
 				}
@@ -355,12 +337,12 @@ public class DependencyCollector {
 	private void iterateDependenciesDown(Map<String, Set<String>> dependencies,
 			Map<String, Set<String>> newDependencies, String command) {
 
-		// pruefe welche keys das aktuelle command in value-Liste haben, d.h.
-		// welche commands von dem aktuellen abhaengen
+		// check which commands are pointing to the given command, i. e. which commands are dependent on the given
+		// command
 		for (String key : dependencies.keySet()) {
 			if (dependencies.get(key).contains(command)) {
-				// falls enthalten, muss es in neue Map und rekursiv
-				// abhanegigkeiten fuer dieses command pruefen
+				// if any command is dependent on the given command, a new set will be filled with the given command and
+				// the dependency check will be performed on this command recursively.
 				Set<String> tmp = new HashSet<String>();
 				tmp.add(command);
 				if (newDependencies.containsKey(key)) {
