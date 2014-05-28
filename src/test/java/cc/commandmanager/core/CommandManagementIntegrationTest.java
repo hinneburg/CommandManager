@@ -11,12 +11,13 @@ import com.google.common.collect.Lists;
 public class CommandManagementIntegrationTest {
 
 	public static final String EXECUTED_COMMANDS = "executedCommands";
+
 	private Context context = new Context();
 	private CommandManagement commandManagement = new CommandManagement(
-			"src/test/resources/CommandManagementIntegrationTest-catalog.xml", context);;
+			"src/test/resources/CommandManagementIntegrationTest-catalog.xml", context);
 
 	@Test
-	public void test() {
+	public void testExecuteAllCommands() {
 		context.bind(EXECUTED_COMMANDS, Lists.newArrayList());
 
 		commandManagement.executeAllCommands();
