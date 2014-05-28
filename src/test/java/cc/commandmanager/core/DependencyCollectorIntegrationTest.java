@@ -13,6 +13,9 @@ import com.google.common.collect.Maps;
 
 public class DependencyCollectorIntegrationTest {
 
+	private static final String DOT_DIRECTORY = "./etc";
+	private static final String DOT_FILE = "graph.dot";
+
 	private DependencyCollector dependencyCollector;
 	private Map<String, Class<? extends Command>> catalog;
 
@@ -21,13 +24,21 @@ public class DependencyCollectorIntegrationTest {
 		catalog = Maps.newHashMap();
 	}
 
+	@AfterClass
+	public static void removeFileAndDirCreatedForTests() {
+		if (dotFileExists()) {
+			new File(DOT_DIRECTORY + "/" + DOT_FILE).delete();
+			new File(DOT_DIRECTORY).delete();
+		}
+	}
+
 	@Test
 	public void testOrderCommands_commandAtTheEnd_mandatoryDependency() {
 		catalog.put("command", DummyCommand1.class);
 		catalog.put("before", DummyCommand3.class);
 		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
 
-		assertThat(dependencyCollector.getOrderedCommands()).containsSequence("before", "command");
+		assertThat(dependencyCollector.getOrderedCommands()).containsExactly("before", "command");
 	}
 
 	@Test
@@ -36,7 +47,7 @@ public class DependencyCollectorIntegrationTest {
 		catalog.put("after", DummyCommand2.class);
 		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
 
-		assertThat(dependencyCollector.getOrderedCommands()).containsSequence("command", "after");
+		assertThat(dependencyCollector.getOrderedCommands()).containsExactly("command", "after");
 	}
 
 	@Test
@@ -45,7 +56,7 @@ public class DependencyCollectorIntegrationTest {
 		catalog.put("before", DummyCommand5.class);
 		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
 
-		assertThat(dependencyCollector.getOrderedCommands()).containsSequence("before", "command");
+		assertThat(dependencyCollector.getOrderedCommands()).containsExactly("before", "command");
 	}
 
 	@Test
@@ -54,7 +65,7 @@ public class DependencyCollectorIntegrationTest {
 		catalog.put("after", DummyCommand4.class);
 		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
 
-		assertThat(dependencyCollector.getOrderedCommands()).containsSequence("command", "after");
+		assertThat(dependencyCollector.getOrderedCommands()).containsExactly("command", "after");
 	}
 
 	@Test
@@ -64,7 +75,7 @@ public class DependencyCollectorIntegrationTest {
 		catalog.put("after", DummyCommand2.class);
 		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
 
-		assertThat(dependencyCollector.getOrderedCommands()).containsSequence("before", "command", "after");
+		assertThat(dependencyCollector.getOrderedCommands()).containsExactly("before", "command", "after");
 	}
 
 	@Test
@@ -74,18 +85,7 @@ public class DependencyCollectorIntegrationTest {
 		catalog.put("after", DummyCommand4.class);
 		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
 
-		assertThat(dependencyCollector.getOrderedCommands()).containsSequence("before", "command", "after");
-	}
-
-	private static final String DOT_DIRECTORY = "./etc";
-	private static final String DOT_FILE = "graph.dot";
-
-	@AfterClass
-	public static void removeFileAndDirCreatedForTests() {
-		if (dotFileExists()) {
-			new File(DOT_DIRECTORY + "/" + DOT_FILE).delete();
-			new File(DOT_DIRECTORY).delete();
-		}
+		assertThat(dependencyCollector.getOrderedCommands()).containsExactly("before", "command", "after");
 	}
 
 	private static boolean dotFileExists() {
