@@ -2,6 +2,7 @@ package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.qualitycheck.exception.IllegalEmptyArgumentException;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -21,6 +23,12 @@ public class CatalogTest {
 
 	private Catalog catalog = null;
 	private Document catalogDocument = createBaseCatalogDocument();
+	private Map<String, Class<? extends Command>> catalogMap;
+
+	@Before
+	public void setup() {
+		catalogMap = Maps.newHashMap();
+	}
 
 	private static Document createBaseCatalogDocument() {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -36,20 +44,10 @@ public class CatalogTest {
 
 	@Test
 	public void testCreateCatalogAllowsMultipleCommandNamesForSameClassName() {
-		Element documentRoot = catalogDocument.createElement("catalog");
+		catalogMap.put("abc", Command1.class);
+		catalogMap.put("xyz", Command1.class);
 
-		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
-		command1.setAttribute("name", "abc");
-		documentRoot.appendChild(command1);
-
-		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
-		command2.setAttribute("name", "xyz");
-		documentRoot.appendChild(command2);
-
-		catalogDocument.appendChild(documentRoot);
-		catalog = Catalog.fromDomDocument(catalogDocument);
+		catalog = Catalog.fromMap(catalogMap);
 	}
 
 	@Test(expected = MissingElementAttributeException.class)
@@ -89,7 +87,7 @@ public class CatalogTest {
 	}
 
 	@Test(expected = IllegalClassNameToCommandAssociationException.class)
-	public void testCreateCatalogThrowsException_illegalClassNameToCommandAssociationException() {
+	public void testCreateCatalogThrowsException_illegalMultipleClassNamesToOneCommandName() {
 		Element documentRoot = catalogDocument.createElement("catalog");
 
 		Element command1 = catalogDocument.createElement("command");
@@ -121,79 +119,42 @@ public class CatalogTest {
 	}
 
 	@Test
-	public void testGetNames() throws ParserConfigurationException {
-		Element documentRoot = catalogDocument.createElement("catalog");
-
-		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
-		command1.setAttribute("name", "Command1");
-		documentRoot.appendChild(command1);
-		catalogDocument.appendChild(documentRoot);
-
-		catalog = Catalog.fromDomDocument(catalogDocument);
+	public void testGetNames() {
+		catalogMap.put("Command1", Command1.class);
+		catalog = Catalog.fromMap(catalogMap);
 		assertThat(catalog.getCommandNames()).containsOnly("Command1");
 
-		Element command2 = catalogDocument.createElement("command");
-		command2.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command2");
-		command2.setAttribute("name", "Command2");
-		documentRoot.appendChild(command2);
-
-		catalog = Catalog.fromDomDocument(catalogDocument);
+		catalogMap.put("Command2", Command2.class);
+		catalog = Catalog.fromMap(catalogMap);
 		assertThat(catalog.getCommandNames()).containsOnly("Command1", "Command2");
 	}
 
 	@Test
 	public void testGetCommand() {
-		Element documentRoot = catalogDocument.createElement("catalog");
+		catalogMap.put("Command1", Command1.class);
+		catalog = Catalog.fromMap(catalogMap);
 
-		Element command1 = catalogDocument.createElement("command");
-		command1.setAttribute("className", "cc.commandmanager.core.CatalogTest$Command1");
-		command1.setAttribute("name", "Command1");
-		documentRoot.appendChild(command1);
-
-		catalogDocument.appendChild(documentRoot);
-		catalog = Catalog.fromDomDocument(catalogDocument);
-
-		String actual = catalog.getCommand("Command1").getClass().getName();
-		assertThat(actual).isEqualTo("cc.commandmanager.core.CatalogTest$Command1");
+		assertThat(catalog.getCommand("Command1").getClass()).isEqualTo(Command1.class);
 	}
 
 	@Test(expected = CommandNotFoundException.class)
 	public void testGetCommand_commandNotFound() {
-		Element documentRootWithoutAnyCommandChilds = catalogDocument.createElement("catalog");
-
-		catalogDocument.appendChild(documentRootWithoutAnyCommandChilds);
-		catalog = Catalog.fromDomDocument(catalogDocument);
-
+		catalog = Catalog.fromMap(new HashMap<String, Class<? extends Command>>());
 		catalog.getCommand("Command");
 	}
 
 	@Test(expected = CommandNotInstantiableException.class)
 	public void testGetCommand_notInstantiableCommand() {
-		Element documentRoot = catalogDocument.createElement("catalog");
-
-		Element command = catalogDocument.createElement("command");
-		command.setAttribute("className", "cc.commandmanager.core.CatalogTest$NotInstantiableCommand");
-		command.setAttribute("name", "NotInstantiableCommand");
-		documentRoot.appendChild(command);
-
-		catalogDocument.appendChild(documentRoot);
-		catalog = Catalog.fromDomDocument(catalogDocument);
+		catalogMap.put("NotInstantiableCommand", NotInstantiableCommand.class);
+		catalog = Catalog.fromMap(catalogMap);
 
 		catalog.getCommand("NotInstantiableCommand");
 	}
 
 	@Test(expected = CommandNotInstantiableException.class)
 	public void testGetCommand_notAccessableCommand() {
-		Element documentRoot = catalogDocument.createElement("catalog");
-
-		Element command = catalogDocument.createElement("command");
-		command.setAttribute("className", "cc.commandmanager.core.CatalogTest$NotAccessableCommand");
-		command.setAttribute("name", "NotAccessableCommand");
-		documentRoot.appendChild(command);
-
-		catalogDocument.appendChild(documentRoot);
-		catalog = Catalog.fromDomDocument(catalogDocument);
+		catalogMap.put("NotAccessableCommand", NotAccessableCommand.class);
+		catalog = Catalog.fromMap(catalogMap);
 
 		catalog.getCommand("NotAccessableCommand");
 	}
