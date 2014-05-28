@@ -1,4 +1,4 @@
-package cc.commandmanager.core;
+package cc.commandmanager.catalog;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
@@ -16,6 +16,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import cc.commandmanager.catalog.Catalog;
+import cc.commandmanager.catalog.IllegalClassNameToCommandAssociationException;
+import cc.commandmanager.catalog.MissingElementAttributeException;
+import cc.commandmanager.core.Command;
+import cc.commandmanager.core.CommandNotFoundException;
+import cc.commandmanager.core.CommandNotInstantiableException;
+import cc.commandmanager.core.Context;
 
 import com.google.common.collect.Maps;
 

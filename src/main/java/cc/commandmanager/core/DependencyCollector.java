@@ -17,6 +17,8 @@ import net.sf.qualitycheck.Check;
 
 import org.apache.log4j.Logger;
 
+import cc.commandmanager.catalog.Catalog;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 

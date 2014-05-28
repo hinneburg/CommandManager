@@ -1,4 +1,5 @@
-package cc.commandmanager.core;
+package cc.commandmanager.catalog;
+
 
 public class IllegalClassNameToCommandAssociationException extends RuntimeException {
 

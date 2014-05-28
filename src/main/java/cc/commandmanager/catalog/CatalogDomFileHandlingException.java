@@ -1,4 +1,4 @@
-package cc.commandmanager.core;
+package cc.commandmanager.catalog;
 
 import javax.xml.parsers.ParserConfigurationException;
 

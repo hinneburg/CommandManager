@@ -1,4 +1,4 @@
-package cc.commandmanager.core;
+package cc.commandmanager.catalog;
 
 public final class MissingElementAttributeException extends RuntimeException {
 

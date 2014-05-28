@@ -9,6 +9,8 @@ import net.sf.qualitycheck.Check;
 
 import org.apache.log4j.Logger;
 
+import cc.commandmanager.catalog.Catalog;
+
 /**
  * This class is used for the controlled execution of commands. Commands to be executed are declared in a catalog. Those
  * commands will be ordered and then executed.

@@ -1,4 +1,4 @@
-package cc.commandmanager.core;
+package cc.commandmanager.catalog;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +17,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import cc.commandmanager.core.Command;
+import cc.commandmanager.core.CommandNotFoundException;
+import cc.commandmanager.core.CommandNotInstantiableException;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

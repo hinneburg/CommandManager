@@ -9,6 +9,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import cc.commandmanager.catalog.Catalog;
+
 import com.google.common.collect.Maps;
 
 public class DependencyCollectorIntegrationTest {

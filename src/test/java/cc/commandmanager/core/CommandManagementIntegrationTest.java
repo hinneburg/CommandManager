@@ -13,8 +13,8 @@ public class CommandManagementIntegrationTest {
 	public static final String EXECUTED_COMMANDS = "executedCommands";
 
 	private Context context = new Context();
-	private CommandManagement commandManagement = new CommandManagement(
-			"src/test/resources/CommandManagementIntegrationTest-catalog.xml", context);
+	private CommandManagement commandManagement = new CommandManagement(CommandManagementIntegrationTest.class
+			.getClassLoader().getResource("CommandManagementIntegrationTest-catalog.xml").getFile(), context);
 
 	@Test
 	public void testExecuteAllCommands() {
