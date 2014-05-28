@@ -23,7 +23,7 @@ public final class DummyCommand2 implements Command {
 
 	@Override
 	public Set<String> getBeforeDependencies() {
-		return Sets.newHashSet("DummyCommand1");
+		return Sets.newHashSet("command");
 	}
 
 	@Override

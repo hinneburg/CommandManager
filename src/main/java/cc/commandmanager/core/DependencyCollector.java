@@ -236,25 +236,43 @@ public class DependencyCollector {
 	}
 
 	/**
-	 * Topologically sorts the composedDependencies and sets the orderedCommands variable.
+	 * Return a list of commands, topologically sorted by their dependency representation in the catalog that was used
+	 * to create this {@link DependencyCollector} with.
+	 * 
+	 * @throws IllegalStateException
+	 *             if any command in the catalog is dependent on another command which cannot be found in the catalog.
 	 */
-	public List<String> orderCommands(Map<String, Set<String>> dependencies) {
+	public List<String> getOrderedCommands() {
+		return orderCommands(getDependencies());
+	}
+
+	/**
+	 * Return a list of commands, topologically sorted by their dependency representation in dependencies.
+	 * 
+	 * @param dependencies
+	 *            represents commands which will get ordered. If a command maps a non empty {@link Set} that means that
+	 *            the given command is dependent on other commands, contained by this {@link Set}. Any command of this
+	 *            {@link Set} must occur as a key in dependencies as well.
+	 * @throws IllegalStateException
+	 *             if any {@link Set} to a given key holds a command which does not appear as a key in dependencies as
+	 *             well.
+	 */
+	public static List<String> orderCommands(Map<String, Set<String>> dependencies) {
 		Check.notNull(dependencies, "dependencies");
 
-		Map<String, Set<String>> dependenciesWithIncomingEdges = new ConcurrentHashMap<String, Set<String>>(
-				dependencies);
+		Map<String, Set<String>> commandsWithOutgoingEdges = new ConcurrentHashMap<String, Set<String>>(dependencies);
 		List<String> orderedCommands = new ArrayList<String>();
 		List<String> commandsToBeOrdered = new ArrayList<String>();
 		String node = "";
 
 		// find all nodes with no dependencies, put into helpList, remove from
 		// HashMap
-		for (String key : dependenciesWithIncomingEdges.keySet()) {
-			Set<String> list = dependenciesWithIncomingEdges.get(key);
+		for (String key : commandsWithOutgoingEdges.keySet()) {
+			Set<String> outgoingEdges = commandsWithOutgoingEdges.get(key);
 
-			if (list.isEmpty()) {
+			if (outgoingEdges.isEmpty()) {
 				commandsToBeOrdered.add(key);
-				dependenciesWithIncomingEdges.remove(key);
+				commandsWithOutgoingEdges.remove(key);
 			}
 		}
 
@@ -266,28 +284,28 @@ public class DependencyCollector {
 			orderedCommands.add(node);
 
 			// check if there is any edge between the node and another one
-			for (String key : dependenciesWithIncomingEdges.keySet()) {
-				Set<String> list = dependenciesWithIncomingEdges.get(key);
+			for (String key : commandsWithOutgoingEdges.keySet()) {
+				Set<String> list = commandsWithOutgoingEdges.get(key);
 
 				// if the node is in a value list, remove it
 				if (list.contains(node)) {
 					list.remove(node);
-					dependenciesWithIncomingEdges.put(key, list);
+					commandsWithOutgoingEdges.put(key, list);
 				}
 
 				// if the node has no other incoming edges, put it into
 				// commandList
-				if (dependenciesWithIncomingEdges.get(key).isEmpty()) {
+				if (commandsWithOutgoingEdges.get(key).isEmpty()) {
 					commandsToBeOrdered.add(key);
-					dependenciesWithIncomingEdges.remove(key);
+					commandsWithOutgoingEdges.remove(key);
 				}
 			}
 		}
 
 		// only if the dependencyMap is empty the graph was correct, otherwise
 		// there was something wrong with it
-		if (!dependenciesWithIncomingEdges.isEmpty()) {
-			logger.error("The dependencyMap wasn't empty yet but it should have been: " + dependenciesWithIncomingEdges);
+		if (!commandsWithOutgoingEdges.isEmpty()) {
+			logger.error("The dependencyMap wasn't empty yet but it should have been: " + commandsWithOutgoingEdges);
 			throw new IllegalStateException();
 		}
 

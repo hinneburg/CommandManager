@@ -4,11 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+
 /**
- * Dummy {@link Command} implementation with no dependencies. {@link #execute(Context)} will bind a {@link Class} object
- * corresponding to this class to the context. A {@link ClassCastException} will be thrown if the context does not have
- * a {@link List<Class<? extends Command>>}. The list should be bound to the context with the key, specified in the
- * {@link CommandManagementIntegrationTest}.
+ * Dummy {@link Command} implementation with an optional after dependency on {@link DummyCommand1}.
+ * {@link #execute(Context)} will bind a {@link Class} object corresponding to this class to the context. A
+ * {@link ClassCastException} will be thrown if the context does not have a {@link List<Class<? extends Command>>}. The
+ * list should be bound to the context with the key, specified in the {@link CommandManagementIntegrationTest}.
  */
 public final class DummyCommand5 implements Command {
 
@@ -36,6 +38,6 @@ public final class DummyCommand5 implements Command {
 
 	@Override
 	public Set<String> getOptionalAfterDependencies() {
-		return new HashSet<String>();
+		return Sets.newHashSet("command");
 	}
 }

@@ -7,8 +7,7 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 /**
- * Dummy {@link Command} implementation with a before dependency on {@link DummyCommand1} and an after dependency on
- * {@link DummyCommand2}. Furthermore it has an optional after dependency on {@link DummyCommand3}.
+ * Dummy {@link Command} implementation with an optional before dependency on {@link DummyCommand1}.
  * {@link #execute(Context)} will bind a {@link Class} object corresponding to this class to the context. A
  * {@link ClassCastException} will be thrown if the context does not have a {@link List<Class<? extends Command>>}. The
  * list should be bound to the context with the key, specified in the {@link CommandManagementIntegrationTest}.
@@ -24,22 +23,22 @@ public final class DummyCommand4 implements Command {
 
 	@Override
 	public Set<String> getBeforeDependencies() {
-		return Sets.newHashSet("DummyCommand1");
-	}
-
-	@Override
-	public Set<String> getAfterDependencies() {
-		return Sets.newHashSet("DummyCommand2");
-	}
-
-	@Override
-	public Set<String> getOptionalBeforeDependencies() {
 		return new HashSet<String>();
 	}
 
 	@Override
+	public Set<String> getAfterDependencies() {
+		return new HashSet<String>();
+	}
+
+	@Override
+	public Set<String> getOptionalBeforeDependencies() {
+		return Sets.newHashSet("command");
+	}
+
+	@Override
 	public Set<String> getOptionalAfterDependencies() {
-		return Sets.newHashSet("DummyCommand3");
+		return new HashSet<String>();
 	}
 
 }
