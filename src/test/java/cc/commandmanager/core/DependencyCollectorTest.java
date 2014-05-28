@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class DependencyCollectorTest {
 
@@ -27,39 +28,29 @@ public class DependencyCollectorTest {
 	}
 
 	@Test
-	public void testUpdateDependencies() {
-		catalog.put("DummyCommand1", DummyCommand1.class);
-		catalog.put("DummyCommand2", DummyCommand2.class);
-		catalog.put("DummyCommand3", DummyCommand3.class);
-		dependencyCollector = new DependencyCollector(Catalog.fromMap(catalog));
+	public void testUpdateDependencies_onEmptyDependencies() {
 		Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
 
-		Set<String> afterDependencies = new HashSet<String>(Arrays.asList("after1", "after2"));
-		Set<String> beforeDependencies = new HashSet<String>(Arrays.asList("before1", "before2"));
-		DependencyCollector.updateDependencies("command", dependencies, afterDependencies, beforeDependencies);
+		DependencyCollector.updateDependencies("command", dependencies, new HashSet<String>(Arrays.asList("after")),
+				new HashSet<String>(Arrays.asList("before")));
 
-		assertThat(dependencies.get("after1")).contains("command");
-		assertThat(dependencies.get("after2")).contains("command");
-		assertThat(dependencies.get("command")).contains("before1", "before2");
+		assertThat(dependencies.keySet()).containsOnly("command", "after");
+		assertThat(dependencies.get("after")).contains("command");
+		assertThat(dependencies.get("command")).contains("before");
 	}
 
 	@Test
-	public void testUpdateDependenciesWithExistingDependencies() {
+	public void testUpdateDependencies_onNonEmptyDependencies() {
 		Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
-		dependencies.put("command_already1", new HashSet<String>());
-		dependencies.put("command_already2", new HashSet<String>(Arrays.asList("before1")));
-		dependencies.put("command_alreadyA",
-				new HashSet<String>(Arrays.asList("command_already1", "command_already3", "command_already4")));
+		dependencies.put("command", Sets.newHashSet("before"));
+		dependencies.put("after", Sets.newHashSet("command"));
 
-		Set<String> afterDependencies = new HashSet<String>(Arrays.asList("command_alreadyA"));
-		Set<String> beforeDependencies = new HashSet<String>(Arrays.asList("before2", "before3"));
+		DependencyCollector.updateDependencies("command", dependencies,
+				new HashSet<String>(Arrays.asList("additionalAfter")),
+				new HashSet<String>(Arrays.asList("additionalBefore")));
 
-		DependencyCollector.updateDependencies("command_already2", dependencies, afterDependencies, beforeDependencies);
-
-		assertThat(dependencies.get("command_already1")).contains();
-		assertThat(dependencies.get("command_already2")).containsOnly("before1", "before2", "before3");
-		assertThat(dependencies.get("command_alreadyA")).containsOnly("command_already1", "command_already2",
-				"command_already3", "command_already4");
+		assertThat(dependencies.keySet()).contains("additionalAfter");
+		assertThat(dependencies.get("command")).contains("additionalBefore");
 	}
 
 	@Test
@@ -128,7 +119,7 @@ public class DependencyCollectorTest {
 	private static final String DOT_FILE = "graph.dot";
 
 	@AfterClass
-	public static void removeFleAndDirCreatedForTests() {
+	public static void removeFileAndDirCreatedForTests() {
 		if (dotFileExists()) {
 			new File(DOT_DIRECTORY + "/" + DOT_FILE).delete();
 			new File(DOT_DIRECTORY).delete();
