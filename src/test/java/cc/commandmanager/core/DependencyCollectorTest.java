@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Maps;
@@ -14,10 +15,15 @@ import com.google.common.collect.Sets;
 
 public class DependencyCollectorTest {
 
+	Map<String, Set<String>> dependencies;
+
+	@Before
+	public void setup() {
+		dependencies = Maps.newHashMap();
+	}
+
 	@Test
 	public void testUpdateDependencies_onEmptyDependencies() {
-		Map<String, Set<String>> dependencies = Maps.newHashMap();
-
 		DependencyCollector.updateDependencies("command", dependencies, new HashSet<String>(Arrays.asList("after")),
 				new HashSet<String>(Arrays.asList("before")));
 
@@ -28,7 +34,6 @@ public class DependencyCollectorTest {
 
 	@Test
 	public void testUpdateDependencies_onNonEmptyDependencies() {
-		Map<String, Set<String>> dependencies = Maps.newHashMap();
 		dependencies.put("command", Sets.newHashSet("before"));
 		dependencies.put("after", Sets.newHashSet("command"));
 
