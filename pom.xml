@@ -73,11 +73,11 @@
 		</plugins>
 	</build>
 	<distributionManagement>
-		<snapshotRepository>
+		<repository>
 			<id>snapshots-write</id>
 			<name>Archiva Snapshot Repository on 'moon'</name>
 			<url>https://moon.informatik.uni-halle.de/archiva/repository/snapshots-db</url>
-		</snapshotRepository>
+		</repository>
 
 	</distributionManagement>
 </project>
