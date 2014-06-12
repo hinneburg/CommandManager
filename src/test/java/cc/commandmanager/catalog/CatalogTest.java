@@ -5,7 +5,6 @@ import static org.fest.assertions.Fail.fail;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -20,8 +19,7 @@ import org.w3c.dom.Element;
 import cc.commandmanager.core.Command;
 import cc.commandmanager.core.CommandNotFoundException;
 import cc.commandmanager.core.CommandNotInstantiableException;
-import cc.commandmanager.core.Context;
-import cc.commandmanager.core.ResultState;
+import cc.commandmanager.core.DummyCommand;
 
 import com.google.common.collect.Maps;
 
@@ -166,61 +164,11 @@ public class CatalogTest {
 		catalog = Catalog.fromDomDocument(catalogDocument);
 	}
 
-	public static class Command1 implements Command {
-
-		@Override
-		public ResultState execute(Context context) {
-			return ResultState.success();
-		}
-
-		@Override
-		public Set<String> getBeforeDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getAfterDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getOptionalBeforeDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getOptionalAfterDependencies() {
-			return null;
-		}
+	public static class Command1 extends DummyCommand {
 
 	}
 
-	public static class Command2 implements Command {
-
-		@Override
-		public ResultState execute(Context context) {
-			return ResultState.success();
-		}
-
-		@Override
-		public Set<String> getBeforeDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getAfterDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getOptionalBeforeDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getOptionalAfterDependencies() {
-			return null;
-		}
+	public static class Command2 extends DummyCommand {
 
 	}
 
@@ -228,35 +176,10 @@ public class CatalogTest {
 
 	}
 
-	public static class NotAccessableCommand implements Command {
+	public static class NotAccessableCommand extends DummyCommand {
 
 		private NotAccessableCommand() {
 
-		}
-
-		@Override
-		public ResultState execute(Context context) {
-			return ResultState.success();
-		}
-
-		@Override
-		public Set<String> getBeforeDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getAfterDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getOptionalBeforeDependencies() {
-			return null;
-		}
-
-		@Override
-		public Set<String> getOptionalAfterDependencies() {
-			return null;
 		}
 
 	}
