@@ -21,6 +21,7 @@ import cc.commandmanager.core.Command;
 import cc.commandmanager.core.CommandNotFoundException;
 import cc.commandmanager.core.CommandNotInstantiableException;
 import cc.commandmanager.core.Context;
+import cc.commandmanager.core.ResultState;
 
 import com.google.common.collect.Maps;
 
@@ -168,7 +169,8 @@ public class CatalogTest {
 	public static class Command1 implements Command {
 
 		@Override
-		public void execute(Context context) {
+		public ResultState execute(Context context) {
+			return ResultState.success();
 		}
 
 		@Override
@@ -196,7 +198,8 @@ public class CatalogTest {
 	public static class Command2 implements Command {
 
 		@Override
-		public void execute(Context context) {
+		public ResultState execute(Context context) {
+			return ResultState.success();
 		}
 
 		@Override
@@ -232,7 +235,8 @@ public class CatalogTest {
 		}
 
 		@Override
-		public void execute(Context context) {
+		public ResultState execute(Context context) {
+			return ResultState.success();
 		}
 
 		@Override

@@ -21,7 +21,7 @@ import java.util.Set;
 
 public interface Command {
 
-	void execute(Context context);
+	ResultState execute(Context context);
 
 	Set<String> getBeforeDependencies();
 

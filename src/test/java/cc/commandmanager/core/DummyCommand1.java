@@ -14,9 +14,10 @@ public final class DummyCommand1 implements Command {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void execute(Context context) {
+	public ResultState execute(Context context) {
 		((List<Class<? extends Command>>) context.get(CommandManagementIntegrationTest.EXECUTED_COMMANDS)).add(this
 				.getClass());
+		return ResultState.success();
 	}
 
 	@Override
