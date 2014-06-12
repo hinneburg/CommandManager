@@ -146,8 +146,7 @@ public class CommandManagement {
 		Check.notNull(localContext, "localContext");
 
 		for (String commandName : commands) {
-			Command command;
-			command = catalog.getCommand(commandName);
+			Command command = catalog.getCommand(commandName);
 			logger.info("Execute current command: " + command.getClass());
 			long startTime = System.currentTimeMillis();
 			ResultState resultState = command.execute(localContext);
