@@ -1,5 +1,6 @@
 package cc.commandmanager.core;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import net.sf.qualitycheck.Check;
@@ -51,7 +52,7 @@ public class CommandClass {
 	 *            command
 	 * @return if this command has the same name as the other one
 	 */
-	public boolean hasSameSameAs(CommandClass other) {
+	public boolean hasSameSameAs(@Nullable CommandClass other) {
 		if (other == null) {
 			return false;
 		}
