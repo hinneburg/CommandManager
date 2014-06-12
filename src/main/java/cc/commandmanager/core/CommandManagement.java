@@ -146,18 +146,25 @@ public class CommandManagement {
 		Check.notNull(localContext, "localContext");
 
 		for (String commandName : commands) {
-			try {
-				Command command;
-				command = catalog.getCommand(commandName);
-				logger.info("Execute current command : [ " + command.getClass() + " ]");
-				long startTime = System.currentTimeMillis();
-				command.execute(localContext);
-				logger.info(System.currentTimeMillis() - startTime + " ms");
-			} catch (RuntimeException e) {
-				logger.error(String.format("The current command %s caused a critical exception", commandName));
-				throw e;
+			Command command;
+			command = catalog.getCommand(commandName);
+			logger.info("Execute current command: " + command.getClass());
+			long startTime = System.currentTimeMillis();
+			ResultState resultState = command.execute(localContext);
+			if (resultState.isSuccess()) {
+				logger.info("Command " + command.getClass() + " successfully executed in "
+						+ (System.currentTimeMillis() - startTime) + " ms");
+			} else if (resultState.isWarning()) {
+				logger.warn("Command " + command.getClass() + " executed with warning in "
+						+ (System.currentTimeMillis() - startTime) + " ms: " + resultState.getMessage() + " "
+						+ resultState.getCause());
+			} else {
+				logger.error("Command " + command.getClass() + " failed to execute (took "
+						+ (System.currentTimeMillis() - startTime) + " ms): " + resultState.getMessage() + " "
+						+ resultState.getCause());
+				logger.error("Aborting execution of all commands.");
+				break;
 			}
 		}
 	}
-
 }
