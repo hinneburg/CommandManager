@@ -52,7 +52,7 @@ public class CommandClass {
 	 *            command
 	 * @return if this command has the same name as the other one
 	 */
-	public boolean hasSameSameAs(@Nullable CommandClass other) {
+	public boolean hasSameNameAs(@Nullable CommandClass other) {
 		if (other == null) {
 			return false;
 		}
