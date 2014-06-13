@@ -21,7 +21,7 @@ public class CommandClassTest {
 		assertThat(command1.equals(command1)).isTrue();
 		assertThat(command1.equals(command2)).isFalse();
 		assertThat(command1.equals(null)).isFalse();
-		assertThat(command1.equals(new CommandClass("Command1", "cc.commandmanager.core.Command1")));
+		assertThat(command1.equals(new CommandClass("Command1", "cc.commandmanager.core.Command1"))).isTrue();
 	}
 
 	@Test
