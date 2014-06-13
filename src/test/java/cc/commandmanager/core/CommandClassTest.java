@@ -26,9 +26,10 @@ public class CommandClassTest {
 
 	@Test
 	public void testHasNameNameAs() {
+		assertThat(command1.hasSameNameAs(command1)).isTrue();
 		assertThat(command1.hasSameSameAs(command2)).isFalse();
-		assertThat(command1.hasSameSameAs(new CommandClass("Command1", "")));
 		assertThat(command1.hasSameSameAs(null)).isFalse();
+		assertThat(command1.hasSameSameAs(new CommandClass("Command1", ""))).isTrue();
 	}
 
 }
