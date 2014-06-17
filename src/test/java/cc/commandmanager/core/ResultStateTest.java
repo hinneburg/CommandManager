@@ -34,6 +34,15 @@ public class ResultStateTest {
 	}
 
 	@Test
+	public void testHasCause() {
+		ResultState warningNoCause = ResultState.warning("Warning!");
+		assertThat(warningNoCause.hasCause()).isFalse();
+
+		ResultState warningWithCause = ResultState.warning("Warning!", cause);
+		assertThat(warningWithCause.hasCause()).isTrue();
+	}
+
+	@Test
 	public void testGetMessage() {
 		assertThat(warning.getMessage()).isEqualTo("Warning!");
 		assertThat(failure.getMessage()).isEqualTo("Failure!");

@@ -158,9 +158,12 @@ public class CommandManagement {
 						+ (System.currentTimeMillis() - startTime) + " ms: " + resultState.getMessage() + " "
 						+ resultState.getCause());
 			} else {
-				logger.error("Command " + command.getClass() + " failed to execute (took "
-						+ (System.currentTimeMillis() - startTime) + " ms): " + resultState.getMessage() + " "
-						+ resultState.getCause());
+				String message = "Command " + command.getClass() + " failed to execute (took "
+						+ (System.currentTimeMillis() - startTime) + " ms): " + resultState.getMessage();
+				if (resultState.hasCause()) {
+					message += " " + resultState.getCause();
+				}
+				logger.error(message);
 				logger.error("Aborting execution of all commands.");
 				break;
 			}

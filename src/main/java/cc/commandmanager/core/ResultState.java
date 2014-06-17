@@ -108,6 +108,17 @@ public abstract class ResultState {
 	}
 
 	/**
+	 * @return {@code true} if this {@linkplain Warning} or {@linkplain Failure} has a cause, {@code false} otherwise.
+	 * 
+	 * @throws IllegalInstanceOfArgumentException
+	 *             if this is not a {@linkplain Warning} or {@linkplain Failure}.
+	 */
+	public boolean hasCause() {
+		Check.instanceOf(WarningOrFailure.class, this);
+		return ((WarningOrFailure) this).cause != null;
+	}
+
+	/**
 	 * @return the message of this {@linkplain Warning} or {@linkplain Failure}.
 	 * 
 	 * @throws IllegalInstanceOfArgumentException
