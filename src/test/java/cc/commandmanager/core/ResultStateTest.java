@@ -34,15 +34,6 @@ public class ResultStateTest {
 	}
 
 	@Test
-	public void testHasCause() {
-		ResultState warningNoCause = ResultState.warning("Warning!");
-		assertThat(warningNoCause.hasCause()).isFalse();
-
-		ResultState warningWithCause = ResultState.warning("Warning!", cause);
-		assertThat(warningWithCause.hasCause()).isTrue();
-	}
-
-	@Test
 	public void testGetMessage() {
 		assertThat(warning.getMessage()).isEqualTo("Warning!");
 		assertThat(failure.getMessage()).isEqualTo("Failure!");
@@ -51,6 +42,17 @@ public class ResultStateTest {
 	@Test(expected = IllegalInstanceOfArgumentException.class)
 	public void testGetMessage_noWarningOrFailure() {
 		success.getMessage();
+	}
+
+	@Test
+	public void testHasCause() {
+		assertThat(warning.hasCause()).isTrue();
+		assertThat(ResultState.warning("Warning!").hasCause()).isFalse();
+	}
+
+	@Test(expected = IllegalInstanceOfArgumentException.class)
+	public void testHasCause_noWarningOrFailure() {
+		success.hasCause();
 	}
 
 	@Test
