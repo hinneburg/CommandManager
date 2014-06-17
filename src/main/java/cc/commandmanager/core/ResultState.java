@@ -114,8 +114,7 @@ public abstract class ResultState {
 	 *             if this is not a {@linkplain Warning} or {@linkplain Failure}.
 	 */
 	public boolean hasCause() {
-		Check.instanceOf(WarningOrFailure.class, this);
-		return ((WarningOrFailure) this).cause != null;
+		return getCause() != null;
 	}
 
 	/**
