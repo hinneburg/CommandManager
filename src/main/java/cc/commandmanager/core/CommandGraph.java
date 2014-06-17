@@ -90,6 +90,10 @@ public class CommandGraph {
 
 	}
 
+	public static class DependencyEdge {
+		// TODO implement Optional and Mandatory Dependencies
+	}
+
 	/**
 	 * Before dependencies represent commands on which the given command depends on. After dependencies represent
 	 * commands that are depending on a given command.
