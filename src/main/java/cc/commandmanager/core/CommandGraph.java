@@ -45,17 +45,28 @@ public class CommandGraph {
 		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
 
-		public CommandGraphBuilder addCommand(String name, String className) {
+		public boolean addCommand(String name, String className) {
 			return addCommand(new CommandClass(Check.notNull(name, "name"), Check.notNull(className, "className")));
 		}
 
-		public CommandGraphBuilder addCommand(CommandClass commandClass) {
+		public boolean addCommand(CommandClass commandClass) {
 			Check.notNull(commandClass, "commandClass");
+
 			String command = commandClass.getName();
-			namesToCommandClasses.put(command, commandClass);
-			namesToMandatoryDependencies.put(command, new Dependencies());
-			namesToOptionalDependencies.put(command, new Dependencies());
-			graph.addVertex(commandClass);
+			if (!isAlreadyPresent(commandClass)) {
+				namesToCommandClasses.put(command, commandClass);
+				namesToMandatoryDependencies.put(command, new Dependencies());
+				namesToOptionalDependencies.put(command, new Dependencies());
+				graph.addVertex(commandClass);
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		private boolean isAlreadyPresent(CommandClass commandClass) {
+			return namesToCommandClasses.containsKey(commandClass.getName());
+		}
 			return this;
 		}
 		public CommandGraphBuilder addCommandWithDependencies(CommandClass commandClass,
