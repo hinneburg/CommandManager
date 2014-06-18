@@ -34,6 +34,39 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
+	public void testAddMandatoryDependency() {
+		assertThat(builder.addCommand(new CommandClass("Source", "className.Source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("Target", "className.Target"))).isTrue();
+		assertThat(builder.addMandatoryDependency("Source", "Target")).isTrue();
+
+		assertThat(builder.build().getDependencies("Source")).containsOnly(
+				new CommandClass("Target", "className.Target"));
+	}
+
+	@Test
+	public void testAddMandatoryDependency_circularDependency() {
+		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
+		assertThat(builder.addMandatoryDependency("target", "source")).isFalse();
+	}
+
+	@Test
+	public void testAddMandatoryDependency_dependencyWithoutCommand() {
+		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "nowhere")).isFalse();
+		assertThat(builder.addMandatoryDependency("nowhere", "source")).isFalse();
+	}
+
+	@Test
+	public void testAddMandatoryDependency_sameDependencyTwice() {
+		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "target")).isFalse();
+	}
+
+	@Test
 	public void testHasCommand() {
 		builder.addCommand(new CommandClass("A", "className.A"));
 		CommandGraph graph = builder.build();
