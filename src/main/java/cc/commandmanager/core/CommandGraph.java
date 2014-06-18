@@ -6,13 +6,13 @@ import java.util.Set;
 
 import net.sf.qualitycheck.Check;
 
-import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 
 import com.google.common.collect.Maps;
 
 public class CommandGraph {
 
-	private final DirectedMultigraph<CommandClass, DependencyEdge> commandGraph;
+	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
 
 	private CommandGraph(CommandGraphBuilder builder) {
@@ -30,13 +30,34 @@ public class CommandGraph {
 		return vertices.containsKey(commandName);
 	}
 
+	public CommandClass getCommandClass(String commandName) {
+		Check.notEmpty(commandName, "commandName");
+		if (hasCommand(commandName)) {
+			return vertices.get(commandName);
+		} else {
+			throw new CommandNotFoundException(commandName);
+		}
+	}
 	public static class CommandGraphBuilder {
 		private Map<String, CommandClass> namesToCommandClasses = Maps.newHashMap();
 		private Map<String, Dependencies> namesToMandatoryDependencies = Maps.newHashMap();
 		private Map<String, Dependencies> namesToOptionalDependencies = Maps.newHashMap();
-		private DirectedMultigraph<CommandClass, DependencyEdge> graph = new DirectedMultigraph<CommandClass, DependencyEdge>(
+		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
 
+		public CommandGraphBuilder addCommand(String name, String className) {
+			return addCommand(new CommandClass(Check.notNull(name, "name"), Check.notNull(className, "className")));
+		}
+
+		public CommandGraphBuilder addCommand(CommandClass commandClass) {
+			Check.notNull(commandClass, "commandClass");
+			String command = commandClass.getName();
+			namesToCommandClasses.put(command, commandClass);
+			namesToMandatoryDependencies.put(command, new Dependencies());
+			namesToOptionalDependencies.put(command, new Dependencies());
+			graph.addVertex(commandClass);
+			return this;
+		}
 		public CommandGraphBuilder addCommandWithDependencies(CommandClass commandClass,
 				Dependencies mandatoryDependencies, Dependencies optionalDependencies) {
 			Check.notNull(commandClass, "commandClass");
@@ -52,15 +73,38 @@ public class CommandGraph {
 		}
 
 		public CommandGraph build() {
-			for (String command : namesToCommandClasses.keySet()) {
-				graph.addVertex(namesToCommandClasses.get(command));
-				addMandatoryDependenciesToGraph(command);
-				addOptionalDependenciesToGraph(command);
-			}
+			graph = composeCurrentState(namesToCommandClasses, namesToMandatoryDependencies,
+					namesToOptionalDependencies);
 			return new CommandGraph(this);
 		}
 
-		private void addMandatoryDependenciesToGraph(String command) {
+		private static DirectedAcyclicGraph<CommandClass, DependencyEdge> composeCurrentState(
+				Map<String, CommandClass> namesToCommandClasses,
+				Map<String, Dependencies> namesToMandatoryDependencies,
+				Map<String, Dependencies> namesToOptionalDependencies) {
+			Check.notNull(namesToCommandClasses, "namesToCommandClasses");
+			Check.notNull(namesToMandatoryDependencies, "namesToMandatoryDependencies");
+			Check.notNull(namesToOptionalDependencies, "namesToOptionalDependencies");
+
+			DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, CommandGraph.DependencyEdge>(
+					CommandGraph.DependencyEdge.class);
+			for (String command : namesToCommandClasses.keySet()) {
+				graph.addVertex(namesToCommandClasses.get(command));
+				addMandatoryDependenciesToGraph(command, namesToCommandClasses, namesToMandatoryDependencies, graph);
+				addOptionalDependenciesToGraph(command, namesToCommandClasses, namesToOptionalDependencies, graph);
+			}
+			return graph;
+		}
+
+		private static void addMandatoryDependenciesToGraph(String command,
+				Map<String, CommandClass> namesToCommandClasses,
+				Map<String, Dependencies> namesToMandatoryDependencies,
+				DirectedAcyclicGraph<CommandClass, DependencyEdge> graph) {
+			Check.notNull(command, "command");
+			Check.notNull(namesToCommandClasses, "namesToCommandClasses");
+			Check.notNull(namesToMandatoryDependencies, "namesToMandatoryDependencies");
+			Check.notNull(graph, "graph");
+
 			Dependencies dependencies = namesToMandatoryDependencies.get(command);
 			if (!dependencies.beforeDependencies.isEmpty()) {
 				for (String dependency : dependencies.beforeDependencies) {
@@ -74,7 +118,9 @@ public class CommandGraph {
 			}
 		}
 
-		private void addOptionalDependenciesToGraph(String command) {
+		private static void addOptionalDependenciesToGraph(String command,
+				Map<String, CommandClass> namesToCommandClasses, Map<String, Dependencies> namesToOptionalDependencies,
+				DirectedAcyclicGraph<CommandClass, DependencyEdge> graph) {
 			Dependencies dependencies = namesToOptionalDependencies.get(command);
 			if (!dependencies.beforeDependencies.isEmpty()) {
 				for (String dependency : dependencies.beforeDependencies) {

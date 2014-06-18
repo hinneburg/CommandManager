@@ -18,11 +18,17 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
-	public void testHasCommand() {
-		builder.addCommandWithDependencies(new CommandClass("command", "cc.commandmanager.core.DummyCommand1"),
-				new Dependencies(), new Dependencies());
+	public void testAddCommand() {
+		builder.addCommand(new CommandClass("A", "className.A"));
 		CommandGraph graph = builder.build();
-		assertThat(graph.hasCommand("command")).isTrue();
+		assertThat(graph.hasCommand("A")).isTrue();
+		assertThat(graph.getCommandClass("A")).isEqualTo(new CommandClass("A", "className.A"));
+	}
+	@Test
+	public void testHasCommand() {
+		builder.addCommand(new CommandClass("A", "className.A"));
+		CommandGraph graph = builder.build();
+		assertThat(graph.hasCommand("A")).isTrue();
 		assertThat(graph.hasCommand("not there")).isFalse();
 	}
 
