@@ -9,6 +9,7 @@ import net.sf.qualitycheck.Check;
 
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
+import org.jgrapht.graph.DefaultEdge;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -146,7 +147,7 @@ public class CommandGraph {
 				throws CycleFoundException {
 			Set<String> targets = namesToMandatoryDependencies.get(source.getName()).beforeDependencies;
 			targets.add(target.getName());
-			return graph.addDagEdge(source, target, new DependencyEdge());
+			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
 		}
 		public CommandGraphBuilder addCommandWithDependencies(CommandClass commandClass,
 				Dependencies mandatoryDependencies, Dependencies optionalDependencies) {
@@ -228,8 +229,28 @@ public class CommandGraph {
 
 	}
 
-	public static class DependencyEdge {
-		// TODO implement Optional and Mandatory Dependencies
+	private static class DependencyEdge extends DefaultEdge {
+
+		public static final boolean MANDATORY = true;
+		public static final boolean OPTIONAL = false;
+		private static final long serialVersionUID = 1357561909643656035L;
+
+		private boolean mandatory;
+
+		public DependencyEdge(boolean mandatory) {
+			this.mandatory = mandatory;
+		}
+
+		public boolean isMandatory() {
+			return mandatory;
+		}
+
+		@Override
+		public String toString() {
+			String mandatoryOrOptional = mandatory ? "Mandatory" : "Optional";
+			return mandatoryOrOptional + " dependency:[" + super.getSource() + "] -> [" + super.getTarget() + "]";
+		}
+
 	}
 
 	/**
