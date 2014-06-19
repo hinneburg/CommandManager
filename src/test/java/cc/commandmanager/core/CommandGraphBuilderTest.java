@@ -86,12 +86,4 @@ public class CommandGraphBuilderTest {
 		assertThat(builder.addMandatoryDependency("source", "target")).isFalse();
 	}
 
-	@Test
-	public void testHasCommand() {
-		builder.addCommand(new CommandClass("A", "className.A"));
-		CommandGraph graph = builder.build();
-		assertThat(graph.hasCommand("A")).isTrue();
-		assertThat(graph.hasCommand("not there")).isFalse();
-	}
-
 }
