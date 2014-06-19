@@ -89,6 +89,10 @@ public class CommandGraph {
 		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
 
+		public CommandGraph build() {
+			return new CommandGraph(this);
+		}
+
 		public boolean addCommand(String name, String className) {
 			return addCommand(new CommandClass(Check.notNull(name, "name"), Check.notNull(className, "className")));
 		}
@@ -239,83 +243,9 @@ public class CommandGraph {
 			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL));
 		}
 
-		public CommandGraphBuilder addCommandWithDependencies(CommandClass commandClass,
-				Dependencies mandatoryDependencies, Dependencies optionalDependencies) {
-			Check.notNull(commandClass, "commandClass");
-			Check.noNullElements(mandatoryDependencies.beforeDependencies, "mandatoryBeforeDependencies");
-			Check.noNullElements(mandatoryDependencies.afterDependencies, "mandatoryAfterDependencies");
-			Check.noNullElements(optionalDependencies.beforeDependencies, "optionalBeforeDependencies");
-			Check.noNullElements(optionalDependencies.afterDependencies, "optionalAfterDependencies");
-
-			namesToCommandClasses.put(commandClass.getName(), commandClass);
-			namesToMandatoryDependencies.put(commandClass.getName(), mandatoryDependencies);
-			namesToOptionalDependencies.put(commandClass.getName(), optionalDependencies);
-			return this;
-		}
-
 		// ***********************
 		// ADD DEPENDENCIES END
 		// ***********************
-
-		public CommandGraph build() {
-			return new CommandGraph(this);
-		}
-
-		private static DirectedAcyclicGraph<CommandClass, DependencyEdge> composeCurrentState(
-				Map<String, CommandClass> namesToCommandClasses,
-				Map<String, Dependencies> namesToMandatoryDependencies,
-				Map<String, Dependencies> namesToOptionalDependencies) {
-			Check.notNull(namesToCommandClasses, "namesToCommandClasses");
-			Check.notNull(namesToMandatoryDependencies, "namesToMandatoryDependencies");
-			Check.notNull(namesToOptionalDependencies, "namesToOptionalDependencies");
-
-			DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, CommandGraph.DependencyEdge>(
-					CommandGraph.DependencyEdge.class);
-			for (String command : namesToCommandClasses.keySet()) {
-				graph.addVertex(namesToCommandClasses.get(command));
-				addMandatoryDependenciesToGraph(command, namesToCommandClasses, namesToMandatoryDependencies, graph);
-				addOptionalDependenciesToGraph(command, namesToCommandClasses, namesToOptionalDependencies, graph);
-			}
-			return graph;
-		}
-
-		private static void addMandatoryDependenciesToGraph(String command,
-				Map<String, CommandClass> namesToCommandClasses,
-				Map<String, Dependencies> namesToMandatoryDependencies,
-				DirectedAcyclicGraph<CommandClass, DependencyEdge> graph) {
-			Check.notNull(command, "command");
-			Check.notNull(namesToCommandClasses, "namesToCommandClasses");
-			Check.notNull(namesToMandatoryDependencies, "namesToMandatoryDependencies");
-			Check.notNull(graph, "graph");
-
-			Dependencies dependencies = namesToMandatoryDependencies.get(command);
-			if (!dependencies.beforeDependencies.isEmpty()) {
-				for (String dependency : dependencies.beforeDependencies) {
-					graph.addEdge(namesToCommandClasses.get(command), namesToCommandClasses.get(dependency));
-				}
-			}
-			if (!dependencies.afterDependencies.isEmpty()) {
-				for (String dependency : dependencies.afterDependencies) {
-					graph.addEdge(namesToCommandClasses.get(dependency), namesToCommandClasses.get(command));
-				}
-			}
-		}
-
-		private static void addOptionalDependenciesToGraph(String command,
-				Map<String, CommandClass> namesToCommandClasses, Map<String, Dependencies> namesToOptionalDependencies,
-				DirectedAcyclicGraph<CommandClass, DependencyEdge> graph) {
-			Dependencies dependencies = namesToOptionalDependencies.get(command);
-			if (!dependencies.beforeDependencies.isEmpty()) {
-				for (String dependency : dependencies.beforeDependencies) {
-					graph.addEdge(namesToCommandClasses.get(command), namesToCommandClasses.get(dependency));
-				}
-			}
-			if (!dependencies.afterDependencies.isEmpty()) {
-				for (String dependency : dependencies.afterDependencies) {
-					graph.addEdge(namesToCommandClasses.get(dependency), namesToCommandClasses.get(command));
-				}
-			}
-		}
 
 	}
 
