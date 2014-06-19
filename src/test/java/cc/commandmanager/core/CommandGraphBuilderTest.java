@@ -55,11 +55,21 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
-	public void testAddCommandReturnsFalse() {
+	public void testAddCommand_sameClassNameTwice() {
+		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("B", "className.A"))).isTrue();
+	}
+
+	@Test
+	public void testAddCommand_sameCommandTwice() {
 		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isFalse();
+	}
+
+	@Test
+	public void testAddCommand_sameCommandNameTwice() {
+		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("A", "otherClassName.A"))).isFalse();
-		assertThat(builder.addCommand(new CommandClass("B", "className.A"))).isTrue();
 	}
 
 	@Test
