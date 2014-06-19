@@ -1,7 +1,7 @@
 package cc.commandmanager.core;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,11 +42,11 @@ public class CommandGraph {
 		}
 	}
 
-	public Iterable<CommandClass> getDependencies(String commandName) {
+	public List<CommandClass> getDependencies(String commandName) {
 		Check.notEmpty(commandName, "commandName");
 		if (hasCommand(commandName)) {
-			Collection<CommandClass> targets = Lists.newArrayList();
-			Collection<DependencyEdge> dependencies = commandGraph.edgesOf(vertices.get(commandName));
+			List<CommandClass> targets = Lists.newArrayList();
+			Set<DependencyEdge> dependencies = commandGraph.edgesOf(vertices.get(commandName));
 			for (DependencyEdge dependency : dependencies) {
 				targets.add(commandGraph.getEdgeTarget(dependency));
 			}
