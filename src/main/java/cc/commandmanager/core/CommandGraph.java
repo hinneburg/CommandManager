@@ -36,26 +36,52 @@ public class CommandGraph {
 
 	public CommandClass getCommandClass(String commandName) {
 		Check.notEmpty(commandName, "commandName");
-		if (hasCommand(commandName)) {
-			return vertices.get(commandName);
-		} else {
+		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
+		return vertices.get(commandName);
 	}
 
 	public List<CommandClass> getDependencies(String commandName) {
 		Check.notEmpty(commandName, "commandName");
-		if (hasCommand(commandName)) {
-			List<CommandClass> targets = Lists.newArrayList();
-			Set<DependencyEdge> dependencies = commandGraph.edgesOf(vertices.get(commandName));
-			for (DependencyEdge dependency : dependencies) {
-				targets.add(commandGraph.getEdgeTarget(dependency));
-			}
-			return targets;
-		} else {
+		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
+		List<CommandClass> targets = Lists.newArrayList();
+		targets.addAll(getMandatoryDependencies(commandName));
+		targets.addAll(getOptionalDependencies(commandName));
+		return targets;
 	}
+
+	public List<CommandClass> getMandatoryDependencies(String commandName) {
+		Check.notEmpty(commandName, "commandName");
+		if (!hasCommand(commandName)) {
+			throw new CommandNotFoundException(commandName);
+		}
+		List<CommandClass> mandatoryTargets = getDependenciesWithRequirementState(commandName, DependencyEdge.MANDATORY);
+		return mandatoryTargets;
+	}
+
+	public List<CommandClass> getOptionalDependencies(String commandName) {
+		Check.notEmpty(commandName, "commandName");
+		if (!hasCommand(commandName)) {
+			throw new CommandNotFoundException(commandName);
+		}
+		List<CommandClass> optionalTargets = getDependenciesWithRequirementState(commandName, DependencyEdge.OPTIONAL);
+		return optionalTargets;
+	}
+
+	private List<CommandClass> getDependenciesWithRequirementState(String commandName, boolean mandatoryOrOptional) {
+		List<CommandClass> targets = Lists.newArrayList();
+		Set<DependencyEdge> dependencies = commandGraph.outgoingEdgesOf(vertices.get(commandName));
+		for (DependencyEdge dependency : dependencies) {
+			if (dependency.isMandatory() == mandatoryOrOptional) {
+				targets.add(commandGraph.getEdgeTarget(dependency));
+			}
+		}
+		return targets;
+	}
+
 	public static class CommandGraphBuilder {
 		private Map<String, CommandClass> namesToCommandClasses = Maps.newHashMap();
 		private Map<String, Dependencies> namesToMandatoryDependencies = Maps.newHashMap();
@@ -149,6 +175,67 @@ public class CommandGraph {
 			targets.add(target.getName());
 			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
 		}
+
+		/**
+		 * Add an optional dependency from {@code sourceName} to {@code targetName} IFF <li>the given edge is not
+		 * already a member of the graph <li>there is not already an edge from {@code sourceName} to {@code targetName}
+		 * in the graph <li>
+		 * the edge does not induce a cycle in the graph.
+		 * 
+		 * @param sourceName
+		 *            source of the newly created edge
+		 * @param targetName
+		 *            target of the newly created edge
+		 * @return {@code true} if the edge was added to the graph.
+		 */
+		public boolean addOptionalDependency(String sourceName, String targetName) {
+			if (!isAlreadyPresent(Check.notNull(sourceName, "sourceName"))
+					|| !isAlreadyPresent(Check.notNull(targetName, "targetName"))) {
+				return false;
+			}
+			try {
+				return addOptionalDependencyOfPresentCommands(sourceName, targetName);
+			} catch (CycleFoundException e) {
+				return false;
+			}
+		}
+
+		/**
+		 * Add an optional dependency from {@code source} to {@code target} IFF <li>the given edge is not already a
+		 * member of the graph <li>there is not already an edge from {@code source} to {@code target} in the graph <li>
+		 * the edge does not induce a cycle in the graph.
+		 * 
+		 * @param source
+		 *            source of the newly created edge
+		 * @param target
+		 *            target of the newly created edge
+		 * @return {@code true} if the edge was added to the graph.
+		 */
+		public boolean addOptionalDependency(CommandClass source, CommandClass target) {
+			if (!isAlreadyPresent(Check.notNull(source, "source"))
+					|| !isAlreadyPresent(Check.notNull(target, "target"))) {
+				return false;
+			}
+			try {
+				return addOptionalDependencyOfPresentCommands(source, target);
+			} catch (CycleFoundException e) {
+				return false;
+			}
+		}
+
+		private boolean addOptionalDependencyOfPresentCommands(String sourceName, String targetName)
+				throws CycleFoundException {
+			return addOptionalDependencyOfPresentCommands(namesToCommandClasses.get(sourceName), namesToCommandClasses
+					.get(targetName));
+		}
+
+		private boolean addOptionalDependencyOfPresentCommands(CommandClass source, CommandClass target)
+				throws CycleFoundException {
+			Set<String> targetsOfCurrentCommand = namesToOptionalDependencies.get(source.getName()).beforeDependencies;
+			targetsOfCurrentCommand.add(target.getName());
+			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL));
+		}
+
 		public CommandGraphBuilder addCommandWithDependencies(CommandClass commandClass,
 				Dependencies mandatoryDependencies, Dependencies optionalDependencies) {
 			Check.notNull(commandClass, "commandClass");

@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
-import cc.commandmanager.core.CommandGraph.Dependencies;
 
 public class CommandGraphBuilderTest {
 
@@ -26,21 +25,42 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
-	public void testAddCommandReturnsFalse() {
-		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
-		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isFalse();
-		assertThat(builder.addCommand(new CommandClass("A", "otherClassName.A"))).isFalse();
-		assertThat(builder.addCommand(new CommandClass("B", "className.A"))).isTrue();
-	}
-
-	@Test
 	public void testAddMandatoryDependency() {
 		assertThat(builder.addCommand(new CommandClass("Source", "className.Source"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("Target", "className.Target"))).isTrue();
 		assertThat(builder.addMandatoryDependency("Source", "Target")).isTrue();
 
-		assertThat(builder.build().getDependencies("Source")).containsOnly(
+		CommandGraph graph = builder.build();
+		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
+		assertThat(graph.getMandatoryDependencies("Source")).containsOnly(
 				new CommandClass("Target", "className.Target"));
+		assertThat(graph.getOptionalDependencies("Source")).isEmpty();
+
+		// TODO move this section to a testGetDependencies in CommandGraphTest
+		assertThat(builder.addCommand(new CommandClass("AnotherSource", "className.AnotherSource"))).isTrue();
+		assertThat(builder.addMandatoryDependency("AnotherSource", "Source")).isTrue();
+		assertThat(builder.build().getDependencies("Source")).excludes("AnotherSource");
+	}
+
+	@Test
+	public void testAddOptionalDependency() {
+		assertThat(builder.addCommand(new CommandClass("Source", "className.Source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("Target", "className.Target"))).isTrue();
+		assertThat(builder.addOptionalDependency("Source", "Target")).isTrue();
+
+		CommandGraph graph = builder.build();
+		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
+		assertThat(graph.getMandatoryDependencies("Source")).isEmpty();
+		assertThat(graph.getOptionalDependencies("Source"))
+				.containsOnly(new CommandClass("Target", "className.Target"));
+	}
+
+	@Test
+	public void testAddCommandReturnsFalse() {
+		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isFalse();
+		assertThat(builder.addCommand(new CommandClass("A", "otherClassName.A"))).isFalse();
+		assertThat(builder.addCommand(new CommandClass("B", "className.A"))).isTrue();
 	}
 
 	@Test
