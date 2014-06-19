@@ -36,7 +36,6 @@ public class CommandGraphBuilderTest {
 				new CommandClass("Target", "className.Target"));
 		assertThat(graph.getOptionalDependencies("Source")).isEmpty();
 
-		// TODO move this section to a testGetDependencies in CommandGraphTest
 		assertThat(builder.addCommand(new CommandClass("AnotherSource", "className.AnotherSource"))).isTrue();
 		assertThat(builder.addMandatoryDependency("AnotherSource", "Source")).isTrue();
 		assertThat(builder.build().getDependencies("Source")).excludes("AnotherSource");
