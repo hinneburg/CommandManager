@@ -174,8 +174,8 @@ public class CommandGraph {
 
 		private boolean addMandatoryDependencyOfPresentCommands(CommandClass source, CommandClass target)
 				throws CycleFoundException {
-			Set<String> targets = namesToMandatoryDependencies.get(source.getName()).beforeDependencies;
-			targets.add(target.getName());
+			Set<String> targetsOfCurrentCommand = namesToMandatoryDependencies.get(source.getName()).beforeDependencies;
+			targetsOfCurrentCommand.add(target.getName());
 			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
 		}
 
