@@ -120,8 +120,10 @@ public class CommandGraph {
 		// ***********************
 
 		/**
-		 * Add the given edge IFF <li>the given edge is not already a member of the graph <li>there is not already an
-		 * edge from {@code source} to {@code target} in the graph <li>the edge does not induce a cycle in the graph.
+		 * Add a mandatory dependency from {@code sourceName} to {@code targetName} IFF <li>the given edge is not
+		 * already a member of the graph <li>there is not already an edge from {@code sourceName} to {@code targetName}
+		 * in the graph <li>
+		 * the edge does not induce a cycle in the graph.
 		 * 
 		 * @param sourceName
 		 *            source of the newly created edge
@@ -142,8 +144,9 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add the given edge IFF <li>the given edge is not already a member of the graph <li>there is not already an
-		 * edge from {@code source} to {@code target} in the graph <li>the edge does not induce a cycle in the graph.
+		 * Add a mandatory dependency from {@code source} to {@code target} IFF <li>the given edge is not already a
+		 * member of the graph <li>there is not already an edge from {@code source} to {@code target} in the graph <li>
+		 * the edge does not induce a cycle in the graph.
 		 * 
 		 * @param source
 		 *            source of the newly created edge
