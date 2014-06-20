@@ -180,7 +180,12 @@ public class CommandGraph {
 				throws CycleFoundException {
 			Set<String> targetsOfCurrentCommand = namesToMandatoryDependencies.get(source.getName()).beforeDependencies;
 			targetsOfCurrentCommand.add(target.getName());
-			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
+			if (graph.containsEdge(source, target) && !graph.getEdge(source, target).isMandatory()) {
+				graph.getEdge(source, target).setMandatory(true);
+				return true;
+			} else {
+				return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
+			}
 		}
 
 		/**
@@ -263,6 +268,10 @@ public class CommandGraph {
 
 		public boolean isMandatory() {
 			return mandatory;
+		}
+
+		public void setMandatory(boolean mandatory) {
+			this.mandatory = mandatory;
 		}
 
 		@Override

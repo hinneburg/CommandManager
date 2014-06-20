@@ -128,4 +128,41 @@ public class CommandGraphBuilderTest {
 		assertThat(builder.addMandatoryDependency("source", "target")).isFalse();
 	}
 
+	@Test
+	public void testAddMandatoryDependency_overwritesOptionalDependency() {
+		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
+		assertThat(builder.addOptionalDependency("source", "target")).isTrue();
+
+		CommandGraph optional = builder.build();
+		assertThat(optional.getMandatoryDependencies("source")).isEmpty();
+		assertThat(optional.getOptionalDependencies("source")).containsOnly(
+				new CommandClass("target", "className.target"));
+
+		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
+		CommandGraph mandatoryInsteadOfOptional = builder.build();
+		assertThat(mandatoryInsteadOfOptional.getMandatoryDependencies("source")).containsOnly(
+				new CommandClass("target", "className.target"));
+		assertThat(mandatoryInsteadOfOptional.getOptionalDependencies("source")).isEmpty();
+	}
+
+	@Test
+	public void testAddOptionalDependency_doesNotOverwriteMandatoryDependency() {
+		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
+
+		CommandGraph mandatory = builder.build();
+		assertThat(mandatory.getMandatoryDependencies("source")).containsOnly(
+				new CommandClass("target", "className.target"));
+		assertThat(mandatory.getOptionalDependencies("source")).isEmpty();
+
+		assertThat(builder.addOptionalDependency("source", "target")).isFalse();
+		CommandGraph stillOnlyMandatory = builder.build();
+		assertThat(stillOnlyMandatory.getMandatoryDependencies("source")).containsOnly(
+				new CommandClass("target", "className.target"));
+		assertThat(stillOnlyMandatory.getOptionalDependencies("source")).isEmpty();
+
+	}
+
 }
