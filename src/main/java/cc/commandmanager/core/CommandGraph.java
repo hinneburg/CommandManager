@@ -52,7 +52,7 @@ public class CommandGraph {
 	/**
 	 * 
 	 * @param commandName
-	 * @return A {@code CommandClass} object, related to the given {@code commandName}.
+	 * @return A {@code CommandClass} object having the given {@code commandName}.
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
