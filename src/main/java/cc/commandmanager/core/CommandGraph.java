@@ -168,8 +168,7 @@ public class CommandGraph {
 			}
 
 			namesToCommandClasses.put(commandClass.getName(), commandClass);
-			graph.addVertex(commandClass);
-			return true;
+			return graph.addVertex(commandClass);
 		}
 
 		private boolean isAlreadyPresent(String commandName) {
@@ -179,10 +178,6 @@ public class CommandGraph {
 		private boolean isAlreadyPresent(CommandClass commandClass) {
 			return isAlreadyPresent(commandClass.getName());
 		}
-
-		// ***********************
-		// ADD DEPENDENCIES START
-		// ***********************
 
 		/**
 		 * Add a mandatory dependency from {@code sourceName} to {@code targetName} IFF <li>both, source and target have
@@ -319,10 +314,6 @@ public class CommandGraph {
 			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL));
 		}
 
-		// ***********************
-		// ADD DEPENDENCIES END
-		// ***********************
-
 	}
 
 	private static class DependencyEdge extends DefaultEdge {
@@ -347,7 +338,7 @@ public class CommandGraph {
 
 		@Override
 		public String toString() {
-			String mandatoryOrOptional = mandatory ? "Mandatory" : "Optional";
+			String mandatoryOrOptional = isMandatory() ? "Mandatory" : "Optional";
 			return mandatoryOrOptional + " dependency:[" + super.getSource() + "] -> [" + super.getTarget() + "]";
 		}
 
