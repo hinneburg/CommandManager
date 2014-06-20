@@ -1,6 +1,5 @@
 package cc.commandmanager.core;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,8 +83,6 @@ public class CommandGraph {
 
 	public static class CommandGraphBuilder {
 		private Map<String, CommandClass> namesToCommandClasses = Maps.newHashMap();
-		private Map<String, Dependencies> namesToMandatoryDependencies = Maps.newHashMap();
-		private Map<String, Dependencies> namesToOptionalDependencies = Maps.newHashMap();
 		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
 
@@ -103,10 +100,7 @@ public class CommandGraph {
 				return false;
 			}
 
-			String command = commandClass.getName();
-			namesToCommandClasses.put(command, commandClass);
-			namesToMandatoryDependencies.put(command, new Dependencies());
-			namesToOptionalDependencies.put(command, new Dependencies());
+			namesToCommandClasses.put(commandClass.getName(), commandClass);
 			graph.addVertex(commandClass);
 			return true;
 		}
@@ -178,8 +172,6 @@ public class CommandGraph {
 
 		private boolean addMandatoryDependencyOfPresentCommands(CommandClass source, CommandClass target)
 				throws CycleFoundException {
-			Set<String> targetsOfCurrentCommand = namesToMandatoryDependencies.get(source.getName()).beforeDependencies;
-			targetsOfCurrentCommand.add(target.getName());
 			if (graph.containsEdge(source, target) && !graph.getEdge(source, target).isMandatory()) {
 				graph.getEdge(source, target).setMandatory(true);
 				return true;
@@ -243,8 +235,6 @@ public class CommandGraph {
 
 		private boolean addOptionalDependencyOfPresentCommands(CommandClass source, CommandClass target)
 				throws CycleFoundException {
-			Set<String> targetsOfCurrentCommand = namesToOptionalDependencies.get(source.getName()).beforeDependencies;
-			targetsOfCurrentCommand.add(target.getName());
 			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL));
 		}
 
@@ -280,24 +270,6 @@ public class CommandGraph {
 			return mandatoryOrOptional + " dependency:[" + super.getSource() + "] -> [" + super.getTarget() + "]";
 		}
 
-	}
-
-	/**
-	 * Before dependencies represent commands on which the given command depends on. After dependencies represent
-	 * commands that are depending on a given command.
-	 */
-	public static class Dependencies {
-		public Set<String> beforeDependencies;
-		public Set<String> afterDependencies;
-
-		public Dependencies() {
-			this(new HashSet<String>(), new HashSet<String>());
-		}
-
-		public Dependencies(Set<String> beforeDependencies, Set<String> afterDependencies) {
-			this.beforeDependencies = beforeDependencies;
-			this.afterDependencies = afterDependencies;
-		}
 	}
 
 }
