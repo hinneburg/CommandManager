@@ -27,9 +27,10 @@ public class CommandGraph {
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
 
+	@SuppressWarnings("unchecked")
 	private CommandGraph(CommandGraphBuilder builder) {
-		commandGraph = builder.graph;
-		vertices = builder.namesToCommandClasses;
+		commandGraph = (DirectedAcyclicGraph<CommandClass, DependencyEdge>) builder.graph.clone();
+		vertices = Maps.newHashMap(builder.namesToCommandClasses);
 	}
 
 	/**

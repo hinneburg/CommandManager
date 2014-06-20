@@ -17,6 +17,18 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
+	public void testCommandGraphIsImmutable() {
+		assertThat(builder.addCommand("A", "className.A")).isTrue();
+		CommandGraph graph = builder.build();
+
+		assertThat(builder.addCommand("B", "className.B")).isTrue();
+		assertThat(builder.addMandatoryDependency("A", "B"));
+
+		assertThat(graph.hasCommand("B")).isFalse();
+		assertThat(graph.getDependencies("A")).isEmpty();
+	}
+
+	@Test
 	public void testAddCommand_CommandClass() {
 		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
 		CommandGraph graph = builder.build();
