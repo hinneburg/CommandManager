@@ -162,8 +162,7 @@ public class CommandGraph {
 		 * @param commandClass
 		 *            to add
 		 * @return {@code true} if the command could be added, {@code false} if the command could not be added because
-		 *         another command previously was added whose name equals the name of the given {@code commandClass} or
-		 *         a cycle would be induced.
+		 *         another command previously was added whose name equals the name of the given {@code commandClass}.
 		 */
 		public boolean addCommand(CommandClass commandClass) {
 			Check.notNull(commandClass, "commandClass");
