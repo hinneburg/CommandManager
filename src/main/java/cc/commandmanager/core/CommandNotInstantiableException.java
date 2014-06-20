@@ -4,9 +4,8 @@ public class CommandNotInstantiableException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public CommandNotInstantiableException(Class<?> commandClassName, Throwable throwable) {
-		super("Class " + commandClassName.getCanonicalName() + " could not be instantiated: " + throwable.getMessage(),
-				throwable);
+	public CommandNotInstantiableException(String commandClassName, Throwable throwable) {
+		super("Class " + commandClassName + " could not be instantiated: " + throwable.getMessage(), throwable);
 	}
 
 }

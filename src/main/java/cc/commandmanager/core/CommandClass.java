@@ -45,6 +45,23 @@ public class CommandClass {
 		return className;
 	}
 
+	public Command newInstance() {
+		try {
+			return getClassForName(className).newInstance();
+		} catch (IllegalAccessException exception) {
+			throw new CommandNotInstantiableException(className, exception);
+		} catch (InstantiationException exception) {
+			throw new CommandNotInstantiableException(className, exception);
+		} catch (ClassNotFoundException exception) {
+			throw new CommandNotInstantiableException(className, exception);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Class<? extends Command> getClassForName(String commandClassName) throws ClassNotFoundException {
+		return (Class<? extends Command>) Class.forName(commandClassName);
+	}
+
 	/**
 	 * Checks whether this command has the same name as the other command.
 	 * 
