@@ -321,7 +321,7 @@ public class CommandGraph {
 	private static class DependencyEdge extends DefaultEdge {
 
 		public static final boolean MANDATORY = true;
-		public static final boolean OPTIONAL = false;
+		public static final boolean OPTIONAL = !MANDATORY;
 		private static final long serialVersionUID = 1357561909643656035L;
 
 		private boolean mandatory;
