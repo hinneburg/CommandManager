@@ -18,27 +18,27 @@ import cc.commandmanager.catalog.Catalog;
  * This class executes specified initial commands needed for further tasks. Arguments will be parsed from command line
  * and may then be accessed.
  */
-public class CommandManagement {
+public class CommandManager {
 
 	private final Context context;
 	private final Catalog catalog;
 	private DependencyCollector dependencyCollector;
-	private static final Logger logger = Logger.getLogger(CommandManagement.class);
+	private static final Logger logger = Logger.getLogger(CommandManager.class);
 
 	/**
-	 * Create a new {@link CommandManagement}. Use the catalog, parsed from the XML file at the given catalog location.
+	 * Create a new {@link CommandManager}. Use the catalog, parsed from the XML file at the given catalog location.
 	 * The catalog specifies which commands which will be executed and in which order this will happen. A new
 	 * {@link Context} will be used to execute the commands with.
 	 * 
 	 * @param catalogLocation
 	 *            see {@link Catalog#fromXmlFile(String)} for specifications on the catalog file.
 	 */
-	public CommandManagement(String catalogLocation) {
+	public CommandManager(String catalogLocation) {
 		this(catalogLocation, new Context());
 	}
 
 	/**
-	 * Create a new {@link CommandManagement}. Use the catalog, parsed from the XML file at the given catalog location.
+	 * Create a new {@link CommandManager}. Use the catalog, parsed from the XML file at the given catalog location.
 	 * The catalog specifies which commands which will be executed and in which order this will happen.
 	 * 
 	 * @param catalogLocation
@@ -46,29 +46,29 @@ public class CommandManagement {
 	 * @param context
 	 *            information in the context will be used to execute the commands with.
 	 */
-	public CommandManagement(String catalogLocation, Context context) {
+	public CommandManager(String catalogLocation, Context context) {
 		this(Catalog.fromXmlFile(catalogLocation), context);
 	}
 
 	/**
-	 * Create a new {@link CommandManagement}. A new {@link Context} will be used to execute the commands with.
+	 * Create a new {@link CommandManager}. A new {@link Context} will be used to execute the commands with.
 	 * 
 	 * @param catalog
 	 *            specifies which commands which will be executed and in which order this will happen.
 	 */
-	public CommandManagement(Catalog catalog) {
+	public CommandManager(Catalog catalog) {
 		this(catalog, new Context());
 	}
 
 	/**
-	 * Create a new {@link CommandManagement}.
+	 * Create a new {@link CommandManager}.
 	 * 
 	 * @param catalog
 	 *            specifies which commands which will be executed and in which order this will happen.
 	 * @param context
 	 *            information in the context will be used to execute the commands with.
 	 */
-	public CommandManagement(Catalog catalog, Context context) {
+	public CommandManager(Catalog catalog, Context context) {
 		this.context = context;
 		this.catalog = catalog;
 	}

@@ -12,9 +12,9 @@ import cc.commandmanager.catalog.Catalog;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
-public class CommandManagementTest {
+public class CommandManagerTest {
 
-	private CommandManagement commandManagement;
+	private CommandManager commandManagement;
 
 	@Before
 	public void setUpCommandManagement() {
@@ -23,7 +23,7 @@ public class CommandManagementTest {
 		commands.put("Warning", WarningCommand.class);
 		commands.put("Failure", FailingCommand.class);
 		Catalog catalog = Catalog.fromMap(commands);
-		commandManagement = new CommandManagement(catalog);
+		commandManagement = new CommandManager(catalog);
 	}
 
 	@Test

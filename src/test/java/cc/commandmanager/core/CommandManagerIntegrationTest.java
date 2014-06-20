@@ -8,13 +8,13 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class CommandManagementIntegrationTest {
+public class CommandManagerIntegrationTest {
 
 	public static final String EXECUTED_COMMANDS = "executedCommands";
 
 	private Context context = new Context();
-	private CommandManagement commandManagement = new CommandManagement(CommandManagementIntegrationTest.class
-			.getClassLoader().getResource("CommandManagementIntegrationTest-catalog.xml").getFile(), context);
+	private CommandManager commandManagement = new CommandManager(CommandManagerIntegrationTest.class.getClassLoader()
+			.getResource("CommandManagerIntegrationTest-catalog.xml").getFile(), context);
 
 	@Test
 	public void testExecuteAllCommands() {

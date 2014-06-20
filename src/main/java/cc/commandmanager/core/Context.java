@@ -9,7 +9,7 @@ import net.sf.qualitycheck.Check;
 import com.google.common.collect.Maps;
 
 /**
- * Execution context of the {@linkplain CommandManagement}. {@linkplain Command}s can use this context to store or read
+ * Execution context of the {@linkplain CommandManager}. {@linkplain Command}s can use this context to store or read
  * values during their execution. The context will be passed along the execution graph. Values bound to keys of the
  * context must be unique, i.e. a {@linkplain Command} cannot accidently overwrite an existing key value binding.
  */
