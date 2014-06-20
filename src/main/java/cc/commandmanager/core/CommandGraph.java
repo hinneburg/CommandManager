@@ -17,10 +17,16 @@ import com.google.common.collect.Maps;
  * A graph to represent an amount of {@link Command}s and the dependency relationship between them. A
  * {@linkplain CommandGraph} contains a set V of {@link CommandClass} vertices and a set E of edges which represent
  * dependencies. Each dependency can either be mandatory or optional. Each edge e=(v1,v2) in E connects vertex v1 to
- * vertex v2. For more information about graphs and their related definitions see
- * http://mathworld.wolfram.com/Graph.html. Furthermor instances of this graph are <li>
- * directed <li>
- * acyclic <li>immutable and <li>topologically sorted.
+ * vertex v2. For more information about graphs and their related definitions see <a
+ * href="http://mathworld.wolfram.com/Graph.html">Wolfram Mathworld</a>.
+ * <p>
+ * Furthermore instances of this graph are
+ * <li>
+ * directed
+ * <li>
+ * acyclic
+ * <li>immutable and
+ * <li>topologically sorted.
  */
 public class CommandGraph {
 
@@ -130,6 +136,7 @@ public class CommandGraph {
 	 * an immutable {@link CommandGraph} from scratch.
 	 */
 	public static class CommandGraphBuilder {
+
 		private Map<String, CommandClass> namesToCommandClasses = Maps.newHashMap();
 		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
