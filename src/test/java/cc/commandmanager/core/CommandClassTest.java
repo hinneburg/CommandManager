@@ -32,4 +32,10 @@ public class CommandClassTest {
 		assertThat(command1.hasSameNameAs(new CommandClass("Command1", ""))).isTrue();
 	}
 
+	@Test
+	public void testEqualObjectsHaveEqualHashcodes() {
+		assertThat(command1.hashCode()).isEqualTo(
+				(new CommandClass("Command1", "cc.commandmanager.core.Command1")).hashCode());
+	}
+
 }
