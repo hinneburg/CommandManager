@@ -13,6 +13,15 @@ import org.jgrapht.graph.DefaultEdge;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+/**
+ * A graph to represent an amount of {@link Command}s and the dependency relationship between them. A
+ * {@linkplain CommandGraph} contains a set V of {@link CommandClass} vertices and a set E of edges which represent
+ * dependencies. Each dependency can either be mandatory or optional. Each edge e=(v1,v2) in E connects vertex v1 to
+ * vertex v2. For more information about graphs and their related definitions see
+ * http://mathworld.wolfram.com/Graph.html. Furthermor instances of this graph are <li>
+ * directed <li>
+ * acyclic <li>immutable and <li>topologically sorted.
+ */
 public class CommandGraph {
 
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
@@ -33,6 +42,13 @@ public class CommandGraph {
 		return vertices.containsKey(commandName);
 	}
 
+	/**
+	 * 
+	 * @param commandName
+	 * @return A {@code CommandClass} object, related to the given {@code commandName}.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found in this graph for the given {@code commandName}.
+	 */
 	public CommandClass getCommandClass(String commandName) {
 		Check.notEmpty(commandName, "commandName");
 		if (!hasCommand(commandName)) {
@@ -41,6 +57,16 @@ public class CommandGraph {
 		return vertices.get(commandName);
 	}
 
+	/**
+	 * For a given {@code commandName} find all commands on which this command is dependent on. Mandatory dependencies
+	 * will be returned as well as optional dependencies.
+	 * 
+	 * @param commandName
+	 * @return Commands on which the given command is dependent on. Commands are not explicitly ordered by their
+	 *         dependency type.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found in this graph for the given {@code commandName}.
+	 */
 	public List<CommandClass> getDependencies(String commandName) {
 		Check.notEmpty(commandName, "commandName");
 		if (!hasCommand(commandName)) {
@@ -52,6 +78,14 @@ public class CommandGraph {
 		return targets;
 	}
 
+	/**
+	 * For a given {@code commandName} find all commands on which this command is mandatorily dependent on.
+	 * 
+	 * @param commandName
+	 * @return Commands on which the given command is mandatorily dependent on.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found in this graph for the given {@code commandName}.
+	 */
 	public List<CommandClass> getMandatoryDependencies(String commandName) {
 		Check.notEmpty(commandName, "commandName");
 		if (!hasCommand(commandName)) {
@@ -61,6 +95,14 @@ public class CommandGraph {
 		return mandatoryTargets;
 	}
 
+	/**
+	 * For a given {@code commandName} find all commands on which this command is optionally dependent on.
+	 * 
+	 * @param commandName
+	 * @return Commands on which the given command is optionally dependent on.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found in this graph for the given {@code commandName}.
+	 */
 	public List<CommandClass> getOptionalDependencies(String commandName) {
 		Check.notEmpty(commandName, "commandName");
 		if (!hasCommand(commandName)) {
@@ -81,19 +123,44 @@ public class CommandGraph {
 		return targets;
 	}
 
+	/**
+	 * A mutable representation of {@code Command}s, represented by related {@code CommandClass}es, and the relationship
+	 * between them, represented by mandatory and optional dependencies, respectively. This class is designed to build
+	 * an immutable {@link CommandGraph} from scratch.
+	 */
 	public static class CommandGraphBuilder {
 		private Map<String, CommandClass> namesToCommandClasses = Maps.newHashMap();
 		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
 
+		/**
+		 * @return A new and immutable {@link CommandGraph} containing all commands and dependencies just added.
+		 */
 		public CommandGraph build() {
 			return new CommandGraph(this);
 		}
 
+		/**
+		 * Add a command with the given {@code name} and the given {@code className} to this builder.
+		 * 
+		 * @param name
+		 *            must not be contained in this builder, yet.
+		 * @param className
+		 * @return {@code true} if the command could be added, {@code false} if the command could not be added because
+		 *         another command previously was added whos name equals the given {@code name}.
+		 */
 		public boolean addCommand(String name, String className) {
 			return addCommand(new CommandClass(Check.notNull(name, "name"), Check.notNull(className, "className")));
 		}
 
+		/**
+		 * Add a command with the given {@code name} and the given {@code className} to this builder.
+		 * 
+		 * @param commandClass
+		 *            name of {@code commandClass} must not be contained in this builder, yet.
+		 * @return {@code true} if the command could be added, {@code false} if the command could not be added because
+		 *         another command previously was added whos name equals the name of the given {@code commandClass}.
+		 */
 		public boolean addCommand(CommandClass commandClass) {
 			Check.notNull(commandClass, "commandClass");
 			if (isAlreadyPresent(commandClass)) {
@@ -118,10 +185,13 @@ public class CommandGraph {
 		// ***********************
 
 		/**
-		 * Add a mandatory dependency from {@code sourceName} to {@code targetName} IFF <li>the given edge is not
-		 * already a member of the graph <li>there is not already an edge from {@code sourceName} to {@code targetName}
-		 * in the graph <li>
-		 * the edge does not induce a cycle in the graph.
+		 * Add a mandatory dependency from {@code sourceName} to {@code targetName} IFF <li>both, source and target have
+		 * been added already <li>the given edge is not already a member of the graph <li>there has not been added a
+		 * mandatory edge from {@code sourceName} to {@code targetName}, yet<li>
+		 * the edge does not induce a circular dependency.
+		 * <p>
+		 * If an optional dependency between source and target already exists, the dependency state will be changed from
+		 * optional to mandatory.
 		 * 
 		 * @param sourceName
 		 *            source of the newly created edge
@@ -142,9 +212,13 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add a mandatory dependency from {@code source} to {@code target} IFF <li>the given edge is not already a
-		 * member of the graph <li>there is not already an edge from {@code source} to {@code target} in the graph <li>
-		 * the edge does not induce a cycle in the graph.
+		 * Add a mandatory dependency from {@code source} to {@code target} IFF <li>both, source and target have been
+		 * added already <li>the given edge is not already a member of the graph <li>there has not been added a
+		 * mandatory edge from {@code source} to {@code target}, yet<li>
+		 * the edge does not induce a circular dependency.
+		 * <p>
+		 * If an optional dependency between source and target already exists, the dependency state will be changed from
+		 * optional to mandatory.
 		 * 
 		 * @param source
 		 *            source of the newly created edge
@@ -181,10 +255,13 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add an optional dependency from {@code sourceName} to {@code targetName} IFF <li>the given edge is not
-		 * already a member of the graph <li>there is not already an edge from {@code sourceName} to {@code targetName}
-		 * in the graph <li>
-		 * the edge does not induce a cycle in the graph.
+		 * Add an optional dependency from {@code sourceName} to {@code targetName} IFF <li>both, source and target have
+		 * been added already <li>the given edge is not already a member of the graph <li>there has neither been added a
+		 * mandatory nor an optional edge from {@code sourceName} to {@code targetName}, yet<li>
+		 * the edge does not induce a circular dependency.
+		 * <p>
+		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
+		 * but remains mandatory.
 		 * 
 		 * @param sourceName
 		 *            source of the newly created edge
@@ -205,9 +282,13 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add an optional dependency from {@code source} to {@code target} IFF <li>the given edge is not already a
-		 * member of the graph <li>there is not already an edge from {@code source} to {@code target} in the graph <li>
-		 * the edge does not induce a cycle in the graph.
+		 * Add an optional dependency from {@code source} to {@code target} IFF <li>both, source and target have been
+		 * added already <li>the given edge is not already a member of the graph <li>there has neither been added a
+		 * mandatory nor an optional edge from {@code source} to {@code target}, yet<li>
+		 * the edge does not induce a circular dependency.
+		 * <p>
+		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
+		 * but remains mandatory.
 		 * 
 		 * @param source
 		 *            source of the newly created edge
