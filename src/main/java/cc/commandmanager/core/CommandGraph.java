@@ -113,11 +113,11 @@ public class CommandGraph {
 	}
 
 	private ImmutableList<CommandClass> getDependenciesWithRequirementState(String commandName,
-			boolean mandatoryOrOptional) {
+			boolean mandatoryRequired) {
 		ImmutableList.Builder<CommandClass> result = ImmutableList.builder();
 		Set<DependencyEdge> dependencies = commandGraph.outgoingEdgesOf(vertices.get(commandName));
 		for (DependencyEdge dependency : dependencies) {
-			if (dependency.isMandatory() == mandatoryOrOptional) {
+			if (dependency.isMandatory() == mandatoryRequired) {
 				result.add(commandGraph.getEdgeTarget(dependency));
 			}
 		}
