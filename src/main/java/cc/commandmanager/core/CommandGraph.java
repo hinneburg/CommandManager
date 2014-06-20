@@ -45,7 +45,7 @@ public class CommandGraph {
 	 * @return {@code true} if this command graph contains a vertex with the given command name, {@code false}
 	 *         otherwise.
 	 */
-	public boolean hasCommand(String commandName) {
+	public boolean containsCommand(String commandName) {
 		Check.notNull(commandName, "commandName");
 		return vertices.containsKey(commandName);
 	}
@@ -59,7 +59,7 @@ public class CommandGraph {
 	 */
 	public CommandClass getCommandClass(String commandName) {
 		Check.notNull(commandName, "commandName");
-		if (!hasCommand(commandName)) {
+		if (!containsCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
 		return vertices.get(commandName);
@@ -90,7 +90,7 @@ public class CommandGraph {
 	 */
 	public List<CommandClass> getMandatoryDependencies(String commandName) {
 		Check.notNull(commandName, "commandName");
-		if (!hasCommand(commandName)) {
+		if (!containsCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
 		return getDependenciesWithRequirementState(commandName, DependencyEdge.MANDATORY);
@@ -106,7 +106,7 @@ public class CommandGraph {
 	 */
 	public List<CommandClass> getOptionalDependencies(String commandName) {
 		Check.notNull(commandName, "commandName");
-		if (!hasCommand(commandName)) {
+		if (!containsCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
 		return getDependenciesWithRequirementState(commandName, DependencyEdge.OPTIONAL);
@@ -125,9 +125,8 @@ public class CommandGraph {
 	}
 
 	/**
-	 * A mutable representation of {@code Command}s, represented by related {@code CommandClass}es, and the relationship
-	 * between them, represented by mandatory and optional dependencies, respectively. This class is designed to build
-	 * an immutable {@link CommandGraph} from scratch.
+	 * A builder for a {@linkplain CommandGraph}. It can be used to add vertices and edges (mandatory or optional
+	 * dependencies). The built graph is going to be immutable.
 	 */
 	public static class CommandGraphBuilder {
 
@@ -136,7 +135,8 @@ public class CommandGraph {
 				DependencyEdge.class);
 
 		/**
-		 * @return A new and immutable {@link CommandGraph} containing all commands and dependencies just added.
+		 * @return A new and immutable {@linkplain CommandGraph} containing all commands and dependencies that have been
+		 *         added to the builder.
 		 */
 		public CommandGraph build() {
 			return new CommandGraph(this);
@@ -156,16 +156,18 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add a command with the given {@code name} and the given {@code className} to this builder.
+		 * Add a command with the given {@code name} and the given {@code className} to this builder. The name of
+		 * {@code commandClass} must not be contained in this builder, yet.
 		 * 
 		 * @param commandClass
-		 *            name of {@code commandClass} must not be contained in this builder, yet.
+		 *            to add
 		 * @return {@code true} if the command could be added, {@code false} if the command could not be added because
-		 *         another command previously was added whos name equals the name of the given {@code commandClass}.
+		 *         another command previously was added whose name equals the name of the given {@code commandClass} or
+		 *         a cycle would be induced.
 		 */
 		public boolean addCommand(CommandClass commandClass) {
 			Check.notNull(commandClass, "commandClass");
-			if (isAlreadyPresent(commandClass)) {
+			if (containsCommand(commandClass)) {
 				return false;
 			}
 
@@ -173,12 +175,12 @@ public class CommandGraph {
 			return graph.addVertex(commandClass);
 		}
 
-		private boolean isAlreadyPresent(String commandName) {
+		private boolean containsCommand(String commandName) {
 			return namesToCommandClasses.containsKey(commandName);
 		}
 
-		private boolean isAlreadyPresent(CommandClass commandClass) {
-			return isAlreadyPresent(commandClass.getName());
+		private boolean containsCommand(CommandClass commandClass) {
+			return containsCommand(commandClass.getName());
 		}
 
 		/**
@@ -187,6 +189,7 @@ public class CommandGraph {
 		 * mandatory edge from {@code sourceName} to {@code targetName}, yet<li>
 		 * the edge does not induce a circular dependency.
 		 * <p>
+		 * <br>
 		 * If an optional dependency between source and target already exists, the dependency state will be changed from
 		 * optional to mandatory.
 		 * 
@@ -197,8 +200,8 @@ public class CommandGraph {
 		 * @return {@code true} if the edge was added to the graph.
 		 */
 		public boolean addMandatoryDependency(String sourceName, String targetName) {
-			if (!isAlreadyPresent(Check.notNull(sourceName, "sourceName"))
-					|| !isAlreadyPresent(Check.notNull(targetName, "targetName"))) {
+			if (!containsCommand(Check.notNull(sourceName, "sourceName"))
+					|| !containsCommand(Check.notNull(targetName, "targetName"))) {
 				return false;
 			}
 			try {
@@ -224,8 +227,8 @@ public class CommandGraph {
 		 * @return {@code true} if the edge was added to the graph.
 		 */
 		public boolean addMandatoryDependency(CommandClass source, CommandClass target) {
-			if (!isAlreadyPresent(Check.notNull(source, "source"))
-					|| !isAlreadyPresent(Check.notNull(target, "target"))) {
+			if (!containsCommand(Check.notNull(source, "source"))
+					|| !containsCommand(Check.notNull(target, "target"))) {
 				return false;
 			}
 			try {
@@ -257,6 +260,7 @@ public class CommandGraph {
 		 * mandatory nor an optional edge from {@code sourceName} to {@code targetName}, yet<li>
 		 * the edge does not induce a circular dependency.
 		 * <p>
+		 * <br>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
 		 * but remains mandatory.
 		 * 
@@ -267,8 +271,8 @@ public class CommandGraph {
 		 * @return {@code true} if the edge was added to the graph.
 		 */
 		public boolean addOptionalDependency(String sourceName, String targetName) {
-			if (!isAlreadyPresent(Check.notNull(sourceName, "sourceName"))
-					|| !isAlreadyPresent(Check.notNull(targetName, "targetName"))) {
+			if (!containsCommand(Check.notNull(sourceName, "sourceName"))
+					|| !containsCommand(Check.notNull(targetName, "targetName"))) {
 				return false;
 			}
 			try {
@@ -294,8 +298,8 @@ public class CommandGraph {
 		 * @return {@code true} if the edge was added to the graph.
 		 */
 		public boolean addOptionalDependency(CommandClass source, CommandClass target) {
-			if (!isAlreadyPresent(Check.notNull(source, "source"))
-					|| !isAlreadyPresent(Check.notNull(target, "target"))) {
+			if (!containsCommand(Check.notNull(source, "source"))
+					|| !containsCommand(Check.notNull(target, "target"))) {
 				return false;
 			}
 			try {

@@ -24,7 +24,7 @@ public class CommandGraphBuilderTest {
 		assertThat(builder.addCommand("B", "className.B")).isTrue();
 		assertThat(builder.addMandatoryDependency("A", "B"));
 
-		assertThat(graph.hasCommand("B")).isFalse();
+		assertThat(graph.containsCommand("B")).isFalse();
 		assertThat(graph.getDependencies("A")).isEmpty();
 	}
 
@@ -32,7 +32,7 @@ public class CommandGraphBuilderTest {
 	public void testAddCommand_CommandClass() {
 		assertThat(builder.addCommand(new CommandClass("A", "className.A"))).isTrue();
 		CommandGraph graph = builder.build();
-		assertThat(graph.hasCommand("A")).isTrue();
+		assertThat(graph.containsCommand("A")).isTrue();
 		assertThat(graph.getCommandClass("A")).isEqualTo(new CommandClass("A", "className.A"));
 	}
 
@@ -40,7 +40,7 @@ public class CommandGraphBuilderTest {
 	public void testAddCommand_String() {
 		assertThat(builder.addCommand("A", "className.A")).isTrue();
 		CommandGraph graph = builder.build();
-		assertThat(graph.hasCommand("A")).isTrue();
+		assertThat(graph.containsCommand("A")).isTrue();
 		assertThat(graph.getCommandClass("A")).isEqualTo(new CommandClass("A", "className.A"));
 	}
 

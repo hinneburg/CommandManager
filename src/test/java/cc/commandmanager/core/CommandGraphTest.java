@@ -32,14 +32,14 @@ public class CommandGraphTest {
 	}
 
 	@Test
-	public void testHasCommand() {
-		assertThat(graph.hasCommand("A")).isTrue();
-		assertThat(graph.hasCommand("not there")).isFalse();
+	public void testContainsCommand() {
+		assertThat(graph.containsCommand("A")).isTrue();
+		assertThat(graph.containsCommand("not there")).isFalse();
 	}
 
 	@Test(expected = IllegalNullArgumentException.class)
-	public void testHasCommand_nullArgument() {
-		graph.hasCommand(null);
+	public void testContainsCommand_nullArgument() {
+		graph.containsCommand(null);
 	}
 
 	@Test
