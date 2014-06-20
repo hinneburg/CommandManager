@@ -10,7 +10,8 @@ import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
 import org.jgrapht.graph.DefaultEdge;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 /**
@@ -75,14 +76,8 @@ public class CommandGraph {
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
 	public List<CommandClass> getDependencies(String commandName) {
-		Check.notNull(commandName, "commandName");
-		if (!hasCommand(commandName)) {
-			throw new CommandNotFoundException(commandName);
-		}
-		List<CommandClass> targets = Lists.newArrayList();
-		targets.addAll(getMandatoryDependencies(commandName));
-		targets.addAll(getOptionalDependencies(commandName));
-		return targets;
+		return ImmutableList.copyOf(Iterables.concat(getMandatoryDependencies(commandName),
+				getOptionalDependencies(commandName)));
 	}
 
 	/**
@@ -98,8 +93,7 @@ public class CommandGraph {
 		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
-		List<CommandClass> mandatoryTargets = getDependenciesWithRequirementState(commandName, DependencyEdge.MANDATORY);
-		return mandatoryTargets;
+		return getDependenciesWithRequirementState(commandName, DependencyEdge.MANDATORY);
 	}
 
 	/**
@@ -115,19 +109,19 @@ public class CommandGraph {
 		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
-		List<CommandClass> optionalTargets = getDependenciesWithRequirementState(commandName, DependencyEdge.OPTIONAL);
-		return optionalTargets;
+		return getDependenciesWithRequirementState(commandName, DependencyEdge.OPTIONAL);
 	}
 
-	private List<CommandClass> getDependenciesWithRequirementState(String commandName, boolean mandatoryOrOptional) {
-		List<CommandClass> targets = Lists.newArrayList();
+	private ImmutableList<CommandClass> getDependenciesWithRequirementState(String commandName,
+			boolean mandatoryOrOptional) {
+		ImmutableList.Builder<CommandClass> result = ImmutableList.builder();
 		Set<DependencyEdge> dependencies = commandGraph.outgoingEdgesOf(vertices.get(commandName));
 		for (DependencyEdge dependency : dependencies) {
 			if (dependency.isMandatory() == mandatoryOrOptional) {
-				targets.add(commandGraph.getEdgeTarget(dependency));
+				result.add(commandGraph.getEdgeTarget(dependency));
 			}
 		}
-		return targets;
+		return result.build();
 	}
 
 	/**
