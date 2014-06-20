@@ -50,7 +50,7 @@ public class CommandGraph {
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
 	public CommandClass getCommandClass(String commandName) {
-		Check.notEmpty(commandName, "commandName");
+		Check.notNull(commandName, "commandName");
 		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
@@ -68,7 +68,7 @@ public class CommandGraph {
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
 	public List<CommandClass> getDependencies(String commandName) {
-		Check.notEmpty(commandName, "commandName");
+		Check.notNull(commandName, "commandName");
 		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
@@ -87,7 +87,7 @@ public class CommandGraph {
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
 	public List<CommandClass> getMandatoryDependencies(String commandName) {
-		Check.notEmpty(commandName, "commandName");
+		Check.notNull(commandName, "commandName");
 		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
@@ -104,7 +104,7 @@ public class CommandGraph {
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
 	public List<CommandClass> getOptionalDependencies(String commandName) {
-		Check.notEmpty(commandName, "commandName");
+		Check.notNull(commandName, "commandName");
 		if (!hasCommand(commandName)) {
 			throw new CommandNotFoundException(commandName);
 		}
