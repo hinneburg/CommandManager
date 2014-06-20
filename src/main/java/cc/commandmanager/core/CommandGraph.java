@@ -226,8 +226,7 @@ public class CommandGraph {
 		 * @return {@code true} if the edge was added to the graph.
 		 */
 		public boolean addMandatoryDependency(CommandClass source, CommandClass target) {
-			if (!containsCommand(Check.notNull(source, "source"))
-					|| !containsCommand(Check.notNull(target, "target"))) {
+			if (!containsCommand(Check.notNull(source, "source")) || !containsCommand(Check.notNull(target, "target"))) {
 				return false;
 			}
 			try {
@@ -297,8 +296,7 @@ public class CommandGraph {
 		 * @return {@code true} if the edge was added to the graph.
 		 */
 		public boolean addOptionalDependency(CommandClass source, CommandClass target) {
-			if (!containsCommand(Check.notNull(source, "source"))
-					|| !containsCommand(Check.notNull(target, "target"))) {
+			if (!containsCommand(Check.notNull(source, "source")) || !containsCommand(Check.notNull(target, "target"))) {
 				return false;
 			}
 			try {
