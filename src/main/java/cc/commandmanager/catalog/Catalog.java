@@ -219,9 +219,9 @@ public class Catalog {
 		try {
 			return commands.get(commandName).newInstance();
 		} catch (IllegalAccessException exception) {
-			throw new CommandNotInstantiableException(commands.get(commandName), exception);
+			throw new CommandNotInstantiableException(commandName, exception);
 		} catch (InstantiationException exception) {
-			throw new CommandNotInstantiableException(commands.get(commandName), exception);
+			throw new CommandNotInstantiableException(commandName, exception);
 		}
 	}
 
