@@ -50,7 +50,7 @@ public class CommandGraphBuilderTest {
 		CommandClass target = new CommandClass("Target", "className.Target");
 		assertThat(builder.addCommand(source)).isTrue();
 		assertThat(builder.addCommand(target)).isTrue();
-		assertThat(builder.addMandatoryDependency(source, target)).isTrue();
+		assertThat(builder.addMandatoryDependency(source, target)).isEqualTo(DependencyAdded.SUCCESSFUL);
 
 		CommandGraph graph = builder.build();
 		assertThat(graph.getDependencies("Source")).containsOnly(target);
@@ -62,7 +62,7 @@ public class CommandGraphBuilderTest {
 	public void testAddMandatoryDependency_String() {
 		assertThat(builder.addCommand("Source", "className.Source")).isTrue();
 		assertThat(builder.addCommand("Target", "className.Target")).isTrue();
-		assertThat(builder.addMandatoryDependency("Source", "Target")).isTrue();
+		assertThat(builder.addMandatoryDependency("Source", "Target")).isEqualTo(DependencyAdded.SUCCESSFUL);
 
 		CommandGraph graph = builder.build();
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
@@ -77,7 +77,7 @@ public class CommandGraphBuilderTest {
 		assertThat(builder.addCommand("Target", "className.Target")).isTrue();
 		assertThat(
 				builder.addOptionalDependency(new CommandClass("Source", "className.Source"), new CommandClass(
-						"Target", "className.Target"))).isTrue();
+						"Target", "className.Target"))).isEqualTo(DependencyAdded.SUCCESSFUL);
 
 		CommandGraph graph = builder.build();
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
@@ -90,7 +90,7 @@ public class CommandGraphBuilderTest {
 	public void testAddOptionalDependency_String() {
 		assertThat(builder.addCommand("Source", "className.Source")).isTrue();
 		assertThat(builder.addCommand("Target", "className.Target")).isTrue();
-		assertThat(builder.addOptionalDependency("Source", "Target")).isTrue();
+		assertThat(builder.addOptionalDependency("Source", "Target")).isEqualTo(DependencyAdded.SUCCESSFUL);
 
 		CommandGraph graph = builder.build();
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
@@ -121,37 +121,37 @@ public class CommandGraphBuilderTest {
 	public void testAddMandatoryDependency_circularDependency() {
 		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
-		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
-		assertThat(builder.addMandatoryDependency("target", "source")).isFalse();
+		assertThat(builder.addMandatoryDependency("source", "target")).isEqualTo(DependencyAdded.SUCCESSFUL);
+		assertThat(builder.addMandatoryDependency("target", "source")).isEqualTo(DependencyAdded.CYCLE_DETECTED);
 	}
 
 	@Test
 	public void testAddMandatoryDependency_dependencyWithoutCommand() {
 		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
-		assertThat(builder.addMandatoryDependency("source", "nowhere")).isFalse();
-		assertThat(builder.addMandatoryDependency("nowhere", "source")).isFalse();
+		assertThat(builder.addMandatoryDependency("source", "nowhere")).isEqualTo(DependencyAdded.COMMAND_MISSING);
+		assertThat(builder.addMandatoryDependency("nowhere", "source")).isEqualTo(DependencyAdded.COMMAND_MISSING);
 	}
 
 	@Test
 	public void testAddMandatoryDependency_sameDependencyTwice() {
 		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
-		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
-		assertThat(builder.addMandatoryDependency("source", "target")).isFalse();
+		assertThat(builder.addMandatoryDependency("source", "target")).isEqualTo(DependencyAdded.SUCCESSFUL);
+		assertThat(builder.addMandatoryDependency("source", "target")).isEqualTo(DependencyAdded.ALREADY_PRESENT);
 	}
 
 	@Test
 	public void testAddMandatoryDependency_overwritesOptionalDependency() {
 		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
-		assertThat(builder.addOptionalDependency("source", "target")).isTrue();
+		assertThat(builder.addOptionalDependency("source", "target")).isEqualTo(DependencyAdded.SUCCESSFUL);
 
 		CommandGraph optional = builder.build();
 		assertThat(optional.getMandatoryDependencies("source")).isEmpty();
 		assertThat(optional.getOptionalDependencies("source")).containsOnly(
 				new CommandClass("target", "className.target"));
 
-		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "target")).isEqualTo(DependencyAdded.OPTIONAL_OVERWRITTEN);
 		CommandGraph mandatoryInsteadOfOptional = builder.build();
 		assertThat(mandatoryInsteadOfOptional.getMandatoryDependencies("source")).containsOnly(
 				new CommandClass("target", "className.target"));
@@ -162,14 +162,15 @@ public class CommandGraphBuilderTest {
 	public void testAddOptionalDependency_doesNotOverwriteMandatoryDependency() {
 		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
 		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
-		assertThat(builder.addMandatoryDependency("source", "target")).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "target")).isEqualTo(DependencyAdded.SUCCESSFUL);
 
 		CommandGraph mandatory = builder.build();
 		assertThat(mandatory.getMandatoryDependencies("source")).containsOnly(
 				new CommandClass("target", "className.target"));
 		assertThat(mandatory.getOptionalDependencies("source")).isEmpty();
 
-		assertThat(builder.addOptionalDependency("source", "target")).isFalse();
+		assertThat(builder.addOptionalDependency("source", "target")).isEqualTo(
+				DependencyAdded.MANDATORY_NOT_OVERWRITTEN);
 		CommandGraph stillOnlyMandatory = builder.build();
 		assertThat(stillOnlyMandatory.getMandatoryDependencies("source")).containsOnly(
 				new CommandClass("target", "className.target"));

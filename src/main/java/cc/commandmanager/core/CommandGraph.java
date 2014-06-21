@@ -198,16 +198,12 @@ public class CommandGraph {
 		 *            target of the newly created edge
 		 * @return {@code true} if the edge was added to the graph.
 		 */
-		public boolean addMandatoryDependency(String sourceName, String targetName) {
+		public DependencyAdded addMandatoryDependency(String sourceName, String targetName) {
 			if (!containsCommand(Check.notNull(sourceName, "sourceName"))
 					|| !containsCommand(Check.notNull(targetName, "targetName"))) {
-				return false;
+				return DependencyAdded.COMMAND_MISSING;
 			}
-			try {
-				return addMandatoryDependencyOfPresentCommands(sourceName, targetName);
-			} catch (CycleFoundException e) {
-				return false;
-			}
+			return addMandatoryDependency(namesToCommandClasses.get(sourceName), namesToCommandClasses.get(targetName));
 		}
 
 		/**
@@ -225,30 +221,29 @@ public class CommandGraph {
 		 *            target of the newly created edge
 		 * @return {@code true} if the edge was added to the graph.
 		 */
-		public boolean addMandatoryDependency(CommandClass source, CommandClass target) {
+		public DependencyAdded addMandatoryDependency(CommandClass source, CommandClass target) {
 			if (!containsCommand(Check.notNull(source, "source")) || !containsCommand(Check.notNull(target, "target"))) {
-				return false;
+				return DependencyAdded.COMMAND_MISSING;
 			}
 			try {
 				return addMandatoryDependencyOfPresentCommands(source, target);
 			} catch (CycleFoundException e) {
-				return false;
+				return DependencyAdded.CYCLE_DETECTED;
 			}
 		}
 
-		private boolean addMandatoryDependencyOfPresentCommands(String sourceName, String targetName)
+		private DependencyAdded addMandatoryDependencyOfPresentCommands(CommandClass source, CommandClass target)
 				throws CycleFoundException {
-			return addMandatoryDependencyOfPresentCommands(namesToCommandClasses.get(sourceName), namesToCommandClasses
-					.get(targetName));
-		}
-
-		private boolean addMandatoryDependencyOfPresentCommands(CommandClass source, CommandClass target)
-				throws CycleFoundException {
-			if (graph.containsEdge(source, target) && !graph.getEdge(source, target).isMandatory()) {
-				graph.getEdge(source, target).setMandatory(true);
-				return true;
+			if (graph.containsEdge(source, target)) {
+				if (!graph.getEdge(source, target).isMandatory()) {
+					graph.getEdge(source, target).setMandatory(true);
+					return DependencyAdded.OPTIONAL_OVERWRITTEN;
+				} else {
+					return DependencyAdded.ALREADY_PRESENT;
+				}
 			} else {
-				return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
+				graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.MANDATORY));
+				return DependencyAdded.SUCCESSFUL;
 			}
 		}
 
@@ -268,16 +263,12 @@ public class CommandGraph {
 		 *            target of the newly created edge
 		 * @return {@code true} if the edge was added to the graph.
 		 */
-		public boolean addOptionalDependency(String sourceName, String targetName) {
+		public DependencyAdded addOptionalDependency(String sourceName, String targetName) {
 			if (!containsCommand(Check.notNull(sourceName, "sourceName"))
 					|| !containsCommand(Check.notNull(targetName, "targetName"))) {
-				return false;
+				return DependencyAdded.COMMAND_MISSING;
 			}
-			try {
-				return addOptionalDependencyOfPresentCommands(sourceName, targetName);
-			} catch (CycleFoundException e) {
-				return false;
-			}
+			return addOptionalDependency(namesToCommandClasses.get(sourceName), namesToCommandClasses.get(targetName));
 		}
 
 		/**
@@ -295,28 +286,25 @@ public class CommandGraph {
 		 *            target of the newly created edge
 		 * @return {@code true} if the edge was added to the graph.
 		 */
-		public boolean addOptionalDependency(CommandClass source, CommandClass target) {
+		public DependencyAdded addOptionalDependency(CommandClass source, CommandClass target) {
 			if (!containsCommand(Check.notNull(source, "source")) || !containsCommand(Check.notNull(target, "target"))) {
-				return false;
+				return DependencyAdded.COMMAND_MISSING;
 			}
 			try {
 				return addOptionalDependencyOfPresentCommands(source, target);
 			} catch (CycleFoundException e) {
-				return false;
+				return DependencyAdded.CYCLE_DETECTED;
 			}
 		}
 
-		private boolean addOptionalDependencyOfPresentCommands(String sourceName, String targetName)
+		private DependencyAdded addOptionalDependencyOfPresentCommands(CommandClass source, CommandClass target)
 				throws CycleFoundException {
-			return addOptionalDependencyOfPresentCommands(namesToCommandClasses.get(sourceName), namesToCommandClasses
-					.get(targetName));
+			if (graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL))) {
+				return DependencyAdded.SUCCESSFUL;
+			} else {
+				return DependencyAdded.MANDATORY_NOT_OVERWRITTEN;
+			}
 		}
-
-		private boolean addOptionalDependencyOfPresentCommands(CommandClass source, CommandClass target)
-				throws CycleFoundException {
-			return graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL));
-		}
-
 	}
 
 	private static class DependencyEdge extends DefaultEdge {
