@@ -61,11 +61,6 @@ public class CommandClassTest {
 		(new CommandClass("NotFound", "not.findable.Class")).newInstance();
 	}
 
-	@Test
-	public void test() {
-		System.out.println((new CommandClass("NotFound", "not.findable.Class")).newInstance());
-	}
-
 	public static class Command1 extends DummyCommand {
 
 	}
