@@ -48,12 +48,8 @@ public class CommandClass {
 	public Command newInstance() {
 		try {
 			return getClassForName(className).newInstance();
-		} catch (IllegalAccessException exception) {
-			throw new CommandNotInstantiableException(className, exception);
-		} catch (InstantiationException exception) {
-			throw new CommandNotInstantiableException(className, exception);
-		} catch (ClassNotFoundException exception) {
-			throw new CommandNotInstantiableException(className, exception);
+		} catch (Exception e) {
+			throw new CommandNotInstantiableException(className, e);
 		}
 	}
 
