@@ -37,7 +37,7 @@ public class CommandGraph {
 	@SuppressWarnings("unchecked")
 	private CommandGraph(CommandGraphBuilder builder) {
 		commandGraph = (DirectedAcyclicGraph<CommandClass, DependencyEdge>) builder.graph.clone();
-		vertices = Maps.newHashMap(builder.namesToCommandClasses);
+		vertices = Maps.newHashMap(builder.commandClasses);
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class CommandGraph {
 	 */
 	public static class CommandGraphBuilder {
 
-		private Map<String, CommandClass> namesToCommandClasses = Maps.newHashMap();
+		private Map<String, CommandClass> commandClasses = Maps.newHashMap();
 		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
 
@@ -170,12 +170,12 @@ public class CommandGraph {
 				return false;
 			}
 
-			namesToCommandClasses.put(commandClass.getName(), commandClass);
+			commandClasses.put(commandClass.getName(), commandClass);
 			return graph.addVertex(commandClass);
 		}
 
 		private boolean containsCommand(String commandName) {
-			return namesToCommandClasses.containsKey(commandName);
+			return commandClasses.containsKey(commandName);
 		}
 
 		private boolean containsCommand(CommandClass commandClass) {
@@ -203,7 +203,7 @@ public class CommandGraph {
 					|| !containsCommand(Check.notNull(targetName, "targetName"))) {
 				return DependencyAdded.COMMAND_MISSING;
 			}
-			return addMandatoryDependency(namesToCommandClasses.get(sourceName), namesToCommandClasses.get(targetName));
+			return addMandatoryDependency(commandClasses.get(sourceName), commandClasses.get(targetName));
 		}
 
 		/**
@@ -268,7 +268,7 @@ public class CommandGraph {
 					|| !containsCommand(Check.notNull(targetName, "targetName"))) {
 				return DependencyAdded.COMMAND_MISSING;
 			}
-			return addOptionalDependency(namesToCommandClasses.get(sourceName), namesToCommandClasses.get(targetName));
+			return addOptionalDependency(commandClasses.get(sourceName), commandClasses.get(targetName));
 		}
 
 		/**
