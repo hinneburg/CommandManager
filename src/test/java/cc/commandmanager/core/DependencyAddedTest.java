@@ -12,13 +12,14 @@ public class DependencyAddedTest {
 	@Test
 	public void testSuccessStates() {
 		assertThat(DependencyAdded.SUCCESS_STATES).containsOnly(DependencyAdded.ALREADY_PRESENT,
-				DependencyAdded.OPTIONAL_OVERWRITTEN, DependencyAdded.SUCCESSFUL);
+				DependencyAdded.OPTIONAL_OVERWRITTEN, DependencyAdded.MANDATORY_NOT_OVERWRITTEN,
+				DependencyAdded.SUCCESSFUL);
 	}
 
 	@Test
 	public void testFailureStates() {
 		assertThat(DependencyAdded.FAILURE_STATES).containsOnly(DependencyAdded.CYCLE_DETECTED,
-				DependencyAdded.COMMAND_MISSING, DependencyAdded.MANDATORY_NOT_OVERWRITTEN);
+				DependencyAdded.COMMAND_MISSING);
 	}
 
 	@Test

@@ -48,7 +48,7 @@ public enum DependencyAdded {
 	 * would do any harm.
 	 */
 	public static Set<DependencyAdded> SUCCESS_STATES = ImmutableSet.of(SUCCESSFUL, OPTIONAL_OVERWRITTEN,
-			ALREADY_PRESENT);
+			ALREADY_PRESENT, MANDATORY_NOT_OVERWRITTEN);
 
 	/**
 	 * {@linkplain Set} of states indicating that adding the dependency was not successful because it violated the
