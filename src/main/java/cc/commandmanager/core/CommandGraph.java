@@ -1,17 +1,26 @@
 package cc.commandmanager.core;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.sf.qualitycheck.Check;
 
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
 import org.jgrapht.graph.DefaultEdge;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -31,8 +40,220 @@ import com.google.common.collect.Maps;
  */
 public class CommandGraph {
 
+	private static final String COMMAND = "command";
+	private static final String NAME = "name";
+	private static final String CLASS_NAME = "className";
+
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
+
+	/**
+	 * Create a new {@linkplain CommandGraph}. Parse the XML document, represented by the given file by building a valid
+	 * graph of {@linkplain CommandClass} vertices and mandatory and optional dependencies, respectively.
+	 * <p>
+	 * Required node tag for every command entry in the given XML file is "command". Under those nodes the attributes
+	 * "name" and "className" are required.
+	 * <li>"name" attribute represents the String alias under which a command can be found in this graph.
+	 * <li>"className" attribute contains the associated fully qualified name for this command as obtained by
+	 * {@linkplain Class#getCanonicalName()}. Command classes must be an implementation of {@linkplain Command}.
+	 * <p>
+	 * An example catalog looks like this:<br>
+	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
+	 * <p>
+	 * Every command name must be unique. For problems with dom file handling, see <a
+	 * href="com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl">DocumentBuilderFactoryImpl</a> for more
+	 * details.
+	 * 
+	 * @param catalogFile
+	 *            {@linkplain File} to be parsed. Must have a valid XML structure.
+	 * @return A new {@linkplain CommandGraph} if every command of the given catalog could be added to the graph. In
+	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
+	 *         of those two actions failed.
+	 */
+	public static CommandGraph fromXml(File catalogFile) {
+		Check.notNull(catalogFile, "catalogFile");
+		Document catalog = tryParseFileIntoDocument(catalogFile);
+		return couldNotBeParsed(catalog) ? null : fromDocument(catalog);
+	}
+
+	private static Document tryParseFileIntoDocument(File catalogFile) {
+		try {
+			DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			return documentBuilder.parse(catalogFile);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private static boolean couldNotBeParsed(Document catalog) {
+		return catalog == null;
+	}
+
+	/**
+	 * Create a new {@linkplain CommandGraph}. Parse the given XML document by building a valid graph of
+	 * {@linkplain CommandClass} vertices and mandatory and optional dependencies, respectively.
+	 * <p>
+	 * Required node tag for every command entry in the given catalog document is "command". Under those nodes the
+	 * attributes "name" and "className" are required.
+	 * <li>"name" attribute represents the String alias under which a command can be found in this graph.
+	 * <li>"className" attribute contains the associated fully qualified name for this command as obtained by
+	 * {@linkplain Class#getCanonicalName()}. Command classes must be an implementation of {@linkplain Command}.
+	 * <p>
+	 * An example catalog looks like this:<br>
+	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
+	 * 
+	 * @param catalogDocument
+	 *            {@linkplain Document} to be parsed.
+	 * @return A new {@linkplain CommandGraph} if every command of the given catalog could be added to the graph. In
+	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
+	 *         of those two actions failed.
+	 */
+	public static CommandGraph fromDocument(Document catalogDocument) {
+		Check.notNull(catalogDocument, "catalogDocument");
+		List<CommandClass> commands = getCommandsFromDocument(catalogDocument);
+		return commands == null ? null : fromList(commands);
+	}
+
+	private static List<CommandClass> getCommandsFromDocument(Document catalogDocument) {
+		final List<CommandClass> commands = Lists.newArrayList();
+
+		Iterable<Element> domElements = nodeListToElementList(catalogDocument.getElementsByTagName(COMMAND));
+		for (Element element : domElements) {
+			if (element.hasAttribute(NAME) && element.hasAttribute(CLASS_NAME)) {
+				commands.add(new CommandClass(element.getAttribute(NAME), element.getAttribute(CLASS_NAME)));
+			} else {
+				return null;
+			}
+		}
+		return commands;
+	}
+
+	private static List<Element> nodeListToElementList(NodeList commandNodes) {
+		List<Element> commandElements = Lists.newArrayList();
+
+		for (int currentNode = 0; currentNode < commandNodes.getLength(); currentNode++) {
+			Node node = commandNodes.item(currentNode);
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				commandElements.add((Element) node);
+			}
+		}
+		return commandElements;
+	}
+
+	/**
+	 * Create a new {@linkplain CommandGraph}. Build it of {@linkplain CommandClass} vertices obtained from the given
+	 * list and their mandatory and optional dependencies, respectively.
+	 * <p>
+	 * 
+	 * @param commands
+	 *            the new graph will be built of.
+	 * @return A new {@linkplain CommandGraph} if every command of the given list could be added to the graph. In
+	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
+	 *         of those two actions failed.
+	 */
+	private static CommandGraph fromList(List<CommandClass> commands) {
+		Check.noNullElements(commands, "commands");
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+
+		builder = addCommandsToBuilder(commands, builder);
+		if (hasEncounteredProblems(builder)) {
+			return null;
+		}
+
+		builder = addDependenciesToBuilder(commands, builder);
+		if (hasEncounteredProblems(builder)) {
+			return null;
+		}
+
+		return builder.build();
+	}
+
+	private static CommandGraphBuilder addCommandsToBuilder(List<CommandClass> commands, CommandGraphBuilder builder) {
+		for (CommandClass command : commands) {
+			if (!builder.addCommand(command)) {
+				return null;
+			}
+		}
+		return builder;
+	}
+
+	private static CommandGraphBuilder addDependenciesToBuilder(List<CommandClass> commandClasses,
+			CommandGraphBuilder builder) {
+		for (CommandClass commandClass : commandClasses) {
+			Command command = commandClass.newInstance();
+			builder = addMandatoryBeforeDependenciesToBuilder(commandClass.getName(), command, builder);
+			if (hasEncounteredProblems(builder)) {
+				return null;
+			}
+			builder = addMandatoryAfterDependenciesToBuilder(commandClass.getName(), command, builder);
+			if (hasEncounteredProblems(builder)) {
+				return null;
+			}
+			builder = addOptionalBeforeDependenciesToBuilder(commandClass.getName(), command, builder);
+			if (hasEncounteredProblems(builder)) {
+				return null;
+			}
+			builder = addOptionalAfterDependenciesToBuilder(commandClass.getName(), command, builder);
+			if (hasEncounteredProblems(builder)) {
+				return null;
+			}
+		}
+		return builder;
+	}
+
+	private static CommandGraphBuilder addMandatoryBeforeDependenciesToBuilder(String name, Command command,
+			CommandGraphBuilder builder) {
+		for (String beforeDependency : command.getBeforeDependencies()) {
+			DependencyAdded dependencyAdded = builder.addMandatoryDependency(name, beforeDependency);
+
+			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+				return null;
+			}
+		}
+		return builder;
+	}
+
+	private static CommandGraphBuilder addMandatoryAfterDependenciesToBuilder(String name, Command command,
+			CommandGraphBuilder builder) {
+		for (String afterDependency : command.getAfterDependencies()) {
+			DependencyAdded dependencyAdded = builder.addMandatoryDependency(afterDependency, name);
+
+			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+				return null;
+			}
+		}
+		return builder;
+	}
+
+	private static CommandGraphBuilder addOptionalBeforeDependenciesToBuilder(String name, Command command,
+			CommandGraphBuilder builder) {
+		for (String beforeDependency : command.getOptionalBeforeDependencies()) {
+			DependencyAdded dependencyAdded = builder.addOptionalDependency(name, beforeDependency);
+
+			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)
+					&& !dependencyAdded.equals(DependencyAdded.MANDATORY_NOT_OVERWRITTEN)) {
+				return null;
+			}
+		}
+		return builder;
+	}
+
+	private static CommandGraphBuilder addOptionalAfterDependenciesToBuilder(String name, Command command,
+			CommandGraphBuilder builder) {
+		for (String afterDependency : command.getOptionalAfterDependencies()) {
+			DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, name);
+
+			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)
+					&& !dependencyAdded.equals(DependencyAdded.MANDATORY_NOT_OVERWRITTEN)) {
+				return null;
+			}
+		}
+		return builder;
+	}
+
+	private static boolean hasEncounteredProblems(CommandGraphBuilder builder) {
+		return builder == null;
+	}
 
 	@SuppressWarnings("unchecked")
 	private CommandGraph(CommandGraphBuilder builder) {
