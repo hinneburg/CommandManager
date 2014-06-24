@@ -40,6 +40,7 @@ import com.google.common.collect.Maps;
  */
 public class CommandGraph {
 
+	private static final String INDENTATION = "  ";
 	private static final String COMMAND = "command";
 	private static final String NAME = "name";
 	private static final String CLASS_NAME = "className";
@@ -277,6 +278,68 @@ public class CommandGraph {
 			}
 		}
 		return result.build();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		result.append("digraph G {\n");
+		result.append(drawLabel("Command graph"));
+		result.append(getGraphLayout());
+
+		for (CommandClass command : vertices.values()) {
+			result.append(drawCommand(command));
+			result.append(drawMandatoryDependencies(command));
+			result.append(drawOptionalDependencies(command));
+		}
+
+		result.append("}");
+		return result.toString();
+	}
+
+	private static String getGraphLayout() {
+		final StringBuilder result = new StringBuilder();
+		result.append(INDENTATION + "rankdir = BT;\n");
+		result.append(INDENTATION + "node [shape=record];\n");
+		result.append(INDENTATION + "edge [arrowhead=vee];\n");
+		return result.toString();
+	}
+
+	private static String drawLabel(String label) {
+		final StringBuilder result = new StringBuilder();
+		result.append(INDENTATION + "labelloc = \"t\";\n");
+		result.append(INDENTATION + "label = \"" + label + "\";\n");
+		return result.toString();
+	}
+
+	private static String drawCommand(CommandClass command) {
+		return INDENTATION + "\"" + command + "\";\n";
+	}
+
+	private String drawMandatoryDependencies(CommandClass command) {
+		return drawDependencies(command, true);
+	}
+
+	private String drawOptionalDependencies(CommandClass command) {
+		return drawDependencies(command, false);
+	}
+
+	private String drawDependencies(CommandClass command, boolean mandatory) {
+		final StringBuilder result = new StringBuilder();
+		final Iterable<CommandClass> dependencies;
+		if (mandatory) {
+			dependencies = getMandatoryDependencies(command.getName());
+		} else {
+			dependencies = getOptionalDependencies(command.getName());
+		}
+		for (final CommandClass dependency : dependencies) {
+			result.append(INDENTATION + "\"" + command + "\" -> \"" + dependency + "\"");
+			if (!mandatory) {
+				result.append(" [style = dotted] ");
+			}
+			result.append(";\n");
+		}
+		return result.toString();
 	}
 
 	/**
