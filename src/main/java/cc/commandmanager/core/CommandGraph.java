@@ -236,10 +236,7 @@ public class CommandGraph {
 	 */
 	public CommandClass getCommandClass(String commandName) {
 		Check.notNull(commandName, "commandName");
-		if (!containsCommand(commandName)) {
-			throw new CommandNotFoundException(commandName);
-		}
-		return vertices.get(commandName);
+		return vertices.get(checkGraphContains(commandName));
 	}
 
 	/**
@@ -267,10 +264,7 @@ public class CommandGraph {
 	 */
 	public List<CommandClass> getMandatoryDependencies(String commandName) {
 		Check.notNull(commandName, "commandName");
-		if (!containsCommand(commandName)) {
-			throw new CommandNotFoundException(commandName);
-		}
-		return getDependenciesWithRequirementState(commandName, DependencyEdge.MANDATORY);
+		return getDependenciesWithRequirementState(checkGraphContains(commandName), DependencyEdge.MANDATORY);
 	}
 
 	/**
@@ -283,10 +277,7 @@ public class CommandGraph {
 	 */
 	public List<CommandClass> getOptionalDependencies(String commandName) {
 		Check.notNull(commandName, "commandName");
-		if (!containsCommand(commandName)) {
-			throw new CommandNotFoundException(commandName);
-		}
-		return getDependenciesWithRequirementState(commandName, DependencyEdge.OPTIONAL);
+		return getDependenciesWithRequirementState(checkGraphContains(commandName), DependencyEdge.OPTIONAL);
 	}
 
 	private ImmutableList<CommandClass> getDependenciesWithRequirementState(String commandName,
@@ -370,7 +361,7 @@ public class CommandGraph {
 	public List<CommandClass> topologicalOrderOfGivenCommands(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		for (CommandClass command : commands) {
-			checkGraphContains(command);
+			checkGraphContains(command.getName());
 		}
 		Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>> subgraphOfGivenCommands = new Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>>(
 				commandGraph, Sets.newHashSet(commands), filterEdges(Sets.newHashSet(commands), commandGraph.edgeSet()));
@@ -378,10 +369,11 @@ public class CommandGraph {
 		return ImmutableList.copyOf(reverse(subgraphOfGivenCommands.getBase().iterator()));
 	}
 
-	private void checkGraphContains(CommandClass command) {
-		if (!containsCommand(command.getName())) {
-			throw new CommandNotFoundException(command.getName());
+	private String checkGraphContains(String command) {
+		if (!containsCommand(command)) {
+			throw new CommandNotFoundException(command);
 		}
+		return command;
 	}
 
 	private List<CommandClass> reverse(Iterator<CommandClass> iterator) {
