@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.sf.qualitycheck.Check;
 
+import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
 import org.jgrapht.graph.DefaultEdge;
@@ -53,6 +54,7 @@ public class CommandGraph {
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
 	private final List<CommandClass> topologicalOrdering;
+	private final List<Set<CommandClass>> connectedComponents;
 
 	/**
 	 * Create a new {@linkplain CommandGraph}. Parse the XML file and build a valid graph of {@linkplain CommandClass}
@@ -204,6 +206,8 @@ public class CommandGraph {
 		commandGraph = cloneGraph(builder.graph);
 		vertices = Maps.newHashMap(builder.commandClasses);
 		topologicalOrdering = reverse(commandGraph.iterator());
+		connectedComponents = computeConnectedComponents(new ConnectivityInspector<CommandClass, DependencyEdge>(
+				commandGraph));
 	}
 
 	private DirectedAcyclicGraph<CommandClass, DependencyEdge> cloneGraph(
@@ -221,6 +225,11 @@ public class CommandGraph {
 
 	private static List<CommandClass> reverse(Iterator<CommandClass> iterator) {
 		return Lists.reverse(Lists.newArrayList(iterator));
+	}
+
+	private static List<Set<CommandClass>> computeConnectedComponents(
+			ConnectivityInspector<CommandClass, DependencyEdge> inspector) {
+		return inspector.connectedSets();
 	}
 
 	/**
@@ -329,6 +338,11 @@ public class CommandGraph {
 			}
 
 		});
+	}
+
+	// TODO add JavaDoc
+	public List<Set<CommandClass>> getConnectedComponents() {
+		return ImmutableList.copyOf(connectedComponents);
 	}
 
 	@Override

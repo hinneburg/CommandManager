@@ -26,6 +26,7 @@ import org.xml.sax.SAXParseException;
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class CommandGraphTest {
 
@@ -231,6 +232,15 @@ public class CommandGraphTest {
 	}
 
 	@Test
+	public void testGetConnectedComponents() {
+		assertThat(graph.getConnectedComponents()).hasSize(1).contains(Sets.newHashSet(commandA, commandB, commandC));
+
+		builder.addCommand("D", "className.D");
+		assertThat(builder.build().getConnectedComponents()).hasSize(2).contains(
+				Sets.newHashSet(commandA, commandB, commandC), Sets.newHashSet(new CommandClass("D", "className.D")));
+	}
+
+	@Test
 	public void testToString() {
 		assertThat(graph.toString())
 				.isEqualTo(
@@ -376,6 +386,12 @@ public class CommandGraphTest {
 	@Test
 	public void testTopologicalOrderOfAllCommands_noDuplicates() {
 		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
+	}
+
+	@Test
+	public void testGetConnectedComponents_emptyGraph() {
+		CommandGraph graph = (new CommandGraphBuilder()).build();
+		assertThat(graph.getConnectedComponents()).hasSize(0);
 	}
 
 }
