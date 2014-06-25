@@ -188,16 +188,6 @@ public class CommandGraphTest {
 	}
 
 	@Test
-	public void testToString() {
-		assertThat(graph.toString())
-				.isEqualTo(
-						"digraph G {\n  labelloc = \"t\";\n  label = \"Command graph\";\n  rankdir = BT;\n  node [shape=record];\n  "
-								+ "edge [arrowhead=vee];\n  \"A (className.A)\";\n  \"A (className.A)\" -> \"B (className.B)\";\n  "
-								+ "\"A (className.A)\" -> \"C (className.C)\" [style = dotted] ;\n  \"B (className.B)\";\n  "
-								+ "\"C (className.C)\";\n}");
-	}
-
-	@Test
 	public void topologicalOrderOfAllCommands() {
 		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
 			@Override
@@ -238,6 +228,16 @@ public class CommandGraphTest {
 								|| topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
 					}
 				});
+	}
+
+	@Test
+	public void testToString() {
+		assertThat(graph.toString())
+				.isEqualTo(
+						"digraph G {\n  labelloc = \"t\";\n  label = \"Command graph\";\n  rankdir = BT;\n  node [shape=record];\n  "
+								+ "edge [arrowhead=vee];\n  \"A (className.A)\";\n  \"A (className.A)\" -> \"B (className.B)\";\n  "
+								+ "\"A (className.A)\" -> \"C (className.C)\" [style = dotted] ;\n  \"B (className.B)\";\n  "
+								+ "\"C (className.C)\";\n}");
 	}
 
 	@Test

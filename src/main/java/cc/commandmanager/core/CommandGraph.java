@@ -298,6 +298,39 @@ public class CommandGraph {
 		return result.build();
 	}
 
+	public List<CommandClass> topologicalOrderOfAllCommands() {
+		return ImmutableList.copyOf(topologicalOrdering);
+	}
+
+	public List<CommandClass> topologicalOrderOfGivenCommands(Iterable<CommandClass> commands) {
+		Check.noNullElements(commands, "commands");
+		for (CommandClass command : commands) {
+			checkGraphContains(command.getName());
+		}
+		Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>> subgraphOfGivenCommands = new Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>>(
+				commandGraph, Sets.newHashSet(commands), filterEdges(Sets.newHashSet(commands), commandGraph.edgeSet()));
+
+		return ImmutableList.copyOf(reverse(subgraphOfGivenCommands.getBase().iterator()));
+	}
+
+	private String checkGraphContains(String command) {
+		if (!containsCommand(command)) {
+			throw new CommandNotFoundException(command);
+		}
+		return command;
+	}
+
+	private Set<DependencyEdge> filterEdges(final Set<CommandClass> filter, Set<DependencyEdge> unfilteredEdges) {
+		return Sets.filter(unfilteredEdges, new Predicate<DependencyEdge>() {
+
+			@Override
+			public boolean apply(@Nullable DependencyEdge edge) {
+				return filter.contains(edge.getSource()) && filter.contains(edge.getTarget());
+			}
+
+		});
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
@@ -358,39 +391,6 @@ public class CommandGraph {
 			result.append(";\n");
 		}
 		return result.toString();
-	}
-
-	public List<CommandClass> topologicalOrderOfAllCommands() {
-		return ImmutableList.copyOf(topologicalOrdering);
-	}
-
-	public List<CommandClass> topologicalOrderOfGivenCommands(Iterable<CommandClass> commands) {
-		Check.noNullElements(commands, "commands");
-		for (CommandClass command : commands) {
-			checkGraphContains(command.getName());
-		}
-		Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>> subgraphOfGivenCommands = new Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>>(
-				commandGraph, Sets.newHashSet(commands), filterEdges(Sets.newHashSet(commands), commandGraph.edgeSet()));
-
-		return ImmutableList.copyOf(reverse(subgraphOfGivenCommands.getBase().iterator()));
-	}
-
-	private String checkGraphContains(String command) {
-		if (!containsCommand(command)) {
-			throw new CommandNotFoundException(command);
-		}
-		return command;
-	}
-
-	private Set<DependencyEdge> filterEdges(final Set<CommandClass> filter, Set<DependencyEdge> unfilteredEdges) {
-		return Sets.filter(unfilteredEdges, new Predicate<DependencyEdge>() {
-
-			@Override
-			public boolean apply(@Nullable DependencyEdge edge) {
-				return filter.contains(edge.getSource()) && filter.contains(edge.getTarget());
-			}
-
-		});
 	}
 
 	/**
