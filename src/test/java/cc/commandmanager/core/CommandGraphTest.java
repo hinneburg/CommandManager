@@ -217,6 +217,30 @@ public class CommandGraphTest {
 	}
 
 	@Test
+	public void topologicalOrderOfGivenCommands() {
+		final CommandClass command0 = new CommandClass("0", "className.0");
+		builder.addCommand(command0);
+		builder.addMandatoryDependency(command0, commandA);
+
+		CommandGraph graph = builder.build();
+		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
+			@Override
+			public boolean matches(List<?> topologicalOrder) {
+				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
+			}
+		});
+
+		assertThat(graph.topologicalOrderOfGivenCommands(Lists.newArrayList(commandB, command0))).satisfies(
+				new Condition<List<?>>() {
+					@Override
+					public boolean matches(List<?> topologicalOrder) {
+						return topologicalOrder.indexOf(command0) < topologicalOrder.indexOf(commandB)
+								|| topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
+					}
+				});
+	}
+
+	@Test
 	public void testFromDocument_illegalEqualCommandName() {
 		Document catalogDocument = createBaseCatalogDocument();
 		Element documentRoot = catalogDocument.createElement("catalog");
