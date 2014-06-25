@@ -307,10 +307,29 @@ public class CommandGraph {
 		return result.build();
 	}
 
+	/**
+	 * Arrange all commands of this {@link CommandGraph} in a topological order, meaning that if there exists a
+	 * dependency from command A to command B then command B is guaranteed to come before command A in the iteration
+	 * order.
+	 * 
+	 * @return A topologically sorted list of {@link CommandClasses}es. This list will be immutable.
+	 */
 	public List<CommandClass> topologicalOrderOfAllCommands() {
 		return ImmutableList.copyOf(topologicalOrdering);
 	}
 
+	/**
+	 * Arrange the given commands in a topological order, meaning that if there exists a dependency from command A to
+	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * the given commands must exist in this graph.
+	 * 
+	 * @param commands
+	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
+	 *            null.
+	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 * @throws CommandNotFoundException
+	 *             if at least one of the given commands cannot be found in this graph.
+	 */
 	public List<CommandClass> topologicalOrderOfGivenCommands(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		for (CommandClass command : commands) {
@@ -340,11 +359,20 @@ public class CommandGraph {
 		});
 	}
 
-	// TODO add JavaDoc
+	/**
+	 * @see ConnectivityInspector#connectedSets()
+	 * @return A list of Set s, where each set contains all vertices that are in the same maximally connected component.
+	 *         All graph vertices occur in exactly one set. For more on maximally connected component, see <a
+	 *         href=http://www.nist.gov/dads/HTML/maximallyConnectedComponent.html>maximallyConnectedComponent</a>. The
+	 *         resulting list will be immutable.
+	 */
 	public List<Set<CommandClass>> getConnectedComponents() {
 		return ImmutableList.copyOf(connectedComponents);
 	}
 
+	/**
+	 * 
+	 */
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
