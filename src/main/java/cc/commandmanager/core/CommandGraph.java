@@ -52,6 +52,7 @@ public class CommandGraph {
 
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
+	private final List<CommandClass> topologicalOrdering;
 
 	/**
 	 * Create a new {@linkplain CommandGraph}. Parse the XML file and build a valid graph of {@linkplain CommandClass}
@@ -202,6 +203,7 @@ public class CommandGraph {
 
 		commandGraph = cloneGraph(builder.graph);
 		vertices = Maps.newHashMap(builder.commandClasses);
+		topologicalOrdering = reverse(commandGraph.iterator());
 	}
 
 	private DirectedAcyclicGraph<CommandClass, DependencyEdge> cloneGraph(
@@ -215,6 +217,10 @@ public class CommandGraph {
 			clone.addEdge((CommandClass) dependency.getSource(), (CommandClass) dependency.getTarget(), dependency);
 		}
 		return clone;
+	}
+
+	private static List<CommandClass> reverse(Iterator<CommandClass> iterator) {
+		return Lists.reverse(Lists.newArrayList(iterator));
 	}
 
 	/**
@@ -355,7 +361,7 @@ public class CommandGraph {
 	}
 
 	public List<CommandClass> topologicalOrderOfAllCommands() {
-		return ImmutableList.copyOf(reverse(commandGraph.iterator()));
+		return ImmutableList.copyOf(topologicalOrdering);
 	}
 
 	public List<CommandClass> topologicalOrderOfGivenCommands(Iterable<CommandClass> commands) {
@@ -374,10 +380,6 @@ public class CommandGraph {
 			throw new CommandNotFoundException(command);
 		}
 		return command;
-	}
-
-	private List<CommandClass> reverse(Iterator<CommandClass> iterator) {
-		return Lists.reverse(Lists.newArrayList(commandGraph.iterator()));
 	}
 
 	private Set<DependencyEdge> filterEdges(final Set<CommandClass> filter, Set<DependencyEdge> unfilteredEdges) {
