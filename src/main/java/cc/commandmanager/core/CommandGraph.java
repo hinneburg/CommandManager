@@ -1,10 +1,12 @@
 package cc.commandmanager.core;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -13,15 +15,18 @@ import net.sf.qualitycheck.Check;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.Subgraph;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * A graph to represent an amount of {@link Command}s and the dependency relationship between them. A
@@ -190,10 +195,26 @@ public class CommandGraph {
 		return new Optional<CommandGraph>(builder.build());
 	}
 
-	@SuppressWarnings("unchecked")
 	private CommandGraph(CommandGraphBuilder builder) {
-		commandGraph = (DirectedAcyclicGraph<CommandClass, DependencyEdge>) builder.graph.clone();
+		Check.notNull(builder, "builder");
+		Check.notNull(builder.graph, "builder.graph");
+		Check.notNull(builder.commandClasses, "builder.commandClasses");
+
+		commandGraph = cloneGraph(builder.graph);
 		vertices = Maps.newHashMap(builder.commandClasses);
+	}
+
+	private DirectedAcyclicGraph<CommandClass, DependencyEdge> cloneGraph(
+			DirectedAcyclicGraph<CommandClass, DependencyEdge> original) {
+		DirectedAcyclicGraph<CommandClass, DependencyEdge> clone = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
+				DependencyEdge.class);
+		for (CommandClass command : original.vertexSet()) {
+			clone.addVertex(command);
+		}
+		for (DependencyEdge dependency : original.edgeSet()) {
+			clone.addEdge((CommandClass) dependency.getSource(), (CommandClass) dependency.getTarget(), dependency);
+		}
+		return clone;
 	}
 
 	/**
@@ -340,6 +361,14 @@ public class CommandGraph {
 			result.append(";\n");
 		}
 		return result.toString();
+	}
+
+	public List<CommandClass> topologicalOrderOfAllCommands() {
+		return ImmutableList.copyOf(reverse(commandGraph.iterator()));
+	}
+
+	private List<CommandClass> reverse(Iterator<CommandClass> iterator) {
+		return Lists.reverse(Lists.newArrayList(commandGraph.iterator()));
 	}
 
 	/**
@@ -550,6 +579,16 @@ public class CommandGraph {
 
 		public void setMandatory(boolean mandatory) {
 			this.mandatory = mandatory;
+		}
+
+		@Override
+		public Object getSource() {
+			return super.getSource();
+		}
+
+		@Override
+		public Object getTarget() {
+			return super.getTarget();
 		}
 
 		@Override

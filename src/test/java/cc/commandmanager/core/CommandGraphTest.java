@@ -7,12 +7,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.qualitycheck.exception.IllegalNullArgumentException;
 
+import org.fest.assertions.Condition;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +24,8 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXParseException;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
+
+import com.google.common.collect.Lists;
 
 public class CommandGraphTest {
 
@@ -194,6 +198,25 @@ public class CommandGraphTest {
 	}
 
 	@Test
+	public void topologicalOrderOfAllCommands() {
+		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
+			@Override
+			public boolean matches(List<?> topologicalOrder) {
+				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(commandA)
+						&& topologicalOrder.indexOf(commandC) < topologicalOrder.indexOf(commandA);
+			}
+		});
+
+		builder.addMandatoryDependency(commandC, commandB);
+		assertThat(builder.build().topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
+			@Override
+			public boolean matches(List<?> topologicalOrder) {
+				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(commandC);
+			}
+		});
+	}
+
+	@Test
 	public void testFromDocument_illegalEqualCommandName() {
 		Document catalogDocument = createBaseCatalogDocument();
 		Element documentRoot = catalogDocument.createElement("catalog");
@@ -324,6 +347,11 @@ public class CommandGraphTest {
 	@Test(expected = IllegalNullArgumentException.class)
 	public void testGetOptionalDependencies_nullArgument() {
 		graph.getOptionalDependencies(null);
+	}
+
+	@Test
+	public void testTopologicalOrderOfAllCommands_noDuplicates() {
+		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
 	}
 
 }
