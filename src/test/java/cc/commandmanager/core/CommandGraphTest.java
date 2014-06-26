@@ -24,6 +24,9 @@ import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
 public class CommandGraphTest {
 
+	@Rule
+	public TemporaryFolder folder = new TemporaryFolder();
+
 	private CommandGraphBuilder builder;
 	private CommandGraph graph;
 	private CommandClass commandA;
@@ -110,9 +113,6 @@ public class CommandGraphTest {
 			return null;
 		}
 	}
-
-	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
 
 	@Test
 	public void testFromXmlFile() throws IOException {
