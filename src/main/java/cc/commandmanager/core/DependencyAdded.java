@@ -2,6 +2,7 @@ package cc.commandmanager.core;
 
 import java.util.Set;
 
+import net.sf.qualitycheck.Check;
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
 import com.google.common.collect.ImmutableSet;
@@ -57,6 +58,16 @@ public enum DependencyAdded {
 	public static Set<DependencyAdded> FAILURE_STATES = Sets.difference(ImmutableSet.copyOf(DependencyAdded.values()),
 			SUCCESS_STATES).immutableCopy();
 
+	/**
+	 * Returns whether this result state is part of the given state group.
+	 * 
+	 * @param states
+	 */
+	public boolean isIn(Set<DependencyAdded> states) {
+		Check.notNull(states, "states");
+		return states.contains(this);
+	}
+
 	private final String message;
 
 	private DependencyAdded(String message) {
@@ -67,4 +78,5 @@ public enum DependencyAdded {
 	public String toString() {
 		return message;
 	}
+
 }

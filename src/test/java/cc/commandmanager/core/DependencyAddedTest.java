@@ -28,4 +28,14 @@ public class DependencyAddedTest {
 				Sets.union(DependencyAdded.SUCCESS_STATES, DependencyAdded.FAILURE_STATES));
 	}
 
+	@Test
+	public void testIsIn_isIn() {
+		assertThat(DependencyAdded.SUCCESSFUL.isIn(DependencyAdded.SUCCESS_STATES)).isTrue();
+	}
+
+	@Test
+	public void testIsIn_isNotIn() {
+		assertThat(DependencyAdded.COMMAND_MISSING.isIn(DependencyAdded.SUCCESS_STATES)).isFalse();
+	}
+
 }

@@ -159,28 +159,28 @@ public class CommandGraph {
 
 			for (String beforeDependency : command.getBeforeDependencies()) {
 				DependencyAdded dependencyAdded = builder.addMandatoryDependency(commandName, beforeDependency);
-				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
 					return new Optional<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
 			for (String afterDependency : command.getAfterDependencies()) {
 				DependencyAdded dependencyAdded = builder.addMandatoryDependency(afterDependency, commandName);
-				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
 					return new Optional<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
 			for (String beforeDependency : command.getOptionalBeforeDependencies()) {
 				DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
-				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
 					return new Optional<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
 			for (String afterDependency : command.getOptionalAfterDependencies()) {
 				DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
-				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
 					return new Optional<CommandGraph>(null, dependencyAdded);
 				}
 			}
