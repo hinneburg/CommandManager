@@ -46,12 +46,13 @@ public class CommandGraphTest {
 	}
 
 	/**
-	 * COMMANDS ARE DEPENDENT ON ONE ANOTHER AS FOLLOWS:
-	 * <p>
+	 * Commands are dependent on each other as follows:
+	 * <ul>
 	 * <li>DummyCommand2 (mandatory before) -> 1
 	 * <li>3 (mandatory after) -> 1
 	 * <li>4 (optional before) -> 1
 	 * <li>5 (optional after) -> 1
+	 * </ul>
 	 */
 	@Test
 	public void testFromDocument() {

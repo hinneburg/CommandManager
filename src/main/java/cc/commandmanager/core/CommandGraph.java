@@ -31,12 +31,12 @@ import com.google.common.collect.Maps;
  * href="http://mathworld.wolfram.com/Graph.html">Wolfram Mathworld</a>.
  * <p>
  * Furthermore instances of this graph are
- * <li>
- * directed
- * <li>
- * acyclic
+ * <ul>
+ * <li>directed,
+ * <li>acyclic,
  * <li>immutable and
  * <li>topologically sorted.
+ * </ul>
  */
 public class CommandGraph {
 
@@ -53,10 +53,11 @@ public class CommandGraph {
 	 * <p>
 	 * Required node tag for every command entry in the given XML file is "command". Under those nodes the attributes
 	 * "name" and "className" are required.
+	 * <ul>
 	 * <li>"name" attribute represents the String alias under which a command can be found in this graph.
 	 * <li>"className" attribute contains the associated fully qualified name for this command as obtained by
 	 * {@linkplain Class#getCanonicalName()}. Command classes must be an implementation of {@linkplain Command}.
-	 * <p>
+	 * </ul>
 	 * An example catalog looks like this:<br>
 	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
 	 * <p>
@@ -95,10 +96,11 @@ public class CommandGraph {
 	 * <p>
 	 * Required node tag for every command entry in the given catalog document is "command". Under those nodes the
 	 * attributes "name" and "className" are required.
+	 * <ul>
 	 * <li>"name" attribute represents the String alias under which a command can be found in this graph.
 	 * <li>"className" attribute contains the associated fully qualified name for this command as obtained by
 	 * {@linkplain Class#getCanonicalName()}. Command classes must be an implementation of {@linkplain Command}.
-	 * <p>
+	 * </ul>
 	 * An example catalog looks like this:<br>
 	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
 	 * 
@@ -404,12 +406,13 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add a mandatory dependency from {@code sourceName} to {@code targetName} IFF <li>both, source and target have
-		 * been added already <li>the given edge is not already a member of the graph <li>there has not been added a
-		 * mandatory edge from {@code sourceName} to {@code targetName}, yet<li>
-		 * the edge does not induce a circular dependency.
-		 * <p>
-		 * <br>
+		 * Add a mandatory dependency from {@code sourceName} to {@code targetName} IFF
+		 * <ul>
+		 * <li>both, source and target have been added already
+		 * <li>the given edge is not already a member of the graph
+		 * <li>there has not been added a mandatory edge from {@code sourceName} to {@code targetName}, yet
+		 * <li>the edge does not induce a circular dependency.
+		 * </ul>
 		 * If an optional dependency between source and target already exists, the dependency state will be changed from
 		 * optional to mandatory.
 		 * 
@@ -428,11 +431,13 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add a mandatory dependency from {@code source} to {@code target} IFF <li>both, source and target have been
-		 * added already <li>the given edge is not already a member of the graph <li>there has not been added a
-		 * mandatory edge from {@code source} to {@code target}, yet<li>
-		 * the edge does not induce a circular dependency.
-		 * <p>
+		 * Add a mandatory dependency from {@code source} to {@code target} IFF
+		 * <ul>
+		 * <li>both, source and target have been added already
+		 * <li>the given edge is not already a member of the graph
+		 * <li>there has not been added a mandatory edge from {@code source} to {@code target}, yet
+		 * <li>the edge does not induce a circular dependency.
+		 * </ul>
 		 * If an optional dependency between source and target already exists, the dependency state will be changed from
 		 * optional to mandatory.
 		 * 
@@ -469,12 +474,14 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add an optional dependency from {@code sourceName} to {@code targetName} IFF <li>both, source and target have
-		 * been added already <li>the given edge is not already a member of the graph <li>there has neither been added a
-		 * mandatory nor an optional edge from {@code sourceName} to {@code targetName}, yet<li>
-		 * the edge does not induce a circular dependency.
-		 * <p>
-		 * <br>
+		 * Add an optional dependency from {@code sourceName} to {@code targetName} IFF
+		 * <ul>
+		 * <li>both, source and target have been added already
+		 * <li>the given edge is not already a member of the graph
+		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to
+		 * {@code targetName}, yet
+		 * <li>the edge does not induce a circular dependency.
+		 * </ul>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
 		 * but remains mandatory.
 		 * 
@@ -493,11 +500,13 @@ public class CommandGraph {
 		}
 
 		/**
-		 * Add an optional dependency from {@code source} to {@code target} IFF <li>both, source and target have been
-		 * added already <li>the given edge is not already a member of the graph <li>there has neither been added a
-		 * mandatory nor an optional edge from {@code source} to {@code target}, yet<li>
-		 * the edge does not induce a circular dependency.
-		 * <p>
+		 * Add an optional dependency from {@code source} to {@code target} IFF
+		 * <ul>
+		 * <li>both, source and target have been added already
+		 * <li>the given edge is not already a member of the graph
+		 * <li>there has neither been added a mandatory nor an optional edge from {@code source} to {@code target}, yet
+		 * <li>the edge does not induce a circular dependency.
+		 * </ul>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
 		 * but remains mandatory.
 		 * 
