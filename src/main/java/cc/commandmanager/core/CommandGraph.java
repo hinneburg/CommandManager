@@ -48,8 +48,8 @@ public class CommandGraph {
 	private final Map<String, CommandClass> vertices;
 
 	/**
-	 * Create a new {@linkplain CommandGraph}. Parse the XML document, represented by the given file by building a valid
-	 * graph of {@linkplain CommandClass} vertices and mandatory and optional dependencies, respectively.
+	 * Create a new {@linkplain CommandGraph}. Parse the XML file and build a valid graph of {@linkplain CommandClass}
+	 * vertices and mandatory and optional dependencies, respectively.
 	 * <p>
 	 * Required node tag for every command entry in the given XML file is "command". Under those nodes the attributes
 	 * "name" and "className" are required.
@@ -62,8 +62,7 @@ public class CommandGraph {
 	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
 	 * <p>
 	 * Every command name must be unique. For problems with dom file handling, see <a
-	 * href="com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl">DocumentBuilderFactoryImpl</a> for more
-	 * details.
+	 * href="com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl">DocumentBuilderFactoryImpl</a>.
 	 * 
 	 * @param catalogFile
 	 *            {@linkplain File} to be parsed. Must have a valid XML structure.
