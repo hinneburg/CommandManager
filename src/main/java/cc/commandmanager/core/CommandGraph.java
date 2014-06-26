@@ -73,7 +73,7 @@ public class CommandGraph {
 	public static CommandGraph fromXml(File catalogFile) {
 		Check.notNull(catalogFile, "catalogFile");
 		Document catalog = tryParseFileIntoDocument(catalogFile);
-		return couldNotBeParsed(catalog) ? null : fromDocument(catalog);
+		return couldNotBeParsed(catalog) ? null : CommandGraph.fromDocument(catalog);
 	}
 
 	private static Document tryParseFileIntoDocument(File catalogFile) {
@@ -112,7 +112,7 @@ public class CommandGraph {
 	public static CommandGraph fromDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument, "catalogDocument");
 		List<CommandClass> commands = getCommandsFromDocument(catalogDocument);
-		return commands == null ? null : fromList(commands);
+		return commands == null ? null : CommandGraph.of(commands);
 	}
 
 	private static List<CommandClass> getCommandsFromDocument(Document catalogDocument) {
@@ -152,7 +152,7 @@ public class CommandGraph {
 	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
 	 *         of those two actions failed.
 	 */
-	private static CommandGraph fromList(List<CommandClass> commands) {
+	private static CommandGraph of(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 
@@ -169,7 +169,7 @@ public class CommandGraph {
 		return builder.build();
 	}
 
-	private static CommandGraphBuilder addCommandsToBuilder(List<CommandClass> commands, CommandGraphBuilder builder) {
+	private static CommandGraphBuilder addCommandsToBuilder(Iterable<CommandClass> commands, CommandGraphBuilder builder) {
 		for (CommandClass command : commands) {
 			if (!builder.addCommand(command)) {
 				return null;
@@ -178,7 +178,7 @@ public class CommandGraph {
 		return builder;
 	}
 
-	private static CommandGraphBuilder addDependenciesToBuilder(List<CommandClass> commandClasses,
+	private static CommandGraphBuilder addDependenciesToBuilder(Iterable<CommandClass> commandClasses,
 			CommandGraphBuilder builder) {
 		for (CommandClass commandClass : commandClasses) {
 			Command command = commandClass.newInstance();
