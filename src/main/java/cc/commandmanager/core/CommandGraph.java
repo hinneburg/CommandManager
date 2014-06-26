@@ -70,23 +70,17 @@ public class CommandGraph {
 	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
 	 *         of those two actions failed.
 	 */
-	public static CommandGraph fromXml(File catalogFile) {
+	public static Optional<CommandGraph> fromXml(File catalogFile) {
 		Check.notNull(catalogFile, "catalogFile");
-		Document catalog = tryParseFileIntoDocument(catalogFile);
-		return couldNotBeParsed(catalog) ? null : CommandGraph.fromDocument(catalog);
-	}
 
-	private static Document tryParseFileIntoDocument(File catalogFile) {
+		Document document;
 		try {
 			DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			return documentBuilder.parse(catalogFile);
+			document = documentBuilder.parse(catalogFile);
 		} catch (Exception e) {
-			return null;
+			return new Optional<CommandGraph>(null, e);
 		}
-	}
-
-	private static boolean couldNotBeParsed(Document catalog) {
-		return catalog == null;
+		return CommandGraph.fromDocument(document);
 	}
 
 	/**
@@ -109,28 +103,23 @@ public class CommandGraph {
 	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
 	 *         of those two actions failed.
 	 */
-	public static CommandGraph fromDocument(Document catalogDocument) {
+	public static Optional<CommandGraph> fromDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument, "catalogDocument");
-		List<CommandClass> commands = getCommandsFromDocument(catalogDocument);
-		return commands == null ? null : CommandGraph.of(commands);
-	}
 
-	private static List<CommandClass> getCommandsFromDocument(Document catalogDocument) {
-		final List<CommandClass> commands = Lists.newArrayList();
-
+		List<CommandClass> commands = Lists.newLinkedList();
 		Iterable<Element> domElements = nodeListToElementList(catalogDocument.getElementsByTagName(COMMAND));
 		for (Element element : domElements) {
 			if (element.hasAttribute(NAME) && element.hasAttribute(CLASS_NAME)) {
 				commands.add(new CommandClass(element.getAttribute(NAME), element.getAttribute(CLASS_NAME)));
 			} else {
-				return null;
+				return new Optional<CommandGraph>(null, "Name or class name missing in element: " + element);
 			}
 		}
-		return commands;
+		return CommandGraph.of(commands);
 	}
 
 	private static List<Element> nodeListToElementList(NodeList commandNodes) {
-		List<Element> commandElements = Lists.newArrayList();
+		List<Element> commandElements = Lists.newLinkedList();
 
 		for (int currentNode = 0; currentNode < commandNodes.getLength(); currentNode++) {
 			Node node = commandNodes.item(currentNode);
@@ -152,108 +141,52 @@ public class CommandGraph {
 	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
 	 *         of those two actions failed.
 	 */
-	private static CommandGraph of(Iterable<CommandClass> commands) {
+	private static Optional<CommandGraph> of(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 
-		builder = addCommandsToBuilder(commands, builder);
-		if (hasEncounteredProblems(builder)) {
-			return null;
-		}
-
-		builder = addDependenciesToBuilder(commands, builder);
-		if (hasEncounteredProblems(builder)) {
-			return null;
-		}
-
-		return builder.build();
-	}
-
-	private static CommandGraphBuilder addCommandsToBuilder(Iterable<CommandClass> commands, CommandGraphBuilder builder) {
+		// add commands
 		for (CommandClass command : commands) {
 			if (!builder.addCommand(command)) {
-				return null;
+				return new Optional<CommandGraph>(null, "Duplicate command: " + command);
 			}
 		}
-		return builder;
-	}
 
-	private static CommandGraphBuilder addDependenciesToBuilder(Iterable<CommandClass> commandClasses,
-			CommandGraphBuilder builder) {
-		for (CommandClass commandClass : commandClasses) {
+		// add dependencies
+		for (CommandClass commandClass : commands) {
 			Command command = commandClass.newInstance();
-			builder = addMandatoryBeforeDependenciesToBuilder(commandClass.getName(), command, builder);
-			if (hasEncounteredProblems(builder)) {
-				return null;
-			}
-			builder = addMandatoryAfterDependenciesToBuilder(commandClass.getName(), command, builder);
-			if (hasEncounteredProblems(builder)) {
-				return null;
-			}
-			builder = addOptionalBeforeDependenciesToBuilder(commandClass.getName(), command, builder);
-			if (hasEncounteredProblems(builder)) {
-				return null;
-			}
-			builder = addOptionalAfterDependenciesToBuilder(commandClass.getName(), command, builder);
-			if (hasEncounteredProblems(builder)) {
-				return null;
-			}
-		}
-		return builder;
-	}
+			String commandName = commandClass.getName();
 
-	private static CommandGraphBuilder addMandatoryBeforeDependenciesToBuilder(String name, Command command,
-			CommandGraphBuilder builder) {
-		for (String beforeDependency : command.getBeforeDependencies()) {
-			DependencyAdded dependencyAdded = builder.addMandatoryDependency(name, beforeDependency);
-
-			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
-				return null;
+			for (String beforeDependency : command.getBeforeDependencies()) {
+				DependencyAdded dependencyAdded = builder.addMandatoryDependency(commandName, beforeDependency);
+				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+					return new Optional<CommandGraph>(null, dependencyAdded);
+				}
 			}
-		}
-		return builder;
-	}
 
-	private static CommandGraphBuilder addMandatoryAfterDependenciesToBuilder(String name, Command command,
-			CommandGraphBuilder builder) {
-		for (String afterDependency : command.getAfterDependencies()) {
-			DependencyAdded dependencyAdded = builder.addMandatoryDependency(afterDependency, name);
+			for (String afterDependency : command.getAfterDependencies()) {
+				DependencyAdded dependencyAdded = builder.addMandatoryDependency(afterDependency, commandName);
+				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+					return new Optional<CommandGraph>(null, dependencyAdded);
+				}
+			}
 
-			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
-				return null;
+			for (String beforeDependency : command.getOptionalBeforeDependencies()) {
+				DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
+				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+					return new Optional<CommandGraph>(null, dependencyAdded);
+				}
+			}
+
+			for (String afterDependency : command.getOptionalAfterDependencies()) {
+				DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
+				if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)) {
+					return new Optional<CommandGraph>(null, dependencyAdded);
+				}
 			}
 		}
-		return builder;
-	}
 
-	private static CommandGraphBuilder addOptionalBeforeDependenciesToBuilder(String name, Command command,
-			CommandGraphBuilder builder) {
-		for (String beforeDependency : command.getOptionalBeforeDependencies()) {
-			DependencyAdded dependencyAdded = builder.addOptionalDependency(name, beforeDependency);
-
-			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)
-					&& !dependencyAdded.equals(DependencyAdded.MANDATORY_NOT_OVERWRITTEN)) {
-				return null;
-			}
-		}
-		return builder;
-	}
-
-	private static CommandGraphBuilder addOptionalAfterDependenciesToBuilder(String name, Command command,
-			CommandGraphBuilder builder) {
-		for (String afterDependency : command.getOptionalAfterDependencies()) {
-			DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, name);
-
-			if (DependencyAdded.FAILURE_STATES.contains(dependencyAdded)
-					&& !dependencyAdded.equals(DependencyAdded.MANDATORY_NOT_OVERWRITTEN)) {
-				return null;
-			}
-		}
-		return builder;
-	}
-
-	private static boolean hasEncounteredProblems(CommandGraphBuilder builder) {
-		return builder == null;
+		return new Optional<CommandGraph>(builder.build());
 	}
 
 	@SuppressWarnings("unchecked")

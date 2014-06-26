@@ -15,33 +15,33 @@ public enum DependencyAdded {
 	/**
 	 * Dependency added successfully.
 	 */
-	SUCCESSFUL,
+	SUCCESSFUL("Dependency added successfully."),
 
 	/**
 	 * Mandatory dependency added and overwrote an existing optional one.
 	 */
-	OPTIONAL_OVERWRITTEN,
+	OPTIONAL_OVERWRITTEN("Mandatory dependency added and overwrote an existing optional one."),
 
 	/**
 	 * Tried to add an optional dependency where a mandatory one was already present.
 	 */
-	MANDATORY_NOT_OVERWRITTEN,
+	MANDATORY_NOT_OVERWRITTEN("Tried to add an optional dependency where a mandatory one was already present."),
 
 	/**
 	 * Tried to add a dependency that would have introduced a cycle.
 	 */
-	CYCLE_DETECTED,
+	CYCLE_DETECTED("Tried to add a dependency that would have introduced a cycle."),
 
 	/**
 	 * Tried to add a dependency that is already present. Nothing happened.
 	 */
-	ALREADY_PRESENT,
+	ALREADY_PRESENT("Tried to add a dependency that is already present. Nothing happened."),
 
 	/**
 	 * Tried to add a dependency between commands of which one or both do not exist in the
 	 * {@linkplain CommandGraphBuilder}.
 	 */
-	COMMAND_MISSING;
+	COMMAND_MISSING("Tried to add a dependency between commands of which one or both do not exist in the graph.");
 
 	/**
 	 * {@linkplain Set} of states indicating that adding the dependency did work or at least was not canceled because it
@@ -57,4 +57,14 @@ public enum DependencyAdded {
 	public static Set<DependencyAdded> FAILURE_STATES = Sets.difference(ImmutableSet.copyOf(DependencyAdded.values()),
 			SUCCESS_STATES).immutableCopy();
 
+	private final String message;
+
+	private DependencyAdded(String message) {
+		this.message = message;
+	}
+
+	@Override
+	public String toString() {
+		return message;
+	}
 }

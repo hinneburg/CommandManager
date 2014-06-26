@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXParseException;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
@@ -88,7 +89,7 @@ public class CommandGraphTest {
 		documentRoot.appendChild(command5);
 		catalogDocument.appendChild(documentRoot);
 
-		CommandGraph graph = CommandGraph.fromDocument(catalogDocument);
+		CommandGraph graph = CommandGraph.fromDocument(catalogDocument).get();
 		assertThat(graph.containsCommand("command")).isTrue();
 		assertThat(graph.containsCommand("command2")).isTrue();
 		assertThat(graph.containsCommand("command3")).isTrue();
@@ -126,7 +127,7 @@ public class CommandGraphTest {
 				+ "<command name=\"command5\"\nclassName=\"cc.commandmanager.core.DummyCommand5\"/>\n" + "</catalog>");
 		output.close();
 
-		CommandGraph graph = CommandGraph.fromXml(catalog);
+		CommandGraph graph = CommandGraph.fromXml(catalog).get();
 		assertThat(graph.containsCommand("command")).isTrue();
 		assertThat(graph.containsCommand("command2")).isTrue();
 		assertThat(graph.containsCommand("command3")).isTrue();
@@ -145,7 +146,9 @@ public class CommandGraphTest {
 
 	@Test
 	public void testFromXmlFile_invalidXmlFile() throws IOException {
-		assertThat(CommandGraph.fromXml(folder.newFile("invalidXmlFile.xml"))).isNull();
+		Optional<CommandGraph> graph = CommandGraph.fromXml(folder.newFile("invalidXmlFile.xml"));
+		assertThat(graph.isPresent()).isFalse();
+		assertThat(graph.getNote()).isInstanceOf(SAXParseException.class);
 	}
 
 	@Test
@@ -196,7 +199,9 @@ public class CommandGraphTest {
 		documentRoot.appendChild(command2);
 		catalogDocument.appendChild(documentRoot);
 
-		assertThat(CommandGraph.fromDocument(catalogDocument)).isNull();
+		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		assertThat(graph.isPresent()).isFalse();
+		assertThat(graph.getNote().toString()).contains("Duplicate command");
 	}
 
 	@Test
@@ -215,7 +220,9 @@ public class CommandGraphTest {
 		documentRoot.appendChild(command2);
 		catalogDocument.appendChild(documentRoot);
 
-		assertThat(CommandGraph.fromDocument(catalogDocument)).isNull();
+		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		assertThat(graph.isPresent()).isFalse();
+		assertThat(graph.getNote().toString()).contains("Duplicate command:");
 	}
 
 	@Test
@@ -229,7 +236,9 @@ public class CommandGraphTest {
 		documentRoot.appendChild(command2);
 		catalogDocument.appendChild(documentRoot);
 
-		assertThat(CommandGraph.fromDocument(catalogDocument)).isNull();
+		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		assertThat(graph.isPresent()).isFalse();
+		assertThat(graph.getNote()).isEqualTo(DependencyAdded.COMMAND_MISSING);
 	}
 
 	@Test
@@ -242,7 +251,9 @@ public class CommandGraphTest {
 		documentRoot.appendChild(commandWithoutName);
 		catalogDocument.appendChild(documentRoot);
 
-		assertThat(CommandGraph.fromDocument(catalogDocument)).isNull();
+		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		assertThat(graph.isPresent()).isFalse();
+		assertThat(graph.getNote().toString()).contains("Name or class name missing in element");
 	}
 
 	@Test
@@ -255,7 +266,9 @@ public class CommandGraphTest {
 		documentRoot.appendChild(commandWithoutClassName);
 		catalogDocument.appendChild(documentRoot);
 
-		assertThat(CommandGraph.fromDocument(catalogDocument)).isNull();
+		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		assertThat(graph.isPresent()).isFalse();
+		assertThat(graph.getNote().toString()).contains("Name or class name missing in element");
 	}
 
 	@Test(expected = IllegalNullArgumentException.class)
