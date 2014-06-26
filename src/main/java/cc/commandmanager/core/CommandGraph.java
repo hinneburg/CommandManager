@@ -371,7 +371,10 @@ public class CommandGraph {
 	}
 
 	/**
-	 * 
+	 * @return This graph in DOT format. Dependencies are represented as edges with the dependent command as source,
+	 *         that is A -> B means that A depends on B. Mandatory dependencies will be drawed as solid lines while
+	 *         optional dependencies will be drawed as dashed lines. The command edges will outline
+	 *         {@linkplain CommandClass#toString()}.
 	 */
 	@Override
 	public String toString() {
