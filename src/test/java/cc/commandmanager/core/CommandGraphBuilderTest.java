@@ -126,6 +126,16 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
+	public void testAddMandatoryDependency_circularDependency_commandInTheMiddle() {
+		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("middle", "className.target"))).isTrue();
+		assertThat(builder.addCommand(new CommandClass("target", "className.target"))).isTrue();
+		assertThat(builder.addMandatoryDependency("source", "middle")).isEqualTo(DependencyAdded.SUCCESSFUL);
+		assertThat(builder.addMandatoryDependency("middle", "target")).isEqualTo(DependencyAdded.SUCCESSFUL);
+		assertThat(builder.addMandatoryDependency("target", "source")).isEqualTo(DependencyAdded.CYCLE_DETECTED);
+	}
+
+	@Test
 	public void testAddMandatoryDependency_dependencyWithoutCommand() {
 		assertThat(builder.addCommand(new CommandClass("source", "className.source"))).isTrue();
 		assertThat(builder.addMandatoryDependency("source", "nowhere")).isEqualTo(DependencyAdded.COMMAND_MISSING);
