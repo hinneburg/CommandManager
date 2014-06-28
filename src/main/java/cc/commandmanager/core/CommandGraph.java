@@ -16,7 +16,6 @@ import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph.CycleFoundException;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.Subgraph;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -335,10 +334,9 @@ public class CommandGraph {
 		for (CommandClass command : commands) {
 			checkGraphContains(command.getName());
 		}
-		Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>> subgraphOfGivenCommands = new Subgraph<CommandClass, DependencyEdge, DirectedAcyclicGraph<CommandClass, DependencyEdge>>(
-				commandGraph, Sets.newHashSet(commands), filterEdges(Sets.newHashSet(commands), commandGraph.edgeSet()));
-
-		return ImmutableList.copyOf(reverse(subgraphOfGivenCommands.getBase().iterator()));
+		CommandGraph subGraph = subGraphOf(commandGraph, commands, filterEdgesContaining(commandGraph.edgeSet(), Sets
+				.newHashSet(commands)));
+		return subGraph.topologicalOrderOfAllCommands();
 	}
 
 	private String checkGraphContains(String command) {
@@ -348,7 +346,8 @@ public class CommandGraph {
 		return command;
 	}
 
-	private Set<DependencyEdge> filterEdges(final Set<CommandClass> filter, Set<DependencyEdge> unfilteredEdges) {
+	private Set<DependencyEdge> filterEdgesContaining(Set<DependencyEdge> unfilteredEdges,
+			final Set<CommandClass> filter) {
 		return Sets.filter(unfilteredEdges, new Predicate<DependencyEdge>() {
 
 			@Override
@@ -357,6 +356,23 @@ public class CommandGraph {
 			}
 
 		});
+	}
+
+	private CommandGraph subGraphOf(DirectedAcyclicGraph<CommandClass, DependencyEdge> formerGraph,
+			Iterable<CommandClass> filteredCommands, Set<DependencyEdge> filteredEdges) {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		for (CommandClass command : filteredCommands) {
+			builder.addCommand(command);
+		}
+
+		for (DependencyEdge edge : filteredEdges) {
+			if (edge.isMandatory()) {
+				builder.addMandatoryDependency((CommandClass) edge.getSource(), (CommandClass) edge.getTarget());
+			} else {
+				builder.addOptionalDependency((CommandClass) edge.getSource(), (CommandClass) edge.getTarget());
+			}
+		}
+		return builder.build();
 	}
 
 	/**

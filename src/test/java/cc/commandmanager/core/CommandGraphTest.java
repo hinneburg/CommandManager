@@ -207,6 +207,13 @@ public class CommandGraphTest {
 		});
 	}
 
+	/**
+	 * Commands are dependent on each other as follows:
+	 * <ul>
+	 * <li>0 (mandatory) -> A
+	 * <li>A (mandatory) -> B
+	 * <li>A (optional) -> C
+	 **/
 	@Test
 	public void topologicalOrderOfGivenCommands() {
 		final CommandClass command0 = new CommandClass("0", "className.0");
@@ -225,7 +232,7 @@ public class CommandGraphTest {
 				new Condition<List<?>>() {
 					@Override
 					public boolean matches(List<?> topologicalOrder) {
-						return topologicalOrder.indexOf(command0) < topologicalOrder.indexOf(commandB)
+						return topologicalOrder.indexOf(commandB) > topologicalOrder.indexOf(command0)
 								|| topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
 					}
 				});
@@ -386,6 +393,19 @@ public class CommandGraphTest {
 	@Test
 	public void testTopologicalOrderOfAllCommands_noDuplicates() {
 		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
+	}
+
+	@Test
+	public void testTopologicalOrderOfGivenCommands_variousConnectedComponents() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand(commandA);
+		builder.addCommand(commandB);
+		builder.addCommand(commandC);
+		assertThat(builder.build().topologicalOrderOfGivenCommands(Sets.newHashSet(commandA, commandB, commandC)))
+				.contains(commandA, commandB, commandC).doesNotHaveDuplicates();
+
+		assertThat(builder.build().topologicalOrderOfGivenCommands(Sets.newHashSet(commandA)))
+				.containsExactly(commandA);
 	}
 
 	@Test
