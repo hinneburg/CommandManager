@@ -2,14 +2,16 @@ package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import cc.commandmanager.catalog.Catalog;
+import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -21,31 +23,15 @@ public class CommandManagerTest {
 
 	@Before
 	public void setUpCommandManagement() {
-		Map<String, Class<? extends Command>> commands = Maps.newHashMap();
-		commands.put("Success", SuccessfulCommand.class);
-		commands.put("Warning", WarningCommand.class);
-		commands.put("Failure", FailingCommand.class);
-		Catalog catalog = Catalog.fromMap(commands);
-		commandManager = new CommandManager(catalog);
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("Success", SuccessfulCommand.class.getName());
+		builder.addCommand("Warning", WarningCommand.class.getName());
+		builder.addCommand("Failure", FailingCommand.class.getName());
+		commandManager = new CommandManager(builder.build());
 	}
 
 	@Test
-	public void testGetDependencies() {
-
-	}
-
-	@Test(expected = NullPointerException.class)
-	public void testDependencies_NPE() {
-		commandManager.getDependencies();
-	}
-
-	@Test
-	public void testGetOrderedCommandsFromDependenciesAndStartCommands() {
-
-	}
-
-	@Test
-	public void testGetOrderedCommandsFromStartAndEndCommands() {
+	public void testGetOrderedCommandsFromStartCommands() {
 		Map<String, Set<String>> expected = Maps.newHashMap();
 		expected.put("Success", new HashSet<String>());
 		expected.put("Warning", new HashSet<String>());
@@ -54,8 +40,24 @@ public class CommandManagerTest {
 				commandManager.getOrderedCommands(Sets.newHashSet("Success", "Warning", "Failure"),
 						new HashSet<String>())).containsOnly("Success", "Warning", "Failure").doesNotHaveDuplicates();
 
-		assertThat(commandManager.getOrderedCommands(Sets.newHashSet("Success"), new HashSet<String>()))
+		assertThat(commandManager.getOrderedCommands(Sets.newHashSet("Success"), Collections.<String> emptySet()))
 				.containsExactly("Success");
+	}
+
+	@Test
+	public void testGetOrderedCommands_focusOnConnectedComponent() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("Single", "single.ClassName");
+		builder.addCommand("Connected1", "connected1.ClassName");
+		builder.addCommand("Connected2", "connected2.ClassName");
+		builder.addCommand("Connected3", "connected3.ClassName");
+		builder.addMandatoryDependency("Connected3", "Connected2");
+		builder.addMandatoryDependency("Connected2", "Connected1");
+
+		List<String> orderedCommands = new CommandManager(builder.build()).getOrderedCommands(Sets
+				.newHashSet("Connected1"), Collections.<String> emptySet());
+
+		assertThat(orderedCommands).excludes("Single").doesNotHaveDuplicates();
 	}
 
 	@Test
