@@ -126,10 +126,10 @@ public class CommandGraphTest {
 		BufferedWriter output = new BufferedWriter(new FileWriter(catalog));
 		output.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<catalog>\n"
 				+ "<command name=\"command\" className=\"cc.commandmanager.core.DummyCommand1\"/>\n	"
-				+ "<command name=\"command2\"\nclassName=\"cc.commandmanager.core.DummyCommand2\"/>\n"
-				+ "<command name=\"command3\"\nclassName=\"cc.commandmanager.core.DummyCommand3\"/>\n"
-				+ "<command name=\"command4\"\nclassName=\"cc.commandmanager.core.DummyCommand4\"/>\n"
-				+ "<command name=\"command5\"\nclassName=\"cc.commandmanager.core.DummyCommand5\"/>\n" + "</catalog>");
+				+ "<command name=\"command2\" className=\"cc.commandmanager.core.DummyCommand2\"/>\n"
+				+ "<command name=\"command3\" className=\"cc.commandmanager.core.DummyCommand3\"/>\n"
+				+ "<command name=\"command4\" className=\"cc.commandmanager.core.DummyCommand4\"/>\n"
+				+ "<command name=\"command5\" className=\"cc.commandmanager.core.DummyCommand5\"/>\n" + "</catalog>");
 		output.close();
 
 		CommandGraph graph = CommandGraph.fromXml(catalog).get();
