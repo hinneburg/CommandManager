@@ -346,6 +346,22 @@ public class CommandGraph {
 		return subGraph.topologicalOrderOfAllCommands();
 	}
 
+	/**
+	 * Arrange the given commands in a topological order, meaning that if there exists a dependency from command A to
+	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * the given commands must exist in this graph.
+	 * 
+	 * @param commands
+	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
+	 *            null.
+	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 * @throws CommandNotFoundException
+	 *             if at least one of the given commands cannot be found in this graph.
+	 */
+	public List<CommandClass> topologicalOrderOf(CommandClass... commands) {
+		return topologicalOrderOf(ImmutableList.copyOf(commands));
+	}
+
 	private String checkGraphContains(String command) {
 		if (!containsCommand(command)) {
 			throw new CommandNotFoundException(command);

@@ -25,6 +25,7 @@ import org.xml.sax.SAXParseException;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -402,7 +403,7 @@ public class CommandGraphTest {
 	public void testTopologicalOrderOfGivenCommands_commandDoesNotExist() {
 		final CommandClass command0 = new CommandClass("0", "className.0");
 		CommandGraph graph = builder.build();
-		graph.topologicalOrderOf(Lists.newArrayList(command0));
+		graph.topologicalOrderOf(command0);
 	}
 
 	@Test
@@ -411,11 +412,18 @@ public class CommandGraphTest {
 		builder.addCommand(commandA);
 		builder.addCommand(commandB);
 		builder.addCommand(commandC);
-		assertThat(builder.build().topologicalOrderOf(Sets.newHashSet(commandA, commandB, commandC)))
-				.contains(commandA, commandB, commandC).doesNotHaveDuplicates();
 
-		assertThat(builder.build().topologicalOrderOf(Sets.newHashSet(commandA)))
-				.containsExactly(commandA);
+		assertThat(builder.build().topologicalOrderOf(commandA, commandB, commandC)).contains(commandA, commandB,
+				commandC).doesNotHaveDuplicates();
+
+		assertThat(builder.build().topologicalOrderOf(commandA)).containsExactly(commandA);
+	}
+
+	@Test
+	public void testTopologicalOrderOfGivenCommands_iterableEqualsVarargs() {
+		CommandGraph graph = builder.build();
+		assertThat(graph.topologicalOrderOf(commandA, commandB, commandC)).isEqualTo(
+				graph.topologicalOrderOf(ImmutableList.of(commandA, commandB, commandC)));
 	}
 
 	@Test
