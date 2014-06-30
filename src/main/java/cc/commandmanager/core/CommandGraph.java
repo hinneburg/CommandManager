@@ -23,6 +23,8 @@ import org.w3c.dom.NodeList;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -53,7 +55,7 @@ public class CommandGraph {
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
 	private final ImmutableList<CommandClass> topologicalOrdering;
-	private final List<Set<CommandClass>> connectedComponents;
+	private final ImmutableList<Set<CommandClass>> connectedComponents;
 
 	/**
 	 * Create a new {@linkplain CommandGraph}. Parse the XML file and build a valid graph of {@linkplain CommandClass}
@@ -226,9 +228,14 @@ public class CommandGraph {
 		return Lists.reverse(Lists.newArrayList(iterator));
 	}
 
-	private static List<Set<CommandClass>> computeConnectedComponents(
+	private static ImmutableList<Set<CommandClass>> computeConnectedComponents(
 			ConnectivityInspector<CommandClass, DependencyEdge> inspector) {
-		return inspector.connectedSets();
+		Builder<Set<CommandClass>> result = ImmutableList.builder();
+		List<Set<CommandClass>> connectedSets = inspector.connectedSets();
+		for (Set<CommandClass> set : connectedSets) {
+			result.add(ImmutableSet.copyOf(set));
+		}
+		return result.build();
 	}
 
 	/**
@@ -383,7 +390,7 @@ public class CommandGraph {
 	 *         resulting list will be immutable.
 	 */
 	public List<Set<CommandClass>> getConnectedComponents() {
-		return ImmutableList.copyOf(connectedComponents);
+		return connectedComponents;
 	}
 
 	/**
