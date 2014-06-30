@@ -434,7 +434,7 @@ public class CommandGraphTest {
 	@Test
 	public void testGetConnectedComponents_emptyGraph() {
 		CommandGraph graph = (new CommandGraphBuilder()).build();
-		assertThat(graph.getConnectedComponents()).hasSize(0);
+		assertThat(graph.getConnectedComponents()).isEmpty();
 	}
 
 }
