@@ -189,7 +189,7 @@ public class CommandGraphTest {
 	}
 
 	@Test
-	public void topologicalOrderOfAllCommands() {
+	public void testTopologicalOrderOfAllCommands() {
 		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
 			@Override
 			public boolean matches(List<?> topologicalOrder) {
@@ -215,7 +215,7 @@ public class CommandGraphTest {
 	 * <li>A (optional) -> C
 	 **/
 	@Test
-	public void topologicalOrderOfGivenCommands() {
+	public void testTopologicalOrderOfGivenCommands() {
 		final CommandClass command0 = new CommandClass("0", "className.0");
 		builder.addCommand(command0);
 		builder.addMandatoryDependency(command0, commandA);
