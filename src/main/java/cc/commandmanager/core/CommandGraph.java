@@ -336,7 +336,7 @@ public class CommandGraph {
 	 * @throws CommandNotFoundException
 	 *             if at least one of the given commands cannot be found in this graph.
 	 */
-	public List<CommandClass> topologicalOrderOfGivenCommands(Iterable<CommandClass> commands) {
+	public List<CommandClass> topologicalOrderOf(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		for (CommandClass command : commands) {
 			checkGraphContains(command.getName());

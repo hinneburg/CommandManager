@@ -388,7 +388,7 @@ public class CommandGraphTest {
 			}
 		});
 
-		assertThat(graph.topologicalOrderOfGivenCommands(Lists.newArrayList(commandB, command0))).satisfies(
+		assertThat(graph.topologicalOrderOf(Lists.newArrayList(commandB, command0))).satisfies(
 				new Condition<List<?>>() {
 
 					@Override
@@ -402,7 +402,7 @@ public class CommandGraphTest {
 	public void testTopologicalOrderOfGivenCommands_commandDoesNotExist() {
 		final CommandClass command0 = new CommandClass("0", "className.0");
 		CommandGraph graph = builder.build();
-		graph.topologicalOrderOfGivenCommands(Lists.newArrayList(command0));
+		graph.topologicalOrderOf(Lists.newArrayList(command0));
 	}
 
 	@Test
@@ -411,10 +411,10 @@ public class CommandGraphTest {
 		builder.addCommand(commandA);
 		builder.addCommand(commandB);
 		builder.addCommand(commandC);
-		assertThat(builder.build().topologicalOrderOfGivenCommands(Sets.newHashSet(commandA, commandB, commandC)))
+		assertThat(builder.build().topologicalOrderOf(Sets.newHashSet(commandA, commandB, commandC)))
 				.contains(commandA, commandB, commandC).doesNotHaveDuplicates();
 
-		assertThat(builder.build().topologicalOrderOfGivenCommands(Sets.newHashSet(commandA)))
+		assertThat(builder.build().topologicalOrderOf(Sets.newHashSet(commandA)))
 				.containsExactly(commandA);
 	}
 
