@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.qualitycheck.exception.IllegalNullArgumentException;
+import net.sf.qualitycheck.exception.IllegalNullElementsException;
 
 import org.fest.assertions.Condition;
 import org.junit.Before;
@@ -363,6 +364,23 @@ public class CommandGraphTest {
 	@Test
 	public void testTopologicalOrderOfAllCommands_noDuplicates() {
 		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
+	}
+
+	@Test(expected = CommandNotFoundException.class)
+	public void testTopologicalOrderOfGivenCommands_commandNotFound() {
+		graph.topologicalOrderOfGivenCommands(Lists.newArrayList(new CommandClass("X", "className.X")));
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testTopologicalOrderOfGivenCommands_nullArgument() {
+		graph.topologicalOrderOfGivenCommands(null);
+	}
+
+	@Test(expected = IllegalNullElementsException.class)
+	public void testTopologicalOrderOfGivenCommands_nullElement() {
+		List<CommandClass> nullElement = Lists.newArrayList();
+		nullElement.add(null);
+		graph.topologicalOrderOfGivenCommands(nullElement);
 	}
 
 	@Test
