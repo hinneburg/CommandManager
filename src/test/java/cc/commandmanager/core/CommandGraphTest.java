@@ -399,7 +399,7 @@ public class CommandGraphTest {
 
 					@Override
 					public boolean matches(List<?> topologicalOrder) {
-						return topologicalOrder.indexOf(commandB) > topologicalOrder.indexOf(command0);
+						return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
 					}
 				});
 	}

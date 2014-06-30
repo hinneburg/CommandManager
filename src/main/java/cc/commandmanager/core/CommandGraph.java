@@ -1,12 +1,13 @@
 package cc.commandmanager.core;
 
+import static com.google.common.base.Predicates.in;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -21,14 +22,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * A graph to represent an amount of {@link Command}s and the dependency relationship between them. A
@@ -348,9 +347,9 @@ public class CommandGraph {
 		for (CommandClass command : commands) {
 			checkGraphContains(command.getName());
 		}
-		CommandGraph subGraph = subGraphOf(commandGraph, commands,
-				filterEdgesContaining(commandGraph.edgeSet(), Sets.newHashSet(commands)));
-		return subGraph.topologicalOrderOfAllCommands();
+		List<CommandClass> requestedCommands = ImmutableList.copyOf(commands);
+		Iterable<CommandClass> order = Iterables.filter(topologicalOrderOfAllCommands(), in(requestedCommands));
+		return ImmutableList.copyOf(order);
 	}
 
 	/**
@@ -374,35 +373,6 @@ public class CommandGraph {
 			throw new CommandNotFoundException(command);
 		}
 		return command;
-	}
-
-	private static Set<DependencyEdge> filterEdgesContaining(Set<DependencyEdge> unfilteredEdges,
-			final Set<CommandClass> filter) {
-		return Sets.filter(unfilteredEdges, new Predicate<DependencyEdge>() {
-
-			@Override
-			public boolean apply(@Nullable DependencyEdge edge) {
-				return filter.contains(edge.getSource()) && filter.contains(edge.getTarget());
-			}
-
-		});
-	}
-
-	private static CommandGraph subGraphOf(DirectedAcyclicGraph<CommandClass, DependencyEdge> formerGraph,
-			Iterable<CommandClass> filteredCommands, Set<DependencyEdge> filteredEdges) {
-		CommandGraphBuilder builder = new CommandGraphBuilder();
-		for (CommandClass command : filteredCommands) {
-			builder.addCommand(command);
-		}
-
-		for (DependencyEdge edge : filteredEdges) {
-			if (edge.isMandatory()) {
-				builder.addMandatoryDependency((CommandClass) edge.getSource(), (CommandClass) edge.getTarget());
-			} else {
-				builder.addOptionalDependency((CommandClass) edge.getSource(), (CommandClass) edge.getTarget());
-			}
-		}
-		return builder.build();
 	}
 
 	/**
