@@ -27,7 +27,6 @@ import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class CommandGraphTest {
 
@@ -191,11 +190,15 @@ public class CommandGraphTest {
 
 	@Test
 	public void testGetConnectedComponents() {
-		assertThat(graph.getConnectedComponents()).hasSize(1).contains(Sets.newHashSet(commandA, commandB, commandC));
+		assertThat(graph.getConnectedComponents()).containsOnly(graph);
 
-		builder.addCommand("D", "className.D");
-		assertThat(builder.build().getConnectedComponents()).hasSize(2).contains(
-				Sets.newHashSet(commandA, commandB, commandC), Sets.newHashSet(new CommandClass("D", "className.D")));
+		CommandGraphBuilder smallerGraphBuilder = CommandGraph.builder();
+		smallerGraphBuilder.addCommand("D", "className.D");
+		CommandGraph smallerGraph = smallerGraphBuilder.build();
+
+		builder.addCommand(smallerGraph.getCommandClass("D"));
+		CommandGraph biggerGraph = builder.build();
+		assertThat(biggerGraph.getConnectedComponents()).containsOnly(graph, smallerGraph);
 	}
 
 	@Test
@@ -435,6 +438,32 @@ public class CommandGraphTest {
 		CommandGraph graph = builder.build();
 		assertThat(graph.topologicalOrderOf(commandA, commandB, commandC)).isEqualTo(
 				graph.topologicalOrderOf(ImmutableList.of(commandA, commandB, commandC)));
+	}
+
+	@Test
+	public void testEquals_sameBuild() {
+		assertThat(builder.build().equals(builder.build())).isTrue();
+	}
+
+	@Test
+	public void testEquals_differentBuildSameGraph() {
+		CommandGraphBuilder builder1 = CommandGraph.builder();
+		builder1.addCommand("A", "A");
+		builder1.addCommand("B", "B");
+		builder1.addMandatoryDependency("A", "B");
+		CommandGraphBuilder builder2 = CommandGraph.builder();
+		builder2.addCommand("A", "A");
+		builder2.addCommand("B", "B");
+		builder2.addMandatoryDependency("A", "B");
+		assertThat(builder1.build().equals(builder2.build())).isTrue();
+	}
+
+	@Test
+	public void testEquals_shouldBeDifferent() {
+		CommandGraph smallGraph = builder.build();
+		builder.addCommand("D", "class.D");
+		CommandGraph bigGraph = builder.build();
+		assertThat(smallGraph.equals(bigGraph)).isFalse();
 	}
 
 }

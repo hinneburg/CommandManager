@@ -23,7 +23,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -54,7 +53,6 @@ public class CommandGraph {
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
 	private final ImmutableList<CommandClass> topologicalOrdering;
-	private final ImmutableList<Set<CommandClass>> connectedComponents;
 
 	/**
 	 * @return a builder to build a {@linkplain CommandGraph}
@@ -213,8 +211,6 @@ public class CommandGraph {
 		commandGraph = cloneGraph(builder.graph);
 		vertices = Maps.newHashMap(builder.commandClasses);
 		topologicalOrdering = ImmutableList.copyOf(reverse(commandGraph.iterator()));
-		connectedComponents = computeConnectedComponents(new ConnectivityInspector<CommandClass, DependencyEdge>(
-				commandGraph));
 	}
 
 	private DirectedAcyclicGraph<CommandClass, DependencyEdge> cloneGraph(
@@ -232,16 +228,6 @@ public class CommandGraph {
 
 	private static List<CommandClass> reverse(Iterator<CommandClass> iterator) {
 		return Lists.reverse(Lists.newArrayList(iterator));
-	}
-
-	private static ImmutableList<Set<CommandClass>> computeConnectedComponents(
-			ConnectivityInspector<CommandClass, DependencyEdge> inspector) {
-		Builder<Set<CommandClass>> result = ImmutableList.builder();
-		List<Set<CommandClass>> connectedSets = inspector.connectedSets();
-		for (Set<CommandClass> set : connectedSets) {
-			result.add(ImmutableSet.copyOf(set));
-		}
-		return result.build();
 	}
 
 	/**
@@ -377,19 +363,47 @@ public class CommandGraph {
 
 	/**
 	 * @see ConnectivityInspector#connectedSets()
-	 * @return A list of Set s, where each set contains all vertices that are in the same maximally connected component.
-	 *         All graph vertices occur in exactly one set. For more on maximally connected component, see <a
-	 *         href=http://www.nist.gov/dads/HTML/maximallyConnectedComponent.html>maximallyConnectedComponent</a>. The
-	 *         resulting list will be immutable.
+	 * @return An immutable set of all connected components in form of {@linkplain CommandGraph}s.
+	 *         <p>
+	 *         For more on maximally connected component, see <a
+	 *         href=http://www.nist.gov/dads/HTML/maximallyConnectedComponent.html>maximallyConnectedComponent</a>.
 	 */
-	public List<Set<CommandClass>> getConnectedComponents() {
-		return connectedComponents;
+	public Set<CommandGraph> getConnectedComponents() {
+		return computeConnectedComponents(commandGraph);
+	}
+
+	private static ImmutableSet<CommandGraph> computeConnectedComponents(
+			DirectedAcyclicGraph<CommandClass, DependencyEdge> graph) {
+		ConnectivityInspector<CommandClass, DependencyEdge> inspector = new ConnectivityInspector<CommandClass, DependencyEdge>(
+				graph);
+		ImmutableSet.Builder<CommandGraph> result = ImmutableSet.builder();
+
+		for (Set<CommandClass> connectedSet : inspector.connectedSets()) {
+			CommandGraphBuilder component = CommandGraph.builder();
+			for (CommandClass commandClass : connectedSet) {
+				component.addCommand(commandClass);
+			}
+			for (DependencyEdge dependency : graph.edgeSet()) {
+				if (connectedSet.contains(dependency.getSource())) {
+					if (dependency.isMandatory()) {
+						component.addMandatoryDependency((CommandClass) dependency.getSource(),
+								(CommandClass) dependency.getTarget());
+					} else {
+						component.addOptionalDependency((CommandClass) dependency.getSource(),
+								(CommandClass) dependency.getTarget());
+					}
+				}
+			}
+			result.add(component.build());
+		}
+
+		return result.build();
 	}
 
 	/**
 	 * @return This graph in DOT format. Dependencies are represented as edges with the dependent command as source,
-	 *         that is A -> B means that A depends on B. Mandatory dependencies will be drawed as solid lines while
-	 *         optional dependencies will be drawed as dashed lines. The command edges will outline
+	 *         that is A -> B means that A depends on B. Mandatory dependencies will be drawn as solid lines while
+	 *         optional dependencies will be drawn as dashed lines. The command edges will outline
 	 *         {@linkplain CommandClass#toString()}.
 	 */
 	@Override
@@ -407,6 +421,41 @@ public class CommandGraph {
 
 		result.append("}");
 		return result.toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return topologicalOrdering.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof CommandGraph)) {
+			return false;
+		}
+		CommandGraph that = (CommandGraph) obj;
+		Set<DependencyEdge> thisSet = this.commandGraph.edgeSet();
+		Set<DependencyEdge> thatSet = that.commandGraph.edgeSet();
+		boolean edgeSetsAreEqual = true;
+		for (DependencyEdge edge : thisSet) {
+			if (!thatSet.contains(edge)) {
+				edgeSetsAreEqual = false;
+				break;
+			}
+		}
+		for (DependencyEdge edge : thatSet) {
+			if (!thisSet.contains(edge)) {
+				edgeSetsAreEqual = false;
+				break;
+			}
+		}
+		return edgeSetsAreEqual && this.commandGraph.vertexSet().equals(that.commandGraph.vertexSet());
 	}
 
 	private static String getGraphLayout() {
@@ -678,6 +727,31 @@ public class CommandGraph {
 		public String toString() {
 			String mandatoryOrOptional = isMandatory() ? "Mandatory" : "Optional";
 			return mandatoryOrOptional + " dependency:[" + super.getSource() + "] -> [" + super.getTarget() + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (mandatory ? 1231 : 1237) + ((getSource() == null) ? 0 : getSource().hashCode())
+					+ ((getTarget() == null) ? 0 : getTarget().hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (!(obj instanceof DependencyEdge)) {
+				return false;
+			}
+			DependencyEdge other = (DependencyEdge) obj;
+			return mandatory == other.mandatory && getSource().equals(other.getSource())
+					&& getTarget().equals(other.getTarget());
 		}
 
 	}
