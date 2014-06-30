@@ -199,6 +199,12 @@ public class CommandGraphTest {
 	}
 
 	@Test
+	public void testGetConnectedComponents_emptyGraph() {
+		CommandGraph graph = CommandGraph.builder().build();
+		assertThat(graph.getConnectedComponents()).isEmpty();
+	}
+
+	@Test
 	public void testToString() {
 		assertThat(graph.toString())
 				.isEqualTo(
@@ -429,12 +435,6 @@ public class CommandGraphTest {
 		CommandGraph graph = builder.build();
 		assertThat(graph.topologicalOrderOf(commandA, commandB, commandC)).isEqualTo(
 				graph.topologicalOrderOf(ImmutableList.of(commandA, commandB, commandC)));
-	}
-
-	@Test
-	public void testGetConnectedComponents_emptyGraph() {
-		CommandGraph graph = (new CommandGraphBuilder()).build();
-		assertThat(graph.getConnectedComponents()).isEmpty();
 	}
 
 }
