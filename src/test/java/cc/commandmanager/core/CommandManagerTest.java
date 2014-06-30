@@ -61,6 +61,12 @@ public class CommandManagerTest {
 	}
 
 	@Test
+	public void testGetOrderedCommands_wholeGraphGetsOrderedOnEmptyParameters() {
+		assertThat(commandManager.getOrderedCommands(Collections.<String> emptySet(), Collections.<String> emptySet()))
+				.contains("Success", "Warning", "Failure");
+	}
+
+	@Test
 	public void testExecutionAbortionOnFailure() {
 		// TODO only way of doing this until #41 is implemented and returns the result state
 		commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure"));

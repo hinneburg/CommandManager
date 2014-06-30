@@ -218,6 +218,16 @@ public class CommandGraphTest {
 	}
 
 	@Test
+	public void testDependenciesInvertEdgeDirection() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand(commandA);
+		builder.addCommand(commandB);
+		builder.addMandatoryDependency(commandA, commandB);
+
+		assertThat(builder.build().topologicalOrderOfAllCommands()).containsSequence(commandB, commandA);
+	}
+
+	@Test
 	public void testFromDocument_illegalEqualCommandName() {
 		Document catalogDocument = createBaseCatalogDocument();
 		Element documentRoot = catalogDocument.createElement("catalog");
