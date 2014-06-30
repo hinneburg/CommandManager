@@ -398,6 +398,13 @@ public class CommandGraphTest {
 				});
 	}
 
+	@Test(expected = CommandNotFoundException.class)
+	public void testTopologicalOrderOfGivenCommands_commandDoesNotExist() {
+		final CommandClass command0 = new CommandClass("0", "className.0");
+		CommandGraph graph = builder.build();
+		graph.topologicalOrderOfGivenCommands(Lists.newArrayList(command0));
+	}
+
 	@Test
 	public void testTopologicalOrderOfGivenCommands_variousConnectedComponents() {
 		CommandGraphBuilder builder = new CommandGraphBuilder();
