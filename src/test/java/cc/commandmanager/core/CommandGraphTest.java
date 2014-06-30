@@ -189,55 +189,6 @@ public class CommandGraphTest {
 	}
 
 	@Test
-	public void testTopologicalOrderOfAllCommands() {
-		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
-			@Override
-			public boolean matches(List<?> topologicalOrder) {
-				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(commandA)
-						&& topologicalOrder.indexOf(commandC) < topologicalOrder.indexOf(commandA);
-			}
-		});
-
-		builder.addMandatoryDependency(commandC, commandB);
-		assertThat(builder.build().topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
-			@Override
-			public boolean matches(List<?> topologicalOrder) {
-				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(commandC);
-			}
-		});
-	}
-
-	/**
-	 * Commands are dependent on each other as follows:
-	 * <ul>
-	 * <li>0 (mandatory) -> A
-	 * <li>A (mandatory) -> B
-	 * <li>A (optional) -> C
-	 **/
-	@Test
-	public void testTopologicalOrderOfGivenCommands() {
-		final CommandClass command0 = new CommandClass("0", "className.0");
-		builder.addCommand(command0);
-		builder.addMandatoryDependency(command0, commandA);
-
-		CommandGraph graph = builder.build();
-		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
-			@Override
-			public boolean matches(List<?> topologicalOrder) {
-				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
-			}
-		});
-
-		assertThat(graph.topologicalOrderOfGivenCommands(Lists.newArrayList(commandB, command0))).satisfies(
-				new Condition<List<?>>() {
-					@Override
-					public boolean matches(List<?> topologicalOrder) {
-						return topologicalOrder.indexOf(commandB) > topologicalOrder.indexOf(command0);
-					}
-				});
-	}
-
-	@Test
 	public void testGetConnectedComponents() {
 		assertThat(graph.getConnectedComponents()).hasSize(1).contains(Sets.newHashSet(commandA, commandB, commandC));
 
@@ -392,6 +343,59 @@ public class CommandGraphTest {
 	@Test
 	public void testTopologicalOrderOfAllCommands_noDuplicates() {
 		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
+	}
+
+	@Test
+	public void testTopologicalOrderOfAllCommands() {
+		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
+
+			@Override
+			public boolean matches(List<?> topologicalOrder) {
+				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(commandA)
+						&& topologicalOrder.indexOf(commandC) < topologicalOrder.indexOf(commandA);
+			}
+		});
+
+		builder.addMandatoryDependency(commandC, commandB);
+		assertThat(builder.build().topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
+
+			@Override
+			public boolean matches(List<?> topologicalOrder) {
+				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(commandC);
+			}
+		});
+	}
+
+	/**
+	 * Commands are dependent on each other as follows:
+	 * <ul>
+	 * <li>0 (mandatory) -> A
+	 * <li>A (mandatory) -> B
+	 * <li>A (optional) -> C
+	 **/
+	@Test
+	public void testTopologicalOrderOfGivenCommands() {
+		final CommandClass command0 = new CommandClass("0", "className.0");
+		builder.addCommand(command0);
+		builder.addMandatoryDependency(command0, commandA);
+
+		CommandGraph graph = builder.build();
+		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
+
+			@Override
+			public boolean matches(List<?> topologicalOrder) {
+				return topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
+			}
+		});
+
+		assertThat(graph.topologicalOrderOfGivenCommands(Lists.newArrayList(commandB, command0))).satisfies(
+				new Condition<List<?>>() {
+
+					@Override
+					public boolean matches(List<?> topologicalOrder) {
+						return topologicalOrder.indexOf(commandB) > topologicalOrder.indexOf(command0);
+					}
+				});
 	}
 
 	@Test
