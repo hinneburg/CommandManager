@@ -346,7 +346,7 @@ public class CommandGraph {
 		return command;
 	}
 
-	private Set<DependencyEdge> filterEdgesContaining(Set<DependencyEdge> unfilteredEdges,
+	private static Set<DependencyEdge> filterEdgesContaining(Set<DependencyEdge> unfilteredEdges,
 			final Set<CommandClass> filter) {
 		return Sets.filter(unfilteredEdges, new Predicate<DependencyEdge>() {
 
@@ -358,7 +358,7 @@ public class CommandGraph {
 		});
 	}
 
-	private CommandGraph subGraphOf(DirectedAcyclicGraph<CommandClass, DependencyEdge> formerGraph,
+	private static CommandGraph subGraphOf(DirectedAcyclicGraph<CommandClass, DependencyEdge> formerGraph,
 			Iterable<CommandClass> filteredCommands, Set<DependencyEdge> filteredEdges) {
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 		for (CommandClass command : filteredCommands) {
