@@ -232,8 +232,7 @@ public class CommandGraphTest {
 				new Condition<List<?>>() {
 					@Override
 					public boolean matches(List<?> topologicalOrder) {
-						return topologicalOrder.indexOf(commandB) > topologicalOrder.indexOf(command0)
-								|| topologicalOrder.indexOf(commandB) < topologicalOrder.indexOf(command0);
+						return topologicalOrder.indexOf(commandB) > topologicalOrder.indexOf(command0);
 					}
 				});
 	}
