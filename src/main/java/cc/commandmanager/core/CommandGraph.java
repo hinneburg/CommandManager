@@ -52,7 +52,7 @@ public class CommandGraph {
 
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
 	private final Map<String, CommandClass> vertices;
-	private final List<CommandClass> topologicalOrdering;
+	private final ImmutableList<CommandClass> topologicalOrdering;
 	private final List<Set<CommandClass>> connectedComponents;
 
 	/**
@@ -204,7 +204,7 @@ public class CommandGraph {
 
 		commandGraph = cloneGraph(builder.graph);
 		vertices = Maps.newHashMap(builder.commandClasses);
-		topologicalOrdering = reverse(commandGraph.iterator());
+		topologicalOrdering = ImmutableList.copyOf(reverse(commandGraph.iterator()));
 		connectedComponents = computeConnectedComponents(new ConnectivityInspector<CommandClass, DependencyEdge>(
 				commandGraph));
 	}
@@ -314,7 +314,7 @@ public class CommandGraph {
 	 * @return A topologically sorted list of {@link CommandClasses}es. This list will be immutable.
 	 */
 	public List<CommandClass> topologicalOrderOfAllCommands() {
-		return ImmutableList.copyOf(topologicalOrdering);
+		return topologicalOrdering;
 	}
 
 	/**
@@ -334,8 +334,8 @@ public class CommandGraph {
 		for (CommandClass command : commands) {
 			checkGraphContains(command.getName());
 		}
-		CommandGraph subGraph = subGraphOf(commandGraph, commands, filterEdgesContaining(commandGraph.edgeSet(), Sets
-				.newHashSet(commands)));
+		CommandGraph subGraph = subGraphOf(commandGraph, commands,
+				filterEdgesContaining(commandGraph.edgeSet(), Sets.newHashSet(commands)));
 		return subGraph.topologicalOrderOfAllCommands();
 	}
 
