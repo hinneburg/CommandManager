@@ -58,6 +58,13 @@ public class CommandGraph {
 	private final ImmutableList<Set<CommandClass>> connectedComponents;
 
 	/**
+	 * @return a builder to build a {@linkplain CommandGraph}
+	 */
+	public static CommandGraphBuilder builder() {
+		return new CommandGraphBuilder();
+	}
+
+	/**
 	 * Create a new {@linkplain CommandGraph}. Parse the XML file and build a valid graph of {@linkplain CommandClass}
 	 * vertices and mandatory and optional dependencies, respectively.
 	 * <p>

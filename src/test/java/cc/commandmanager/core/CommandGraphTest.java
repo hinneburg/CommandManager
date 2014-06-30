@@ -347,6 +347,11 @@ public class CommandGraphTest {
 	}
 
 	@Test
+	public void testTopologicalOrderOfAllCommands_shouldBeEmpty() {
+		assertThat(CommandGraph.builder().build().topologicalOrderOfAllCommands()).isEmpty();
+	}
+
+	@Test
 	public void testTopologicalOrderOfAllCommands() {
 		assertThat(graph.topologicalOrderOfAllCommands()).satisfies(new Condition<List<?>>() {
 
