@@ -2,6 +2,7 @@ package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.io.File;
 import java.util.List;
 
 import org.junit.Test;
@@ -13,8 +14,8 @@ public class CommandManagerIntegrationTest {
 	public static final String EXECUTED_COMMANDS = "executedCommands";
 
 	private Context context = new Context();
-	private CommandManager commandManagement = new CommandManager(CommandManagerIntegrationTest.class.getClassLoader()
-			.getResource("CommandManagerIntegrationTest-catalog.xml").getFile(), context);
+	private CommandManager commandManagement = new CommandManager(new File(CommandManagerIntegrationTest.class
+			.getClassLoader().getResource("CommandManagerIntegrationTest-catalog.xml").getFile()), context);
 
 	@Test
 	public void testExecuteAllCommands() {

@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.qualitycheck.exception.IllegalNullArgumentException;
+import net.sf.qualitycheck.exception.IllegalNullElementsException;
 
 import org.fest.assertions.Condition;
 import org.junit.Before;
@@ -126,10 +127,10 @@ public class CommandGraphTest {
 		BufferedWriter output = new BufferedWriter(new FileWriter(catalog));
 		output.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<catalog>\n"
 				+ "<command name=\"command\" className=\"cc.commandmanager.core.DummyCommand1\"/>\n	"
-				+ "<command name=\"command2\"\nclassName=\"cc.commandmanager.core.DummyCommand2\"/>\n"
-				+ "<command name=\"command3\"\nclassName=\"cc.commandmanager.core.DummyCommand3\"/>\n"
-				+ "<command name=\"command4\"\nclassName=\"cc.commandmanager.core.DummyCommand4\"/>\n"
-				+ "<command name=\"command5\"\nclassName=\"cc.commandmanager.core.DummyCommand5\"/>\n" + "</catalog>");
+				+ "<command name=\"command2\" className=\"cc.commandmanager.core.DummyCommand2\"/>\n"
+				+ "<command name=\"command3\" className=\"cc.commandmanager.core.DummyCommand3\"/>\n"
+				+ "<command name=\"command4\" className=\"cc.commandmanager.core.DummyCommand4\"/>\n"
+				+ "<command name=\"command5\" className=\"cc.commandmanager.core.DummyCommand5\"/>\n" + "</catalog>");
 		output.close();
 
 		CommandGraph graph = CommandGraph.fromXml(catalog).get();
@@ -215,6 +216,16 @@ public class CommandGraphTest {
 								+ "edge [arrowhead=vee];\n  \"A (className.A)\";\n  \"A (className.A)\" -> \"B (className.B)\";\n  "
 								+ "\"A (className.A)\" -> \"C (className.C)\" [style = dotted] ;\n  \"B (className.B)\";\n  "
 								+ "\"C (className.C)\";\n}");
+	}
+
+	@Test
+	public void testDependenciesInvertEdgeDirection() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand(commandA);
+		builder.addCommand(commandB);
+		builder.addMandatoryDependency(commandA, commandB);
+
+		assertThat(builder.build().topologicalOrderOfAllCommands()).containsSequence(commandB, commandA);
 	}
 
 	@Test
@@ -353,6 +364,18 @@ public class CommandGraphTest {
 	@Test
 	public void testTopologicalOrderOfAllCommands_noDuplicates() {
 		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testTopologicalOrderOfGivenCommands_nullArgument() {
+		graph.topologicalOrderOf((Iterable<CommandClass>) null);
+	}
+
+	@Test(expected = IllegalNullElementsException.class)
+	public void testTopologicalOrderOfGivenCommands_nullElement() {
+		List<CommandClass> nullElement = Lists.newArrayList();
+		nullElement.add(null);
+		graph.topologicalOrderOf(nullElement);
 	}
 
 	@Test
