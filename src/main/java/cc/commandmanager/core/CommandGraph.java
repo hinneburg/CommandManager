@@ -425,7 +425,7 @@ public class CommandGraph {
 
 	@Override
 	public int hashCode() {
-		return topologicalOrdering.hashCode();
+		return vertices.hashCode();
 	}
 
 	@Override
@@ -440,22 +440,7 @@ public class CommandGraph {
 			return false;
 		}
 		CommandGraph that = (CommandGraph) obj;
-		Set<DependencyEdge> thisSet = this.commandGraph.edgeSet();
-		Set<DependencyEdge> thatSet = that.commandGraph.edgeSet();
-		boolean edgeSetsAreEqual = true;
-		for (DependencyEdge edge : thisSet) {
-			if (!thatSet.contains(edge)) {
-				edgeSetsAreEqual = false;
-				break;
-			}
-		}
-		for (DependencyEdge edge : thatSet) {
-			if (!thisSet.contains(edge)) {
-				edgeSetsAreEqual = false;
-				break;
-			}
-		}
-		return edgeSetsAreEqual && this.commandGraph.vertexSet().equals(that.commandGraph.vertexSet());
+		return this.commandGraph.equals(that.commandGraph);
 	}
 
 	private static String getGraphLayout() {

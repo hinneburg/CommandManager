@@ -455,7 +455,12 @@ public class CommandGraphTest {
 		builder2.addCommand("A", "A");
 		builder2.addCommand("B", "B");
 		builder2.addMandatoryDependency("A", "B");
-		assertThat(builder1.build().equals(builder2.build())).isTrue();
+
+		CommandGraph graph1 = builder1.build();
+		CommandGraph graph2 = builder2.build();
+
+		assertThat(graph1.equals(graph2)).isTrue();
+		assertThat(graph1.hashCode()).isEqualTo(graph2.hashCode());
 	}
 
 	@Test
@@ -463,7 +468,9 @@ public class CommandGraphTest {
 		CommandGraph smallGraph = builder.build();
 		builder.addCommand("D", "class.D");
 		CommandGraph bigGraph = builder.build();
+
 		assertThat(smallGraph.equals(bigGraph)).isFalse();
+		assertThat(smallGraph.hashCode()).isNotEqualTo(bigGraph.hashCode());
 	}
 
 }
