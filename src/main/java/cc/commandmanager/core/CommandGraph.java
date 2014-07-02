@@ -55,6 +55,11 @@ public class CommandGraph {
 	private final ImmutableList<CommandClass> topologicalOrdering;
 
 	/**
+	 * Lazily calculated set of maximally connected components.
+	 */
+	private Set<CommandGraph> connectedComponents;
+
+	/**
 	 * @return a builder to build a {@linkplain CommandGraph}
 	 */
 	public static CommandGraphBuilder builder() {
@@ -369,7 +374,10 @@ public class CommandGraph {
 	 *         href=http://www.nist.gov/dads/HTML/maximallyConnectedComponent.html>maximallyConnectedComponent</a>.
 	 */
 	public Set<CommandGraph> getConnectedComponents() {
-		return computeConnectedComponents(commandGraph);
+		if (connectedComponents == null) {
+			connectedComponents = computeConnectedComponents(commandGraph);
+		}
+		return connectedComponents;
 	}
 
 	private static ImmutableSet<CommandGraph> computeConnectedComponents(
