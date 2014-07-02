@@ -366,21 +366,16 @@ public class CommandGraphTest {
 		assertThat(graph.topologicalOrderOfAllCommands()).doesNotHaveDuplicates();
 	}
 
-	@Test(expected = CommandNotFoundException.class)
-	public void testTopologicalOrderOfGivenCommands_commandNotFound() {
-		graph.topologicalOrderOfGivenCommands(Lists.newArrayList(new CommandClass("X", "className.X")));
-	}
-
 	@Test(expected = IllegalNullArgumentException.class)
 	public void testTopologicalOrderOfGivenCommands_nullArgument() {
-		graph.topologicalOrderOfGivenCommands(null);
+		graph.topologicalOrderOf((Iterable<CommandClass>) null);
 	}
 
 	@Test(expected = IllegalNullElementsException.class)
 	public void testTopologicalOrderOfGivenCommands_nullElement() {
 		List<CommandClass> nullElement = Lists.newArrayList();
 		nullElement.add(null);
-		graph.topologicalOrderOfGivenCommands(nullElement);
+		graph.topologicalOrderOf(nullElement);
 	}
 
 	@Test

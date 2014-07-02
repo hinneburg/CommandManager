@@ -16,8 +16,8 @@ import org.apache.log4j.Logger;
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -31,9 +31,10 @@ import com.google.common.collect.Sets;
  */
 public class CommandManager {
 
+	private static final Logger logger = Logger.getLogger(CommandManager.class);
+
 	private final Context context;
 	private final CommandGraph commandGraph;
-	private static final Logger logger = Logger.getLogger(CommandManager.class);
 
 	/**
 	 * Create a new {@link CommandManager}. Use the {@linkplain CommandGraph}, parsed from the given XML file. The
@@ -125,37 +126,28 @@ public class CommandManager {
 		Check.stateIsTrue(endCommands == null || endCommands.isEmpty(), IllegalStateOfArgumentException.class);
 
 		if (startCommands.isEmpty()) {
-			return Lists.newLinkedList(transformGenericCollection(graph.topologicalOrderOfAllCommands()));
+			return Lists.newLinkedList(commandNamesOf(graph.topologicalOrderOfAllCommands()));
 		} else {
-			List<CommandClass> remaining = Lists.newLinkedList();
-			for (Set<CommandClass> connectedComponent : filterConnectedComponentsContaining(startCommands, graph
+			ImmutableList.Builder<CommandClass> remaining = ImmutableList.builder();
+			for (CommandGraph connectedComponent : filterConnectedComponentsContaining(startCommands, graph
 					.getConnectedComponents())) {
-				remaining.addAll(connectedComponent);
+				remaining.addAll(connectedComponent.topologicalOrderOfAllCommands());
 			}
-			return Lists.newLinkedList(transformGenericCollection(graph.topologicalOrderOfGivenCommands(remaining)));
+			return commandNamesOf(remaining.build());
 		}
 	}
 
-	private static List<Set<CommandClass>> filterConnectedComponentsContaining(Set<String> startCommands,
-			List<Set<CommandClass>> connectedComponents) {
-		Set<Set<CommandClass>> result = Sets.newHashSet();
+	private static Set<CommandGraph> filterConnectedComponentsContaining(Set<String> startCommands,
+			Set<CommandGraph> connectedComponents) {
+		ImmutableSet.Builder<CommandGraph> result = ImmutableSet.builder();
 		for (final String command : startCommands) {
-			for (Set<CommandClass> connectedComponent : connectedComponents) {
-				if (connectedComponentContains(connectedComponent, command)) {
+			for (CommandGraph connectedComponent : connectedComponents) {
+				if (connectedComponent.containsCommand(command)) {
 					result.add(connectedComponent);
 				}
 			}
 		}
-		return Lists.newArrayList(result);
-	}
-
-	private static boolean connectedComponentContains(Set<CommandClass> connectedComponent, final String command) {
-		return Iterables.any(connectedComponent, new Predicate<CommandClass>() {
-			@Override
-			public boolean apply(CommandClass commandClass) {
-				return commandClass.getName().equals(command);
-			}
-		});
+		return result.build();
 	}
 
 	private static CommandGraph buildFromDependencies(Map<String, Set<String>> newCommandGraph) {
@@ -176,22 +168,21 @@ public class CommandManager {
 	public Map<String, Set<String>> getDependencies() {
 		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
 		for (CommandClass command : commandGraph.topologicalOrderOfAllCommands()) {
-			Collection<String> dependencies = transformGenericCollection(commandGraph
-					.getDependencies(command.getName()));
+			Collection<String> dependencies = commandNamesOf(commandGraph.getDependencies(command.getName()));
 			result.put(command.getName(), Sets.newHashSet(dependencies));
 		}
 		return result;
 	}
 
-	private static Collection<String> transformGenericCollection(List<CommandClass> commands) {
-		return Collections2.transform(commands, new Function<CommandClass, String>() {
+	private static List<String> commandNamesOf(List<CommandClass> commands) {
+		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
 
 			@Override
 			public String apply(CommandClass command) {
 				return command.getName();
 			}
 
-		});
+		}));
 	}
 
 	/**
