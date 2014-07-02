@@ -23,6 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -51,7 +52,7 @@ public class CommandGraph {
 	private static final String CLASS_NAME = "className";
 
 	private final DirectedAcyclicGraph<CommandClass, DependencyEdge> commandGraph;
-	private final Map<String, CommandClass> vertices;
+	private final ImmutableMap<String, CommandClass> vertices;
 	private final ImmutableList<CommandClass> topologicalOrdering;
 
 	/**
@@ -214,7 +215,7 @@ public class CommandGraph {
 		Check.notNull(builder.commandClasses, "builder.commandClasses");
 
 		commandGraph = cloneGraph(builder.graph);
-		vertices = Maps.newHashMap(builder.commandClasses);
+		vertices = ImmutableMap.copyOf(builder.commandClasses);
 		topologicalOrdering = ImmutableList.copyOf(reverse(commandGraph.iterator()));
 	}
 
