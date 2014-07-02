@@ -208,8 +208,8 @@ public class CommandGraphTest {
 	}
 
 	@Test
-	public void testToString() {
-		assertThat(graph.toString())
+	public void testToDot() {
+		assertThat(graph.toDot())
 				.isEqualTo(
 						"digraph G {\n  labelloc = \"t\";\n  label = \"Command graph\";\n  rankdir = BT;\n  node [shape=record];\n  "
 								+ "edge [arrowhead=vee];\n  \"A (className.A)\";\n  \"A (className.A)\" -> \"B (className.B)\";\n  "

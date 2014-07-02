@@ -409,14 +409,17 @@ public class CommandGraph {
 		return result.build();
 	}
 
+	@Override
+	public String toString() {
+		return toDot();
+	}
+
 	/**
 	 * @return This graph in DOT format. Dependencies are represented as edges with the dependent command as source,
 	 *         that is A -> B means that A depends on B. Mandatory dependencies will be drawn as solid lines while
-	 *         optional dependencies will be drawn as dashed lines. The command edges will outline
-	 *         {@linkplain CommandClass#toString()}.
+	 *         optional dependencies will be drawn as dashed lines.
 	 */
-	@Override
-	public String toString() {
+	public String toDot() {
 		StringBuilder result = new StringBuilder();
 		result.append("digraph G {\n");
 		result.append(drawLabel("Command graph"));
@@ -628,8 +631,8 @@ public class CommandGraph {
 		 * <ul>
 		 * <li>both, source and target have been added already
 		 * <li>the given edge is not already a member of the graph
-		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to
-		 * {@code targetName}, yet
+		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to {@code
+		 * targetName}, yet
 		 * <li>the edge does not induce a circular dependency.
 		 * </ul>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
