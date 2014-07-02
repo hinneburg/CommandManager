@@ -218,7 +218,7 @@ public class CommandGraph {
 		topologicalOrdering = ImmutableList.copyOf(reverse(commandGraph.iterator()));
 	}
 
-	private DirectedAcyclicGraph<CommandClass, DependencyEdge> cloneGraph(
+	private static DirectedAcyclicGraph<CommandClass, DependencyEdge> cloneGraph(
 			DirectedAcyclicGraph<CommandClass, DependencyEdge> original) {
 		DirectedAcyclicGraph<CommandClass, DependencyEdge> clone = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
 				DependencyEdge.class);
