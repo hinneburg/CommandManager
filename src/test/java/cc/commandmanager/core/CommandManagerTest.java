@@ -38,7 +38,7 @@ public class CommandManagerTest {
 		expected.put("Failure", new HashSet<String>());
 		assertThat(
 				commandManager.getOrderedCommands(Sets.newHashSet("Success", "Warning", "Failure"),
-						new HashSet<String>())).containsOnly("Success", "Warning", "Failure").doesNotHaveDuplicates();
+						new HashSet<String>())).containsExactly("Success", "Warning", "Failure");
 
 		assertThat(commandManager.getOrderedCommands(Sets.newHashSet("Success"), Collections.<String> emptySet()))
 				.containsExactly("Success");
