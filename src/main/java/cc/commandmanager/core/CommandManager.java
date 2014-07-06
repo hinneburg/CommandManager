@@ -85,6 +85,14 @@ public class CommandManager {
 	}
 
 	/**
+	 * 
+	 * @return {@linkplain CommandGraph} object that was used to build this {@linkplain CommandManager}.
+	 */
+	public CommandGraph getCommandGraph() {
+		return commandGraph;
+	}
+
+	/**
 	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
 	 */
 	public List<String> getOrderedCommands(Map<String, Set<String>> newCommandGraph) {
