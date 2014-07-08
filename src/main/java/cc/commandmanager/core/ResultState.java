@@ -155,6 +155,18 @@ public abstract class ResultState {
 			return getMessage().equals(that.getMessage()) && getCause() == that.getCause();
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		int result = 1;
+		if (!isSuccess()) {
+			final int prime = 31;
+			result = prime * result + getMessage().hashCode();
+			result = hasCause() ? prime * result + getCause().hashCode() : result;
+		}
+		return result;
+	}
+
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that has been executed successfully without any problems.
 	 */
