@@ -90,4 +90,11 @@ public class ResultStateTest {
 		assertThat(warning.equals(ResultState.warning("Warning!", cause))).isTrue();
 		assertThat(failure.equals(ResultState.failure("Failure!", cause))).isTrue();
 	}
+
+	@Test
+	public void testHashcode() {
+		assertThat(success.hashCode() == ResultState.success().hashCode());
+		assertThat(warning.hashCode() == ResultState.warning("Warning!", cause).hashCode());
+		assertThat(failure.hashCode() == ResultState.failure("Failure!", cause).hashCode());
+	}
 }
