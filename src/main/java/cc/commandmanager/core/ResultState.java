@@ -152,7 +152,7 @@ public abstract class ResultState {
 
 	}
 
-	private static class WarningOrFailure extends ResultState {
+	private static abstract class WarningOrFailure extends ResultState {
 
 		protected final String message;
 		protected final Throwable cause;
