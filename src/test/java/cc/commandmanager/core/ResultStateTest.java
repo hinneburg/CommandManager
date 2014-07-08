@@ -80,4 +80,14 @@ public class ResultStateTest {
 		assertThat(state.getCause()).isEqualTo(cause);
 	}
 
+	@Test
+	public void testEquals() {
+		assertThat(success.equals(ResultState.success())).isTrue();
+		assertThat(success.equals(warning)).isFalse();
+		assertThat(success.equals(failure)).isFalse();
+		assertThat(warning.equals(ResultState.warning("Different warning!"))).isFalse();
+		assertThat(failure.equals(ResultState.failure("Different failure!"))).isFalse();
+		assertThat(warning.equals(ResultState.warning("Warning!", cause))).isTrue();
+		assertThat(failure.equals(ResultState.failure("Failure!", cause))).isTrue();
+	}
 }

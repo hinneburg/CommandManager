@@ -140,6 +140,21 @@ public abstract class ResultState {
 		return ((WarningOrFailure) this).cause;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || getClass() != obj.getClass()) {
+			return false;
+		}
+		ResultState that = (ResultState) obj;
+		if (isSuccess() && that.isSuccess()) {
+			return true;
+		} else {
+			return getMessage().equals(that.getMessage()) && getCause() == that.getCause();
+		}
+	}
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that has been executed successfully without any problems.
 	 */
