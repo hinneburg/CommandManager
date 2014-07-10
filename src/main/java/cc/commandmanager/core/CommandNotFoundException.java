@@ -5,7 +5,7 @@ public class CommandNotFoundException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
 	public CommandNotFoundException(String commandName) {
-		super("There is no command \"" + commandName + "\" in this catalog.");
+		super("Command \"" + commandName + "\" cannot be found in the given command graph.");
 	}
 
 }
