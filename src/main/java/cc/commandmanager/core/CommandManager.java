@@ -14,13 +14,18 @@ import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 import org.apache.log4j.Logger;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
+import cc.commandmanager.core.ResultState.Failure;
+import cc.commandmanager.core.ResultState.Warning;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 
 /**
  * This class is used for the controlled execution of commands. Commands to be executed are declared in a catalog. Those
@@ -245,4 +250,42 @@ public class CommandManager {
 			}
 		}
 	}
+
+	public static final class ComposedResult {
+		private ResultState2 composedResult = ResultState2.SUCCESS;
+		private final Map<String, ResultState> commandResults = Maps.newLinkedHashMap();
+
+		public ResultState2 getComposedResult() {
+			return composedResult;
+		}
+
+		@VisibleForTesting
+		void addResult(String commandName, ResultState resultState) {
+			commandResults.put(commandName, resultState);
+			setOverallStateRespectfully(resultState);
+		}
+
+		private void setOverallStateRespectfully(ResultState resultState) {
+			if (resultState instanceof Warning && composedResult.equals(ResultState2.SUCCESS)) {
+				composedResult = ResultState2.WARNING;
+			} else if (resultState instanceof Failure
+					&& (composedResult.equals(ResultState2.SUCCESS) || composedResult.equals(ResultState2.WARNING))) {
+				composedResult = ResultState2.FAILURE;
+			}
+		}
+
+		public Map<String, ResultState> getPartialResults() {
+			return ImmutableMap.<String, ResultState> copyOf(commandResults);
+		}
+
+		@Override
+		public String toString() {
+			return "Composed execution result: " + composedResult + ". Partial execution results: " + commandResults;
+		}
+	}
+
+	public static enum ResultState2 {
+		SUCCESS, WARNING, FAILURE
+	}
+
 }
