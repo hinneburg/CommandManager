@@ -1,21 +1,16 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import net.sf.qualitycheck.exception.IllegalEmptyArgumentException;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
+import cc.commandmanager.core.CommandManager.ResultState2;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 public class CommandManagerTest {
 
@@ -31,59 +26,78 @@ public class CommandManagerTest {
 	}
 
 	@Test
-	public void testGetOrderedCommandsFromStartCommands() {
-		Map<String, Set<String>> expected = Maps.newHashMap();
-		expected.put("Success", new HashSet<String>());
-		expected.put("Warning", new HashSet<String>());
-		expected.put("Failure", new HashSet<String>());
+	public void testExecuteAllCommands() {
+		assertThat(commandManager.executeAllCommands().getComposedResult()).isEqualTo(ResultState2.FAILURE);
+	}
+
+	@Test
+	public void testExecuteCommands() {
 		assertThat(
-				commandManager.getOrderedCommands(Sets.newHashSet("Success", "Warning", "Failure"),
-						new HashSet<String>())).containsExactly("Success", "Warning", "Failure");
-
-		assertThat(commandManager.getOrderedCommands(Sets.newHashSet("Success"), Collections.<String> emptySet()))
-				.containsExactly("Success");
+				commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).getComposedResult())
+				.isEqualTo(ResultState2.FAILURE);
 	}
 
 	@Test
-	public void testGetOrderedCommands_focusOnConnectedComponent() {
+	public void testExecuteCommandsRespectsGraphOrder() {
 		CommandGraphBuilder builder = new CommandGraphBuilder();
-		builder.addCommand("Single", "single.ClassName");
-		builder.addCommand("Connected1", "connected1.ClassName");
-		builder.addCommand("Connected2", "connected2.ClassName");
-		builder.addCommand("Connected3", "connected3.ClassName");
-		builder.addMandatoryDependency("Connected3", "Connected2");
-		builder.addMandatoryDependency("Connected2", "Connected1");
+		builder.addCommand("1", SuccessfulCommand.class.getName());
+		builder.addCommand("2", FailingCommand.class.getName());
+		builder.addMandatoryDependency("2", "1");
+		commandManager = new CommandManager(builder.build());
 
-		List<String> orderedCommands = new CommandManager(builder.build()).getOrderedCommands(Sets
-				.newHashSet("Connected1"), Collections.<String> emptySet());
+		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults().values()).contains(
+				ResultState.success(), ResultState.failure("Fail!"));
 
-		assertThat(orderedCommands).excludes("Single").doesNotHaveDuplicates();
+		CommandGraphBuilder backwards = new CommandGraphBuilder();
+		backwards.addCommand("1", SuccessfulCommand.class.getName());
+		backwards.addCommand("2", FailingCommand.class.getName());
+		backwards.addMandatoryDependency("1", "2");
+		commandManager = new CommandManager(backwards.build());
+
+		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults().values())
+				.containsOnly(ResultState.failure("Fail!"));
 	}
 
 	@Test
-	public void testGetOrderedCommands_wholeGraphGetsOrderedOnEmptyParameters() {
-		assertThat(commandManager.getOrderedCommands(Collections.<String> emptySet(), Collections.<String> emptySet()))
-				.contains("Success", "Warning", "Failure");
+	@Test(expected = CommandNotFoundException.class)
+	public void testExecuteCommands_commandNotFound() {
+		commandManager.executeCommands(Lists.newArrayList("Missing"));
+	}
+
+	@Test(expected = IllegalEmptyArgumentException.class)
+	public void testExecuteCommands_emptyCommandName() {
+		commandManager.executeCommands(Lists.<String> newArrayList());
+	}
+
+	@Test
+	public void testExecuteCommands_ignoresUnspecifiedDependencies() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("Misses dependency", SuccessfulCommand.class.getName());
+		builder.addCommand("Warning dependency", WarningCommand.class.getName());
+		builder.addMandatoryDependency("Misses dependency", "Warning dependency");
+		commandManager = new CommandManager(builder.build());
+
+		assertThat(commandManager.executeCommands(Lists.newArrayList("Misses dependency")).getComposedResult())
+				.isEqualTo(ResultState2.SUCCESS);
 	}
 
 	@Test
 	public void testExecutionAbortionOnFailure() {
 		// TODO only way of doing this until #41 is implemented and returns the result state
-		commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure"));
-		assertThat(SuccessfulCommand.isExecuted).isTrue();
-		assertThat(WarningCommand.isExecuted).isTrue();
-		assertThat(FailingCommand.isExecuted).isTrue();
-		SuccessfulCommand.isExecuted = false;
-		WarningCommand.isExecuted = false;
-		FailingCommand.isExecuted = false;
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("Success", SuccessfulCommand.class.getName());
+		builder.addCommand("Warning", WarningCommand.class.getName());
+		builder.addCommand("Failure", FailingCommand.class.getName());
+		builder.addMandatoryDependency("Success", "Warning");
+		builder.addMandatoryDependency("Warning", "Failure");
+		commandManager = new CommandManager(builder.build());
 
-		commandManager.executeCommands(ImmutableList.of("Success", "Failure", "Warning"));
-		assertThat(SuccessfulCommand.isExecuted).isTrue();
-		assertThat(FailingCommand.isExecuted).isTrue();
-		assertThat(WarningCommand.isExecuted).isFalse();
-		SuccessfulCommand.isExecuted = false;
-		WarningCommand.isExecuted = false;
-		FailingCommand.isExecuted = false;
+		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning")).getPartialResults().values())
+				.containsOnly(ResultState.success(), ResultState.warning("Warning!"));
+
+		assertThat(
+				commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure")).getPartialResults()
+						.values()).containsOnly(ResultState.failure("Fail!"));
 	}
 
 	public static class SuccessfulCommand extends SimpleCommand {

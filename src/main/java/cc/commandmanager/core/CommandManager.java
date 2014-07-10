@@ -1,19 +1,14 @@
 package cc.commandmanager.core;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.qualitycheck.Check;
-import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 
 import org.apache.log4j.Logger;
 
-import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 import cc.commandmanager.core.ResultState.Failure;
 import cc.commandmanager.core.ResultState.Warning;
 
@@ -24,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Maps;
 
 /**
@@ -35,7 +29,6 @@ import com.google.common.collect.Maps;
  * and may then be accessed.
  */
 public class CommandManager {
-
 	private static final Logger logger = Logger.getLogger(CommandManager.class);
 
 	private final Context context;
@@ -97,59 +90,6 @@ public class CommandManager {
 		return commandGraph;
 	}
 
-	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 */
-	public List<String> getOrderedCommands(Map<String, Set<String>> newCommandGraph) {
-		Check.notNull(newCommandGraph, "newCommandGraph");
-		return getOrderedCommands(newCommandGraph, Collections.<String> emptySet());
-	}
-
-	public List<String> getOrderedCommands(Map<String, Set<String>> newCommandGraph, Set<String> startCommands) {
-		Check.notNull(newCommandGraph, "newCommandGraph");
-		Check.notNull(startCommands, "startCommands");
-
-		CommandGraph graph = buildFromDependencies(newCommandGraph);
-		return getOrderedCommands(graph, startCommands, Collections.<String> emptySet());
-	}
-
-	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 * 
-	 * @return An ordered {@linkplain List<String>} containing the commands of the catalog.
-	 */
-	public List<String> getOrderedCommands() {
-		return getOrderedCommands(Collections.<String> emptySet(), Collections.<String> emptySet());
-	}
-
-	// TODO FOR NON-EMPTY END_COMMANDS THIS METHOD DOES NOT RETURN A CORRECT RESULT
-	// Remove parameter endCommands or implement this method to be truely applicable for end commands
-	// Consider, getOrderedCommands with end commands will not even be needed in CM1.0 (see #40)
-	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 */
-	public List<String> getOrderedCommands(Set<String> startCommands, Set<String> endCommands) {
-		List<String> result = getOrderedCommands(commandGraph, startCommands, endCommands);
-		return result;
-	}
-
-	private static List<String> getOrderedCommands(CommandGraph graph, Set<String> startCommands,
-			Set<String> endCommands) {
-		Check.notNull(startCommands, "startCommands");
-		Check.stateIsTrue(endCommands == null || endCommands.isEmpty(), IllegalStateOfArgumentException.class);
-
-		if (startCommands.isEmpty()) {
-			return Lists.newLinkedList(commandNamesOf(graph.topologicalOrderOfAllCommands()));
-		} else {
-			ImmutableList.Builder<CommandClass> remaining = ImmutableList.builder();
-			for (CommandGraph connectedComponent : filterConnectedComponentsContaining(startCommands, graph
-					.getConnectedComponents())) {
-				remaining.addAll(connectedComponent.topologicalOrderOfAllCommands());
-			}
-			return commandNamesOf(remaining.build());
-		}
-	}
-
 	private static Set<CommandGraph> filterConnectedComponentsContaining(Set<String> startCommands,
 			Set<CommandGraph> connectedComponents) {
 		ImmutableSet.Builder<CommandGraph> result = ImmutableSet.builder();
@@ -163,31 +103,7 @@ public class CommandManager {
 		return result.build();
 	}
 
-	private static CommandGraph buildFromDependencies(Map<String, Set<String>> newCommandGraph) {
-		CommandGraphBuilder builder = new CommandGraphBuilder();
-		String noClassNameObtainable = "";
-		for (String command : newCommandGraph.keySet()) {
-			builder.addCommand(command, noClassNameObtainable);
-			for (String dependency : newCommandGraph.get(command)) {
-				DependencyAdded dependencyAdded = builder.addMandatoryDependency(command, dependency);
-				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-					throw new IllegalStateException(dependencyAdded.toString());
-				}
-			}
-		}
-		return builder.build();
-	}
-
-	public Map<String, Set<String>> getDependencies() {
-		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
-		for (CommandClass command : commandGraph.topologicalOrderOfAllCommands()) {
-			Collection<String> dependencies = commandNamesOf(commandGraph.getDependencies(command.getName()));
-			result.put(command.getName(), Sets.newHashSet(dependencies));
-		}
-		return result;
-	}
-
-	private static List<String> commandNamesOf(Iterable<CommandClass> commands) {
+	private static List<String> commandNamesOf(List<CommandClass> commands) {
 		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
 
 			@Override
@@ -198,39 +114,50 @@ public class CommandManager {
 		}));
 	}
 
-	/**
-	 * Executes all commands, previously ordered by the commands' specifications.
-	 */
-	public void executeAllCommands() {
-		executeCommands(getOrderedCommands());
+	public ComposedResult executeAllCommands() {
+		return executeCommands(commandNamesOf(commandGraph.topologicalOrderOfAllCommands()));
+	}
+
+	public ComposedResult executeCommands(String... commandNames) {
+		return executeCommands(commandNames);
+	}
+
+	public ComposedResult executeCommands(Context context, String... commandNames) {
+		return executeCommands(context, commandNames);
 	}
 
 	/**
 	 * Takes a {@linkplain List} of commands and executes them in the list's sequence
 	 */
-	public void executeCommands(List<String> commands) {
-		Check.notNull(commands, "commands");
-		executeCommands(commands, context);
+	public ComposedResult executeCommands(Iterable<String> commandNames) {
+		return executeCommands(commandNames, context);
 	}
 
 	/**
 	 * Takes a {@linkplain List} of commands and executes them in the list's sequence, using the specified
 	 * {@linkplain Context}
 	 */
-	public void executeCommands(List<String> commands, Context localContext) {
-		Check.notNull(commands, "commands");
-		Check.notNull(localContext, "localContext");
+	public ComposedResult executeCommands(Iterable<String> commandNames, Context context) {
+		Check.notEmpty(Lists.newArrayList(commandNames), "commandNames");
+		return executeCommands(commandNamesOf(commandGraph.topologicalOrderOfNames(commandNames)), context,
+				commandGraph);
+	}
 
-		for (String command : commands) {
+	private static ComposedResult executeCommands(Iterable<String> commandNames, Context context,
+			CommandGraph commandGraph) {
+		Check.noNullElements(commandNames, "commandNames");
+		Check.notNull(context, "context");
+
+		ComposedResult result = new ComposedResult();
+		for (String command : commandNames) {
 			if (!commandGraph.containsCommand(command)) {
-				logger.error("Command " + command
-						+ "could not be found in the command graph. Aborting execution of all commands.");
-				break;
+				throw new CommandNotFoundException(command);
 			}
 			Command commandInstance = commandGraph.getCommandClass(command).newInstance();
 			logger.info("Execute current command: " + commandInstance.getClass());
 			long startTime = System.currentTimeMillis();
-			ResultState resultState = commandInstance.execute(localContext);
+			ResultState resultState = commandInstance.execute(context);
+			result.addResult(command, resultState);
 			if (resultState.isSuccess()) {
 				logger.info("Command " + commandInstance.getClass() + " successfully executed in "
 						+ (System.currentTimeMillis() - startTime) + " ms");
@@ -249,6 +176,7 @@ public class CommandManager {
 				break;
 			}
 		}
+		return result;
 	}
 
 	public static final class ComposedResult {
