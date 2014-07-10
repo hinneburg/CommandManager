@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -22,6 +23,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -320,6 +322,19 @@ public class CommandGraph {
 	 */
 	public List<CommandClass> topologicalOrderOfAllCommands() {
 		return topologicalOrdering;
+	}
+
+	public List<CommandClass> topologicalOrderOfNames(Iterable<String> commandNames) {
+		Check.noNullElements(commandNames, "commandNames");
+		return topologicalOrderOf(Iterables.transform(commandNames, new Function<String, CommandClass>() {
+
+			@Override
+			@Nullable
+			public CommandClass apply(@Nullable String commandName) {
+				return getCommandClass(commandName);
+			}
+
+		}));
 	}
 
 	/**

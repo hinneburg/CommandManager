@@ -436,6 +436,28 @@ public class CommandGraphTest {
 				});
 	}
 
+	@Test
+	public void testTopologicalOrderOfNames() {
+		assertThat(graph.topologicalOrderOfNames(Lists.newArrayList("A", "B"))).containsExactly(commandB, commandA);
+	}
+
+	@Test(expected = CommandNotFoundException.class)
+	public void testTopologicalOrderOfNames_commandDoesNotExist() {
+		graph.topologicalOrderOfNames(Lists.newArrayList("Missing!"));
+	}
+
+	@Test(expected = IllegalNullArgumentException.class)
+	public void testTopologicalOrderOfNames_nullArgument() {
+		graph.topologicalOrderOfNames((Iterable<String>) null);
+	}
+
+	@Test(expected = IllegalNullElementsException.class)
+	public void testTopologicalOrderOfNames_nullElement() {
+		List<String> nullElement = Lists.newArrayList();
+		nullElement.add(null);
+		graph.topologicalOrderOfNames(nullElement);
+	}
+
 	@Test(expected = CommandNotFoundException.class)
 	public void testTopologicalOrderOfGivenCommands_commandDoesNotExist() {
 		final CommandClass command0 = new CommandClass("0", "className.0");
