@@ -1,6 +1,7 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
+import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -77,6 +78,10 @@ public class CommandManagerTest {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));
 	}
 
+	@Test(expected = IllegalStateOfArgumentException.class)
+	public void testExecuteAtLeastOnCommand() {
+		commandManager.executeCommands(Lists.<String> newArrayList());
+	}
 
 	@Test
 	public void testExecuteCommands_ignoresUnspecifiedDependencies() {
