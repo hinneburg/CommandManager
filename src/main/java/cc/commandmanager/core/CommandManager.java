@@ -139,11 +139,11 @@ public class CommandManager {
 	}
 
 	public ComposedResult executeCommandsGracefully(String... commandNames) {
-		return executeCommandsGracefully(Lists.newArrayList(commandNames), context);
+		return executeCommandsGracefully(context, commandNames);
 	}
 
 	public ComposedResult executeCommandsGracefully(Context context, String... commandNames) {
-		return executeCommandsGracefully(Lists.newArrayList(commandNames), context);
+		return executeCommandsGracefully(Arrays.asList(commandNames), context);
 	}
 
 	public ComposedResult executeCommandsGracefully(Iterable<String> commandNames) {
@@ -172,7 +172,7 @@ public class CommandManager {
 	}
 
 	public ComposedResult executeCommands(Context context, String... commandNames) {
-		return executeCommands(Lists.newArrayList(commandNames), context);
+		return executeCommands(Arrays.asList(commandNames), context);
 	}
 
 	/**
