@@ -1,9 +1,10 @@
 package cc.commandmanager.core;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.qualitycheck.Check;
@@ -16,11 +17,9 @@ import cc.commandmanager.core.ResultState.Warning;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -121,8 +120,7 @@ public class CommandManager {
 	}
 
 	public ComposedResult executeAllCommands(Context context) {
-		return executeOrderedCommands(commandNamesOf(commandGraph.topologicalOrderOfAllCommands()), context,
-				commandGraph);
+		return executeOrderedCommands(commandGraph.topologicalOrderOfAllCommands(), context, commandGraph);
 	}
 
 	public ComposedResult executeConnectedComponentsContaining(Iterable<String> commandNames) {
@@ -190,17 +188,16 @@ public class CommandManager {
 	 */
 	public ComposedResult executeCommands(Iterable<String> commandNames, Context context) {
 		Check.notEmpty(Lists.newArrayList(commandNames), "commandNames");
-		return executeOrderedCommands(commandNamesOf(commandGraph.topologicalOrderOfNames(commandNames)), context,
-				commandGraph);
+		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context, commandGraph);
 	}
 
-	private static ComposedResult executeOrderedCommands(Iterable<String> commandNames, Context context,
+	private static ComposedResult executeOrderedCommands(List<CommandClass> commandNames, Context context,
 			CommandGraph commandGraph) {
 		Check.noNullElements(commandNames, "commandNames");
 		Check.notNull(context, "context");
 
 		ComposedResult result = new ComposedResult();
-		for (String command : commandNames) {
+		for (String command : commandNamesOf(commandNames)) {
 			if (!commandGraph.containsCommand(command)) {
 				throw new CommandNotFoundException(command);
 			}
