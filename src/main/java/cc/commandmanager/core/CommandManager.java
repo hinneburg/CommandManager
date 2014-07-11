@@ -176,7 +176,7 @@ public class CommandManager {
 	 * {@linkplain Context}
 	 */
 	public ComposedResult executeCommands(Iterable<String> commandNames, Context context) {
-		Check.notEmpty(Lists.newArrayList(commandNames), "commandNames");
+		Check.noNullElements(Lists.newArrayList(commandNames), "commandNames");
 		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context, commandGraph);
 	}
 
