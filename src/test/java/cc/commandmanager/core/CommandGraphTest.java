@@ -170,21 +170,21 @@ public class CommandGraphTest {
 
 	@Test
 	public void testGetDependencies() {
-		assertThat(graph.getDependencies("A")).containsExactly(commandB, commandC);
+		assertThat(graph.getDependencies("A")).containsOnly(commandB, commandC);
 		assertThat(graph.getDependencies("B")).isEmpty();
 		assertThat(graph.getDependencies("C")).isEmpty();
 	}
 
 	@Test
 	public void testGetMandatoryDependencies() {
-		assertThat(graph.getMandatoryDependencies("A")).containsExactly(commandB);
+		assertThat(graph.getMandatoryDependencies("A")).containsOnly(commandB);
 		assertThat(graph.getMandatoryDependencies("B")).isEmpty();
 		assertThat(graph.getMandatoryDependencies("C")).isEmpty();
 	}
 
 	@Test
 	public void testGetOptionalDependencies() {
-		assertThat(graph.getOptionalDependencies("A")).containsExactly(commandC);
+		assertThat(graph.getOptionalDependencies("A")).containsOnly(commandC);
 		assertThat(graph.getOptionalDependencies("B")).isEmpty();
 		assertThat(graph.getOptionalDependencies("C")).isEmpty();
 	}

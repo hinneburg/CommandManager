@@ -268,8 +268,8 @@ public class CommandGraph {
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
-	public List<CommandClass> getDependencies(String commandName) {
-		return ImmutableList.copyOf(Iterables.concat(getMandatoryDependencies(commandName),
+	public Set<CommandClass> getDependencies(String commandName) {
+		return ImmutableSet.copyOf(Iterables.concat(getMandatoryDependencies(commandName),
 				getOptionalDependencies(commandName)));
 	}
 
@@ -281,7 +281,7 @@ public class CommandGraph {
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
-	public List<CommandClass> getMandatoryDependencies(String commandName) {
+	public Set<CommandClass> getMandatoryDependencies(String commandName) {
 		Check.notNull(commandName, "commandName");
 		return getDependenciesWithRequirementState(checkGraphContains(commandName), DependencyEdge.MANDATORY);
 	}
@@ -294,14 +294,13 @@ public class CommandGraph {
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
 	 */
-	public List<CommandClass> getOptionalDependencies(String commandName) {
+	public Set<CommandClass> getOptionalDependencies(String commandName) {
 		Check.notNull(commandName, "commandName");
 		return getDependenciesWithRequirementState(checkGraphContains(commandName), DependencyEdge.OPTIONAL);
 	}
 
-	private ImmutableList<CommandClass> getDependenciesWithRequirementState(String commandName,
-			boolean mandatoryRequired) {
-		ImmutableList.Builder<CommandClass> result = ImmutableList.builder();
+	private Set<CommandClass> getDependenciesWithRequirementState(String commandName, boolean mandatoryRequired) {
+		ImmutableSet.Builder<CommandClass> result = ImmutableSet.builder();
 		Set<DependencyEdge> dependencies = commandGraph.outgoingEdgesOf(vertices.get(commandName));
 		for (DependencyEdge dependency : dependencies) {
 			if (dependency.isMandatory() == mandatoryRequired) {

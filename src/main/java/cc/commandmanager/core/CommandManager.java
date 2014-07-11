@@ -182,7 +182,7 @@ public class CommandManager {
 		return result;
 	}
 
-	private static List<String> commandNamesOf(List<CommandClass> commands) {
+	private static List<String> commandNamesOf(Iterable<CommandClass> commands) {
 		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
 
 			@Override
