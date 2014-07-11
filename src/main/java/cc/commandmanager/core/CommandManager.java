@@ -170,11 +170,11 @@ public class CommandManager {
 	}
 
 	public ComposedResult executeCommands(String... commandNames) {
-		return executeCommands(commandNames);
+		return executeCommands(context, commandNames);
 	}
 
 	public ComposedResult executeCommands(Context context, String... commandNames) {
-		return executeCommands(context, commandNames);
+		return executeCommands(Lists.newArrayList(commandNames), context);
 	}
 
 	/**
