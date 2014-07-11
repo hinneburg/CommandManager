@@ -229,7 +229,8 @@ public class CommandManager {
 
 	public static final class ComposedResult {
 		private ResultState2 composedResult = ResultState2.SUCCESS;
-		private final Map<String, ResultState> commandResults = Maps.newLinkedHashMap();
+		private final List<String> executedCommands = Lists.newLinkedList();
+		private final List<ResultState> partialResults = Lists.newLinkedList();
 
 		public ResultState2 getComposedResult() {
 			return composedResult;
@@ -237,7 +238,8 @@ public class CommandManager {
 
 		@VisibleForTesting
 		void addResult(String commandName, ResultState resultState) {
-			commandResults.put(commandName, resultState);
+			executedCommands.add(commandName);
+			partialResults.add(resultState);
 			setOverallStateRespectfully(resultState);
 		}
 
@@ -251,16 +253,21 @@ public class CommandManager {
 		}
 
 		public List<ResultState> getPartialResults() {
-			return Lists.newLinkedList(commandResults.values());
+			return ImmutableList.copyOf(partialResults);
 		}
 
-		public Map<String, ResultState> getPartialResultsWithCorrespondingCommandName() {
-			return ImmutableMap.<String, ResultState> copyOf(commandResults);
+		public List<String> getExecutedCommandNames() {
+			return ImmutableList.copyOf(executedCommands);
 		}
 
 		@Override
 		public String toString() {
-			return "Composed execution result: " + composedResult + ". Partial execution results: " + commandResults;
+			String message = "Composed execution result: " + composedResult + ". Partial execution results: ";
+			Iterator<ResultState> result = partialResults.iterator();
+			for (String command : executedCommands) {
+				message += command + ": " + result.next();
+			}
+			return message;
 		}
 	}
 

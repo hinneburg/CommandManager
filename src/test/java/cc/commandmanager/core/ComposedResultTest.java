@@ -2,9 +2,6 @@ package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,26 +52,20 @@ public class ComposedResultTest {
 	}
 
 	@Test
-	public void testGetPartialResultsWithCorrespondingCommandName() {
+	public void testGetExecutedCommandNames() {
 		result.addResult("Success", ResultState.success());
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.SUCCESS);
-
 		result.addResult("Warning", ResultState.warning("Warning!"));
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.WARNING);
-
 		result.addResult("Failure", ResultState.failure("Failure!"));
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.FAILURE);
-
-		Map<String, ResultState> commandResults = new LinkedHashMap<String, ResultState>();
-		commandResults.put("Success", ResultState.success());
-		commandResults.put("Warning", ResultState.warning("Warning!"));
-		commandResults.put("Failure", ResultState.failure("Failure!"));
-		assertThat(result.getPartialResultsWithCorrespondingCommandName()).isEqualTo(commandResults);
+		assertThat(result.getExecutedCommandNames()).containsExactly("Success", "Warning", "Failure");
 	}
 
 	@Test
-	public void testGetCommandResults() {
-
+	public void testGetPartialResults() {
+		result.addResult("Success", ResultState.success());
+		result.addResult("Warning", ResultState.warning("Warning!"));
+		result.addResult("Failure", ResultState.failure("Failure!"));
+		assertThat(result.getPartialResults()).containsExactly(ResultState.success(), ResultState.warning("Warning!"),
+				ResultState.failure("Failure!"));
 	}
 
 }
