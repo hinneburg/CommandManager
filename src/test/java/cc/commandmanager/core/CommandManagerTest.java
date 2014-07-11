@@ -47,7 +47,7 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("2", "1");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults().values()).contains(
+		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults()).containsExactly(
 				ResultState.success(), ResultState.failure("Fail!"));
 
 		CommandGraphBuilder backwards = new CommandGraphBuilder();
@@ -56,8 +56,8 @@ public class CommandManagerTest {
 		backwards.addMandatoryDependency("1", "2");
 		commandManager = new CommandManager(backwards.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults().values())
-				.containsOnly(ResultState.failure("Fail!"));
+		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults()).containsOnly(
+				ResultState.failure("Fail!"));
 	}
 
 	@Test
@@ -100,12 +100,12 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("Warning", "Failure");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning")).getPartialResults().values())
+		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning")).getPartialResults())
 				.containsOnly(ResultState.success(), ResultState.warning("Warning!"));
 
 		assertThat(
-				commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure")).getPartialResults()
-						.values()).containsOnly(ResultState.failure("Fail!"));
+				commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure")).getPartialResults())
+				.containsOnly(ResultState.failure("Fail!"));
 	}
 
 	public static class SuccessfulCommand extends SimpleCommand {
