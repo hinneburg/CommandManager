@@ -182,6 +182,7 @@ public class CommandManager {
 
 	private static ComposedResult executeOrderedCommands(List<CommandClass> commandNames, Context context,
 			CommandGraph commandGraph) {
+		Check.stateIsTrue(commandNames.iterator().hasNext(), "commandNames must have at least one command name");
 		Check.noNullElements(commandNames, "commandNames");
 		Check.notNull(context, "context");
 
