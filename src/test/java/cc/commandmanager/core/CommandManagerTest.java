@@ -67,6 +67,12 @@ public class CommandManagerTest {
 				.containsOnly(ResultState.success(), ResultState.warning("Warning!"), ResultState.failure("Fail!"));
 	}
 
+	@Test
+	public void testExecuteCommandsGracefully() {
+		assertThat(commandManager.executeCommandsGracefully("Warning").getPartialResults()).containsExactly(
+				ResultState.success(), ResultState.warning("Warning!"));
+	}
+
 	@Test(expected = CommandNotFoundException.class)
 	public void testExecuteCommands_commandNotFound() {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));
