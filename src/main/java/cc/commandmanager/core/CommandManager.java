@@ -135,7 +135,7 @@ public class CommandManager {
 				.getConnectedComponents())) {
 			commands.addAll(graph.topologicalOrderOfAllCommands());
 		}
-		return executeOrderedCommands(commandNamesOf(commands), context, commandGraph);
+		return executeOrderedCommands(commands, context, commandGraph);
 	}
 
 	public ComposedResult executeCommandsGracefully(String... commandNames) {
