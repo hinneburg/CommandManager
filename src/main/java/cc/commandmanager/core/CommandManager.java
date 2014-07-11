@@ -1,6 +1,7 @@
 package cc.commandmanager.core;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * This class is used for the controlled execution of commands. Commands to be executed are declared in a catalog. Those
@@ -115,7 +117,14 @@ public class CommandManager {
 	}
 
 	public ComposedResult executeAllCommands() {
-		return executeCommands(commandNamesOf(commandGraph.topologicalOrderOfAllCommands()));
+		return executeAllCommands(context);
+	}
+
+	public ComposedResult executeAllCommands(Context context) {
+		return executeOrderedCommands(commandNamesOf(commandGraph.topologicalOrderOfAllCommands()), context,
+				commandGraph);
+	}
+
 	}
 
 	public ComposedResult executeCommands(String... commandNames) {
@@ -139,11 +148,11 @@ public class CommandManager {
 	 */
 	public ComposedResult executeCommands(Iterable<String> commandNames, Context context) {
 		Check.notEmpty(Lists.newArrayList(commandNames), "commandNames");
-		return executeCommands(commandNamesOf(commandGraph.topologicalOrderOfNames(commandNames)), context,
+		return executeOrderedCommands(commandNamesOf(commandGraph.topologicalOrderOfNames(commandNames)), context,
 				commandGraph);
 	}
 
-	private static ComposedResult executeCommands(Iterable<String> commandNames, Context context,
+	private static ComposedResult executeOrderedCommands(Iterable<String> commandNames, Context context,
 			CommandGraph commandGraph) {
 		Check.noNullElements(commandNames, "commandNames");
 		Check.notNull(context, "context");
