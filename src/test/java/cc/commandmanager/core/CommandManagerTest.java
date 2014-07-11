@@ -22,6 +22,8 @@ public class CommandManagerTest {
 		builder.addCommand("Success", SuccessfulCommand.class.getName());
 		builder.addCommand("Warning", WarningCommand.class.getName());
 		builder.addCommand("Failure", FailingCommand.class.getName());
+		builder.addMandatoryDependency("Failure", "Warning");
+		builder.addMandatoryDependency("Warning", "Success");
 		commandManager = new CommandManager(builder.build());
 	}
 
@@ -59,6 +61,12 @@ public class CommandManagerTest {
 	}
 
 	@Test
+	public void testExecuteConnectedComponentsContaining() {
+		assertThat(
+				commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success")).getPartialResults())
+				.containsOnly(ResultState.success(), ResultState.warning("Warning!"), ResultState.failure("Fail!"));
+	}
+
 	@Test(expected = CommandNotFoundException.class)
 	public void testExecuteCommands_commandNotFound() {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));

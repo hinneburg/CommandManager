@@ -125,6 +125,21 @@ public class CommandManager {
 				commandGraph);
 	}
 
+	public ComposedResult executeConnectedComponentsContaining(Iterable<String> commandNames) {
+		return executeConnectedComponentsContaining(commandNames, context);
+	}
+
+	public ComposedResult executeConnectedComponentsContaining(Iterable<String> commandNames, Context context) {
+		Check.noNullElements(commandNames);
+
+		List<CommandClass> commands = Lists.newLinkedList();
+		for (CommandGraph graph : filterConnectedComponentsContaining(Sets.newHashSet(commandNames), commandGraph
+				.getConnectedComponents())) {
+			commands.addAll(graph.topologicalOrderOfAllCommands());
+		}
+		return executeOrderedCommands(commandNamesOf(commands), context, commandGraph);
+	}
+
 	}
 
 	public ComposedResult executeCommands(String... commandNames) {
