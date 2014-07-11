@@ -91,30 +91,6 @@ public class CommandManager {
 		return commandGraph;
 	}
 
-	private static Set<CommandGraph> filterConnectedComponentsContaining(Set<String> startCommands,
-			Set<CommandGraph> connectedComponents) {
-		ImmutableSet.Builder<CommandGraph> result = ImmutableSet.builder();
-		for (final String command : startCommands) {
-			for (CommandGraph connectedComponent : connectedComponents) {
-				if (connectedComponent.containsCommand(command)) {
-					result.add(connectedComponent);
-				}
-			}
-		}
-		return result.build();
-	}
-
-	private static List<String> commandNamesOf(List<CommandClass> commands) {
-		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
-
-			@Override
-			public String apply(CommandClass command) {
-				return command.getName();
-			}
-
-		}));
-	}
-
 	public ComposedResult executeAllCommands() {
 		return executeAllCommands(context);
 	}
@@ -136,6 +112,19 @@ public class CommandManager {
 			commands.addAll(graph.topologicalOrderOfAllCommands());
 		}
 		return executeOrderedCommands(commands, context, commandGraph);
+	}
+
+	private static Set<CommandGraph> filterConnectedComponentsContaining(Set<String> startCommands,
+			Set<CommandGraph> connectedComponents) {
+		ImmutableSet.Builder<CommandGraph> result = ImmutableSet.builder();
+		for (final String command : startCommands) {
+			for (CommandGraph connectedComponent : connectedComponents) {
+				if (connectedComponent.containsCommand(command)) {
+					result.add(connectedComponent);
+				}
+			}
+		}
+		return result.build();
 	}
 
 	public ComposedResult executeCommandsGracefully(String... commandNames) {
@@ -225,6 +214,17 @@ public class CommandManager {
 			}
 		}
 		return result;
+	}
+
+	private static List<String> commandNamesOf(List<CommandClass> commands) {
+		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
+
+			@Override
+			public String apply(CommandClass command) {
+				return command.getName();
+			}
+
+		}));
 	}
 
 	public static final class ComposedResult {
