@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import cc.commandmanager.core.CommandManager.ComposedResult;
 
-public class CmResultTest {
+public class ComposedResultTest {
 
 	// TODO find proper names for members
 	private ComposedResult result;
@@ -36,11 +36,8 @@ public class CmResultTest {
 		result.addResult("Failure", ResultState.failure("Failure!"));
 		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.FAILURE);
 
-		Map<String, ResultState> commandResults = new LinkedHashMap<String, ResultState>();
-		commandResults.put("Success", ResultState.success());
-		commandResults.put("Warning", ResultState.warning("Warning!"));
-		commandResults.put("Failure", ResultState.failure("Failure!"));
-		assertThat(result.getPartialResults()).isEqualTo(commandResults);
+		assertThat(result.getPartialResults()).containsExactly(ResultState.success(), ResultState.warning("Warning!"),
+				ResultState.failure("Failure!"));
 	}
 
 	@Test
@@ -55,6 +52,24 @@ public class CmResultTest {
 		result.addResult("Failure", ResultState.failure("Failure!"));
 		result.addResult("Warning", ResultState.warning("Warning!"));
 		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.FAILURE);
+	}
+
+	@Test
+	public void testGetPartialResultsWithCorrespondingCommandName() {
+		result.addResult("Success", ResultState.success());
+		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.SUCCESS);
+
+		result.addResult("Warning", ResultState.warning("Warning!"));
+		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.WARNING);
+
+		result.addResult("Failure", ResultState.failure("Failure!"));
+		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.FAILURE);
+
+		Map<String, ResultState> commandResults = new LinkedHashMap<String, ResultState>();
+		commandResults.put("Success", ResultState.success());
+		commandResults.put("Warning", ResultState.warning("Warning!"));
+		commandResults.put("Failure", ResultState.failure("Failure!"));
+		assertThat(result.getPartialResultsWithCorrespondingCommandName()).isEqualTo(commandResults);
 	}
 
 	@Test

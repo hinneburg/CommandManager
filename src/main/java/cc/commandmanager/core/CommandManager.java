@@ -202,7 +202,11 @@ public class CommandManager {
 			}
 		}
 
-		public Map<String, ResultState> getPartialResults() {
+		public List<ResultState> getPartialResults() {
+			return Lists.newLinkedList(commandResults.values());
+		}
+
+		public Map<String, ResultState> getPartialResultsWithCorrespondingCommandName() {
 			return ImmutableMap.<String, ResultState> copyOf(commandResults);
 		}
 
