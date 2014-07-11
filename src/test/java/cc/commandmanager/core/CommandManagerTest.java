@@ -73,6 +73,18 @@ public class CommandManagerTest {
 				ResultState.success(), ResultState.warning("Warning!"));
 	}
 
+	@Test
+	public void testExecuteCommandsFromGraph() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("A1", SuccessfulCommand.class.getName());
+		builder.addCommand("A2", SuccessfulCommand.class.getName());
+		builder.addCommand("B", SuccessfulCommand.class.getName());
+		builder.addMandatoryDependency("A2", "A1");
+
+		assertThat(CommandManager.executeCommands(builder.build()).getExecutedCommandNames()).containsSequence("A1",
+				"A2").contains("B");
+	}
+
 	@Test(expected = CommandNotFoundException.class)
 	public void testExecuteCommands_commandNotFound() {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));

@@ -180,6 +180,15 @@ public class CommandManager {
 		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context, commandGraph);
 	}
 
+	public static ComposedResult executeCommands(CommandGraph graph) {
+		return executeCommands(graph, new Context());
+	}
+
+	public static ComposedResult executeCommands(CommandGraph graph, Context context) {
+		Check.notNull(graph, "graph");
+		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context, graph);
+	}
+
 	private static ComposedResult executeOrderedCommands(List<CommandClass> commandNames, Context context,
 			CommandGraph commandGraph) {
 		Check.stateIsTrue(commandNames.iterator().hasNext(), "commandNames must have at least one command name");
