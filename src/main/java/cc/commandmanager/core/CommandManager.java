@@ -140,6 +140,33 @@ public class CommandManager {
 		return executeOrderedCommands(commandNamesOf(commands), context, commandGraph);
 	}
 
+	public ComposedResult executeCommandsGracefully(String... commandNames) {
+		return executeCommandsGracefully(Lists.newArrayList(commandNames), context);
+	}
+
+	public ComposedResult executeCommandsGracefully(Context context, String... commandNames) {
+		return executeCommandsGracefully(Lists.newArrayList(commandNames), context);
+	}
+
+	public ComposedResult executeCommandsGracefully(Iterable<String> commandNames) {
+		return executeCommandsGracefully(commandNames, context);
+	}
+
+	public ComposedResult executeCommandsGracefully(Iterable<String> commandNames, Context context) {
+		Set<String> commandsAndTheirDependencies = Sets.newHashSet(Check.noNullElements(commandNames));
+		for (String command : commandNames) {
+			commandsAndTheirDependencies.addAll(successiveBeforeDependencies(command, new HashSet<String>()));
+		}
+		return executeCommands(commandsAndTheirDependencies, context);
+	}
+
+	private Set<String> successiveBeforeDependencies(String commandName, Iterable<String> accumulator) {
+		Set<String> result = Sets.newHashSet(accumulator);
+		result.addAll(commandNamesOf(commandGraph.getDependencies(commandName)));
+		for (CommandClass command : commandGraph.getDependencies(commandName)) {
+			result.addAll(successiveBeforeDependencies(command.getName(), result));
+		}
+		return result;
 	}
 
 	public ComposedResult executeCommands(String... commandNames) {
