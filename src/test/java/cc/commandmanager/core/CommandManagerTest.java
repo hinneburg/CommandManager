@@ -1,7 +1,6 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
-import net.sf.qualitycheck.exception.IllegalEmptyArgumentException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -78,10 +77,6 @@ public class CommandManagerTest {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));
 	}
 
-	@Test(expected = IllegalEmptyArgumentException.class)
-	public void testExecuteCommands_emptyCommandName() {
-		commandManager.executeCommands(Lists.<String> newArrayList());
-	}
 
 	@Test
 	public void testExecuteCommands_ignoresUnspecifiedDependencies() {
