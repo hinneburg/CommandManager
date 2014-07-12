@@ -1,6 +1,5 @@
 package cc.commandmanager.core;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,31 +33,6 @@ public class CommandManager {
 	private final CommandGraph commandGraph;
 
 	/**
-	 * Create a new {@linkplain CommandManager}. Use the {@linkplain CommandGraph}, parsed from the given XML file. The
-	 * command graph specifies which commands which will be executed and in which order this will happen. A new
-	 * {@linkplain Context} will be used to execute the commands with.
-	 * 
-	 * @param catalog
-	 *            see {@linkplain CommandGraph#fromFile(File))} for specifications on the catalog file.
-	 */
-	public CommandManager(File catalog) {
-		this(catalog, new Context());
-	}
-
-	/**
-	 * Create a new {@linkplain CommandManager}. Use the {@linkplain CommandGraph}, parsed from the given XML file. The
-	 * command graph specifies which commands which will be executed and in which order this will happen.
-	 * 
-	 * @param catalog
-	 *            see {@linkplain CommandGraph#fromFile(File))} for specifications on the catalog file.
-	 * @param context
-	 *            information in the context will be used to execute the commands with.
-	 */
-	public CommandManager(File catalog, Context context) {
-		this(CommandGraph.fromXml(catalog).get(), context);
-	}
-
-	/**
 	 * @param commandGraph
 	 *            specifies which commands can be executed. The internal order of this graph will influence
 	 *            <ul>
@@ -75,21 +49,6 @@ public class CommandManager {
 				"commandGraph must have at least one command in it");
 		this.commandGraph = commandGraph;
 		context = new Context();
-	}
-
-	/**
-	 * Create a new {@linkplain CommandManager}.
-	 * 
-	 * @param commandGraph
-	 *            specifies which commands which will be executed and in which order this will happen.
-	 * @param context
-	 *            information in the context will be used to execute the commands with.
-	 */
-	public CommandManager(CommandGraph commandGraph, Context context) {
-		Check.stateIsTrue(!commandGraph.topologicalOrderOfAllCommands().isEmpty(),
-				"commandGraph must have at least one command in it");
-		this.commandGraph = commandGraph;
-		this.context = Check.notNull(context, "context");
 	}
 
 	/**

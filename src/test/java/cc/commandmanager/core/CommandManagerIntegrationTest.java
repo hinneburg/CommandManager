@@ -14,14 +14,15 @@ public class CommandManagerIntegrationTest {
 	public static final String EXECUTED_COMMANDS = "executedCommands";
 
 	private Context context = new Context();
-	private CommandManager commandManagement = new CommandManager(new File(CommandManagerIntegrationTest.class
-			.getClassLoader().getResource("CommandManagerIntegrationTest-catalog.xml").getFile()), context);
+	private CommandManager commandManagement = new CommandManager(CommandGraph.fromXml(
+			new File(CommandManagerIntegrationTest.class.getClassLoader().getResource(
+					"CommandManagerIntegrationTest-catalog.xml").getFile())).get());
 
 	@Test
 	public void testExecuteAllCommands() {
 		context.bind(EXECUTED_COMMANDS, Lists.newArrayList());
 
-		commandManagement.executeAllCommands();
+		commandManagement.executeAllCommands(context);
 
 		@SuppressWarnings("unchecked")
 		List<Class<? extends Command>> executedCommands = context.get(EXECUTED_COMMANDS, List.class);
