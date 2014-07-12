@@ -3,6 +3,7 @@ package cc.commandmanager.core;
 import static com.google.common.base.Predicates.in;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -324,6 +325,35 @@ public class CommandGraph {
 		return topologicalOrdering;
 	}
 
+	/**
+	 * Arrange the specified commands in a topological order, meaning that if there exists a dependency from command A
+	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * the specified commands must exist in this graph.
+	 * 
+	 * @param commandNames
+	 *            to be sorted.
+	 * 
+	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 * 
+	 * @throws CommandNotFoundException
+	 *             if at least one of the given commands cannot be found in this graph.
+	 */
+	public List<CommandClass> topologicalOrderOfNames(String... commandNames) {
+		return topologicalOrderOfNames(Arrays.asList(commandNames));
+	}
+
+	/**
+	 * Arrange the specified commands in a topological order, meaning that if there exists a dependency from command A
+	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * the specified commands must exist in this graph.
+	 * 
+	 * @param commandNames
+	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
+	 *            null.
+	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 * @throws CommandNotFoundException
+	 *             if at least one of the given commands cannot be found in this graph.
+	 */
 	public List<CommandClass> topologicalOrderOfNames(Iterable<String> commandNames) {
 		Check.noNullElements(commandNames, "commandNames");
 		return topologicalOrderOf(Iterables.transform(commandNames, new Function<String, CommandClass>() {
@@ -372,7 +402,7 @@ public class CommandGraph {
 	 *             if at least one of the given commands cannot be found in this graph.
 	 */
 	public List<CommandClass> topologicalOrderOf(CommandClass... commands) {
-		return topologicalOrderOf(ImmutableList.copyOf(commands));
+		return topologicalOrderOf(Arrays.asList(commands));
 	}
 
 	private String checkGraphContains(String command) {
