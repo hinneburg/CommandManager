@@ -33,6 +33,13 @@ public class CommandManagerTest {
 	}
 
 	@Test
+	public void testExecuteAllCommandsUsesContext() {
+		Context context = new Context();
+		commandManager.executeAllCommands(context);
+		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
+	}
+
+	@Test
 	public void testExecuteCommands() {
 		assertThat(commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).getState())
 				.isEqualTo(SimpleState.FAILURE);
@@ -60,6 +67,13 @@ public class CommandManagerTest {
 	}
 
 	@Test
+	public void testExecuteCommandsUsesContext() {
+		Context context = new Context();
+		commandManager.executeCommands(Lists.newArrayList("Success"), context);
+		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
+	}
+
+	@Test
 	public void testExecuteConnectedComponentsContaining() {
 		assertThat(
 				commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success")).getPartialResults())
@@ -67,9 +81,32 @@ public class CommandManagerTest {
 	}
 
 	@Test
+	public void testExecuteConnectedComponentsContainingUsesContext() {
+		Context context = new Context();
+		commandManager.executeCommands(Lists.newArrayList("Success"), context);
+		commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success"));
+		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
+	}
+
+	@Test
 	public void testExecuteCommandsGracefully() {
 		assertThat(commandManager.executeCommandsGracefully("Warning").getPartialResults()).containsExactly(
 				ResultState.success(), ResultState.warning("Warning!"));
+
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("Independent", SuccessfulCommand.class.getName());
+		builder.addCommand("From one another", SuccessfulCommand.class.getName());
+		assertThat(
+				new CommandManager(builder.build()).executeCommandsGracefully("Independent").getExecutedCommandNames())
+				.containsOnly("Independent");
+	}
+
+	@Test
+	public void testExecuteCommandsGracefullyUsesContext() {
+		Context context = new Context();
+		commandManager.executeCommands(Lists.newArrayList("Success"), context);
+		commandManager.executeCommandsGracefully(Lists.newArrayList("Success"));
+		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
 	}
 
 	@Test
@@ -84,26 +121,36 @@ public class CommandManagerTest {
 				"A2").contains("B");
 	}
 
+	@Test
+	public void testExecuteCommandsFromGraphUsesContext() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		builder.addCommand("Success", SuccessfulCommand.class.getName());
+
+		Context context = new Context();
+		CommandManager.executeCommands(builder.build(), context);
+
+		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
+	}
+
 	@Test(expected = CommandNotFoundException.class)
 	public void testExecuteCommands_commandNotFound() {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));
 	}
 
 	@Test(expected = IllegalStateOfArgumentException.class)
-	public void testExecuteAtLeastOnCommand() {
+	public void testExecuteCommands_noCommandSpeficied() {
 		commandManager.executeCommands(Lists.<String> newArrayList());
 	}
 
 	@Test
-	public void testExecuteCommands_ignoresUnspecifiedDependencies() {
+	public void testExecuteCommands_ignoresDependencies() {
 		CommandGraphBuilder builder = new CommandGraphBuilder();
-		builder.addCommand("Misses dependency", SuccessfulCommand.class.getName());
-		builder.addCommand("Warning dependency", WarningCommand.class.getName());
-		builder.addMandatoryDependency("Misses dependency", "Warning dependency");
+		builder.addCommand("Two", SuccessfulCommand.class.getName());
+		builder.addCommand("One", WarningCommand.class.getName());
+		builder.addMandatoryDependency("Two", "One");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("Misses dependency")).getState()).isEqualTo(
-				SimpleState.SUCCESS);
+		assertThat(commandManager.executeCommands(Lists.newArrayList("Two")).getState()).isEqualTo(SimpleState.SUCCESS);
 	}
 
 	@Test
@@ -124,10 +171,23 @@ public class CommandManagerTest {
 				.containsOnly(ResultState.failure("Fail!"));
 	}
 
+	@Test(expected = IllegalStateOfArgumentException.class)
+	public void testConstructorOnEmptyGraph() {
+		new CommandManager(new CommandGraphBuilder().build());
+	}
+
+	@Test(expected = IllegalStateOfArgumentException.class)
+	public void testExecuteCommandsOnEmptyGraph() {
+		CommandManager.executeCommands(new CommandGraphBuilder().build());
+	}
+
 	public static class SuccessfulCommand extends SimpleCommand {
 
 		@Override
 		public ResultState execute(Context context) {
+			if (!context.containsKey("answer to everything")) {
+				context.bind("answer to everything", 42);
+			}
 			return ResultState.success();
 		}
 	}
