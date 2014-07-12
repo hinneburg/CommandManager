@@ -19,19 +19,19 @@ public class ComposedResultTest {
 
 	@Test
 	public void testGetOverallResult() {
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.SUCCESS);
+		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.SUCCESS);
 	}
 
 	@Test
 	public void testAddResult() {
 		result.addResult("Success", ResultState.success());
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.SUCCESS);
+		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.SUCCESS);
 
 		result.addResult("Warning", ResultState.warning("Warning!"));
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.WARNING);
+		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.WARNING);
 
 		result.addResult("Failure", ResultState.failure("Failure!"));
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.FAILURE);
+		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.FAILURE);
 
 		assertThat(result.getPartialResults()).containsExactly(ResultState.success(), ResultState.warning("Warning!"),
 				ResultState.failure("Failure!"));
@@ -41,14 +41,14 @@ public class ComposedResultTest {
 	public void testAddResult_warningLevelRemains() {
 		result.addResult("Warning", ResultState.warning("Warning!"));
 		result.addResult("Success", ResultState.success());
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.WARNING);
+		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.WARNING);
 	}
 
 	@Test
 	public void testAddResult_failureLevelRemains() {
 		result.addResult("Failure", ResultState.failure("Failure!"));
 		result.addResult("Warning", ResultState.warning("Warning!"));
-		assertThat(result.getComposedResult()).isEqualTo(CommandManager.ResultState2.FAILURE);
+		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.FAILURE);
 	}
 
 	@Test

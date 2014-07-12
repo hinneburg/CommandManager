@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
-import cc.commandmanager.core.CommandManager.ResultState2;
+import cc.commandmanager.core.CommandManager.SimpleState;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -29,14 +29,13 @@ public class CommandManagerTest {
 
 	@Test
 	public void testExecuteAllCommands() {
-		assertThat(commandManager.executeAllCommands().getComposedResult()).isEqualTo(ResultState2.FAILURE);
+		assertThat(commandManager.executeAllCommands().getState()).isEqualTo(SimpleState.FAILURE);
 	}
 
 	@Test
 	public void testExecuteCommands() {
-		assertThat(
-				commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).getComposedResult())
-				.isEqualTo(ResultState2.FAILURE);
+		assertThat(commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).getState())
+				.isEqualTo(SimpleState.FAILURE);
 	}
 
 	@Test
@@ -103,13 +102,12 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("Misses dependency", "Warning dependency");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("Misses dependency")).getComposedResult())
-				.isEqualTo(ResultState2.SUCCESS);
+		assertThat(commandManager.executeCommands(Lists.newArrayList("Misses dependency")).getState()).isEqualTo(
+				SimpleState.SUCCESS);
 	}
 
 	@Test
 	public void testExecutionAbortionOnFailure() {
-		// TODO only way of doing this until #41 is implemented and returns the result state
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 		builder.addCommand("Success", SuccessfulCommand.class.getName());
 		builder.addCommand("Warning", WarningCommand.class.getName());
@@ -128,22 +126,16 @@ public class CommandManagerTest {
 
 	public static class SuccessfulCommand extends SimpleCommand {
 
-		static boolean isExecuted = false;
-
 		@Override
 		public ResultState execute(Context context) {
-			isExecuted = true;
 			return ResultState.success();
 		}
 	}
 
 	public static class WarningCommand extends SimpleCommand {
 
-		static boolean isExecuted = false;
-
 		@Override
 		public ResultState execute(Context context) {
-			isExecuted = true;
 			return ResultState.warning("Warning!");
 		}
 
@@ -151,11 +143,8 @@ public class CommandManagerTest {
 
 	public static class FailingCommand extends SimpleCommand {
 
-		static boolean isExecuted = false;
-
 		@Override
 		public ResultState execute(Context context) {
-			isExecuted = true;
 			return ResultState.failure("Fail!");
 		}
 
