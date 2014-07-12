@@ -366,7 +366,6 @@ public class CommandManager {
 	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
 	 * 
 	 */
-	// TODO document that optional tag doesnt matter
 	public ComposedResult executeCommands(Iterable<String> commandNames) {
 		return executeCommands(commandNames, context);
 	}
