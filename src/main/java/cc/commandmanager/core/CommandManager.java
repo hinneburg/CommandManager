@@ -85,7 +85,7 @@ public class CommandManager {
 	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
 	 */
 	public ComposedResult executeAllCommands(Context context) {
-		return executeOrderedCommands(commandGraph.topologicalOrderOfAllCommands(), context, commandGraph);
+		return executeOrderedCommands(commandGraph.topologicalOrderOfAllCommands(), context);
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class CommandManager {
 				.getConnectedComponents())) {
 			commands.addAll(graph.topologicalOrderOfAllCommands());
 		}
-		return executeOrderedCommands(commands, context, commandGraph);
+		return executeOrderedCommands(commands, context);
 	}
 
 	private static Set<CommandGraph> filterConnectedComponentsContaining(Set<String> startCommands,
@@ -352,7 +352,7 @@ public class CommandManager {
 	 */
 	public ComposedResult executeCommands(Iterable<String> commandNames, Context context) {
 		Check.noNullElements(Lists.newArrayList(commandNames), "commandNames");
-		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context, commandGraph);
+		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context);
 	}
 
 	/**
@@ -394,25 +394,28 @@ public class CommandManager {
 		Check.notNull(graph, "graph");
 		Check.stateIsTrue(!graph.topologicalOrderOfAllCommands().isEmpty(),
 				"graph must have at least one command in it");
-		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context, graph);
+		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context);
 	}
 
-	private static ComposedResult executeOrderedCommands(Iterable<CommandClass> commandNames, Context context,
-			CommandGraph commandGraph) {
+	/**
+	 * Executes the given ordered commands using the specified context.
+	 * 
+	 * @param commandNames
+	 * @param context
+	 * @return whether the execution was successful
+	 */
+	private static ComposedResult executeOrderedCommands(Iterable<CommandClass> commandNames, Context context) {
 		Check.noNullElements(commandNames, "commandNames");
 		Check.stateIsTrue(!Iterables.isEmpty(commandNames), "commandNames must have at least one command name");
 		Check.notNull(context, "context");
 
 		ComposedResult result = new ComposedResult();
-		for (String command : commandNamesOf(commandNames)) {
-			if (!commandGraph.containsCommand(command)) {
-				throw new CommandNotFoundException(command);
-			}
-			Command commandInstance = commandGraph.getCommandClass(command).newInstance();
+		for (CommandClass command : commandNames) {
+			Command commandInstance = command.newInstance();
 			logger.info("Execute current command: " + commandInstance.getClass());
 			long startTime = System.currentTimeMillis();
 			ResultState resultState = commandInstance.execute(context);
-			result.addResult(command, resultState);
+			result.addResult(command.getName(), resultState);
 			if (resultState.isSuccess()) {
 				logger.info("Command " + commandInstance.getClass() + " successfully executed in "
 						+ (System.currentTimeMillis() - startTime) + " ms");
