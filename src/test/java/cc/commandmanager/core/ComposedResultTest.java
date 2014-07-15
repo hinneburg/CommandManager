@@ -5,7 +5,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import cc.commandmanager.core.CommandManager.ComposedResult;
+import cc.commandmanager.core.ComposedResult.SimpleState;
 
 public class ComposedResultTest {
 
@@ -19,19 +19,19 @@ public class ComposedResultTest {
 
 	@Test
 	public void testGetOverallResult() {
-		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.SUCCESS);
+		assertThat(result.getState()).isEqualTo(SimpleState.SUCCESS);
 	}
 
 	@Test
 	public void testAddResult() {
 		result.addResult("Success", ResultState.success());
-		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.SUCCESS);
+		assertThat(result.getState()).isEqualTo(SimpleState.SUCCESS);
 
 		result.addResult("Warning", ResultState.warning("Warning!"));
-		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.WARNING);
+		assertThat(result.getState()).isEqualTo(SimpleState.WARNING);
 
 		result.addResult("Failure", ResultState.failure("Failure!"));
-		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.FAILURE);
+		assertThat(result.getState()).isEqualTo(SimpleState.FAILURE);
 
 		assertThat(result.getPartialResults()).containsExactly(ResultState.success(), ResultState.warning("Warning!"),
 				ResultState.failure("Failure!"));
@@ -41,14 +41,14 @@ public class ComposedResultTest {
 	public void testAddResult_warningLevelRemains() {
 		result.addResult("Warning", ResultState.warning("Warning!"));
 		result.addResult("Success", ResultState.success());
-		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.WARNING);
+		assertThat(result.getState()).isEqualTo(SimpleState.WARNING);
 	}
 
 	@Test
 	public void testAddResult_failureLevelRemains() {
 		result.addResult("Failure", ResultState.failure("Failure!"));
 		result.addResult("Warning", ResultState.warning("Warning!"));
-		assertThat(result.getState()).isEqualTo(CommandManager.SimpleState.FAILURE);
+		assertThat(result.getState()).isEqualTo(SimpleState.FAILURE);
 	}
 
 	@Test
