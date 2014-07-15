@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
-import cc.commandmanager.core.CommandManager.SimpleState;
+import cc.commandmanager.core.ComposedResult.SimpleState;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -42,7 +42,7 @@ public class CommandManagerTest {
 	@Test
 	public void testExecuteCommands() {
 		assertThat(commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).getState())
-				.isEqualTo(SimpleState.FAILURE);
+		.isEqualTo(SimpleState.FAILURE);
 	}
 
 	@Test
@@ -164,7 +164,7 @@ public class CommandManagerTest {
 		commandManager = new CommandManager(builder.build());
 
 		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning")).getPartialResults())
-				.containsOnly(ResultState.success(), ResultState.warning("Warning!"));
+		.containsOnly(ResultState.success(), ResultState.warning("Warning!"));
 
 		assertThat(
 				commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure")).getPartialResults())
