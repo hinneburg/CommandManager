@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
  * success is reflected by a {@linkplain ComposedResult}.
  */
 public class CommandManager {
+
 	private static final Logger logger = Logger.getLogger(CommandManager.class);
 
 	private final Context context;
@@ -390,7 +391,8 @@ public class CommandManager {
 	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
 	 */
 	public static ComposedResult executeCommands(CommandGraph graph, Context context) {
-		Check.stateIsTrue(!Check.notNull(graph, "graph").topologicalOrderOfAllCommands().isEmpty(),
+		Check.notNull(graph, "graph");
+		Check.stateIsTrue(!graph.topologicalOrderOfAllCommands().isEmpty(),
 				"graph must have at least one command in it");
 		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context, graph);
 	}
@@ -446,6 +448,7 @@ public class CommandManager {
 	 * the workflow. Highest urgency level is FAILURE, followed by WARNING, followed by SUCCESS.
 	 */
 	public static final class ComposedResult {
+
 		private SimpleState state = SimpleState.SUCCESS;
 		private final List<String> executedCommands = Lists.newLinkedList();
 		private final List<ResultState> partialResults = Lists.newLinkedList();
