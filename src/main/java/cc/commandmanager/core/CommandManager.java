@@ -397,10 +397,10 @@ public class CommandManager {
 		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context, graph);
 	}
 
-	private static ComposedResult executeOrderedCommands(List<CommandClass> commandNames, Context context,
+	private static ComposedResult executeOrderedCommands(Iterable<CommandClass> commandNames, Context context,
 			CommandGraph commandGraph) {
-		Check.stateIsTrue(commandNames.iterator().hasNext(), "commandNames must have at least one command name");
 		Check.noNullElements(commandNames, "commandNames");
+		Check.stateIsTrue(!Iterables.isEmpty(commandNames), "commandNames must have at least one command name");
 		Check.notNull(context, "context");
 
 		ComposedResult result = new ComposedResult();
@@ -431,7 +431,7 @@ public class CommandManager {
 		return result;
 	}
 
-	private static List<String> commandNamesOf(List<CommandClass> commands) {
+	private static List<String> commandNamesOf(Iterable<CommandClass> commands) {
 		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
 
 			@Override
