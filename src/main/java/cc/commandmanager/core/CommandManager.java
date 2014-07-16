@@ -358,7 +358,7 @@ public class CommandManager {
 	 * 
 	 */
 	public ComposedResultState executeCommands(Iterable<String> commandNames, Context context) {
-		Check.noNullElements(Lists.newArrayList(commandNames), "commandNames");
+		Check.noNullElements(commandNames, "commandNames");
 		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context);
 	}
 
