@@ -98,6 +98,8 @@ public class ResultStateTest {
 		assertThat(success.hashCode() == ResultState.success().hashCode());
 		assertThat(warning.hashCode() == ResultState.warning("Warning!", cause).hashCode());
 		assertThat(failure.hashCode() == ResultState.failure("Failure!", cause).hashCode());
+		assertThat(warning.hashCode() != ResultState.failure("Warning!", cause).hashCode());
+		assertThat(failure.hashCode() != ResultState.warning("Failure!", cause).hashCode());
 	}
 
 }
