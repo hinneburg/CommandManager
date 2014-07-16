@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
+import com.google.common.collect.ImmutableList;
+
 public class CommandGraphBuilderTest {
 
 	CommandGraphBuilder builder;
@@ -14,6 +16,20 @@ public class CommandGraphBuilderTest {
 	@Before
 	public void setUp() {
 		builder = new CommandGraphBuilder();
+	}
+
+	@Test
+	public void testCreateEmptyBuilder() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		assertThat(builder.build().topologicalOrderOfAllCommands()).isEmpty();
+	}
+
+	@Test
+	public void testCreateBuilderWithCommands() {
+		CommandClass commandA = new CommandClass("A", "A.class");
+		CommandClass commandB = new CommandClass("B", "B.class");
+		CommandGraphBuilder builder = new CommandGraphBuilder(ImmutableList.of(commandA, commandB));
+		assertThat(builder.build().topologicalOrderOfAllCommands()).containsOnly(commandA, commandB);
 	}
 
 	@Test
@@ -83,7 +99,7 @@ public class CommandGraphBuilderTest {
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
 		assertThat(graph.getMandatoryDependencies("Source")).isEmpty();
 		assertThat(graph.getOptionalDependencies("Source"))
-				.containsOnly(new CommandClass("Target", "className.Target"));
+		.containsOnly(new CommandClass("Target", "className.Target"));
 	}
 
 	@Test
@@ -96,7 +112,7 @@ public class CommandGraphBuilderTest {
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
 		assertThat(graph.getMandatoryDependencies("Source")).isEmpty();
 		assertThat(graph.getOptionalDependencies("Source"))
-				.containsOnly(new CommandClass("Target", "className.Target"));
+		.containsOnly(new CommandClass("Target", "className.Target"));
 	}
 
 	@Test
