@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
-import cc.commandmanager.core.ComposedResult.SimpleState;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -29,7 +28,7 @@ public class CommandManagerTest {
 
 	@Test
 	public void testExecuteAllCommands() {
-		assertThat(commandManager.executeAllCommands().getState()).isEqualTo(SimpleState.FAILURE);
+		assertThat(commandManager.executeAllCommands().isFailure()).isTrue();
 	}
 
 	@Test
@@ -41,8 +40,8 @@ public class CommandManagerTest {
 
 	@Test
 	public void testExecuteCommands() {
-		assertThat(commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).getState())
-		.isEqualTo(SimpleState.FAILURE);
+		assertThat(commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).isFailure())
+				.isTrue();
 	}
 
 	@Test
@@ -53,7 +52,7 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("2", "1");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults()).containsExactly(
+		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getResultStates()).containsExactly(
 				ResultState.success(), ResultState.failure("Fail!"));
 
 		CommandGraphBuilder backwards = new CommandGraphBuilder();
@@ -62,7 +61,7 @@ public class CommandManagerTest {
 		backwards.addMandatoryDependency("1", "2");
 		commandManager = new CommandManager(backwards.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getPartialResults()).containsOnly(
+		assertThat(commandManager.executeCommands(Lists.newArrayList("1", "2")).getResultStates()).containsOnly(
 				ResultState.failure("Fail!"));
 	}
 
@@ -75,8 +74,7 @@ public class CommandManagerTest {
 
 	@Test
 	public void testExecuteConnectedComponentsContaining() {
-		assertThat(
-				commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success")).getPartialResults())
+		assertThat(commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success")).getResultStates())
 				.containsOnly(ResultState.success(), ResultState.warning("Warning!"), ResultState.failure("Fail!"));
 	}
 
@@ -90,15 +88,14 @@ public class CommandManagerTest {
 
 	@Test
 	public void testExecuteCommandsGracefully() {
-		assertThat(commandManager.executeCommandsGracefully("Warning").getPartialResults()).containsExactly(
+		assertThat(commandManager.executeCommandsGracefully("Warning").getResultStates()).containsExactly(
 				ResultState.success(), ResultState.warning("Warning!"));
 
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 		builder.addCommand("Independent", SuccessfulCommand.class.getName());
 		builder.addCommand("From one another", SuccessfulCommand.class.getName());
-		assertThat(
-				new CommandManager(builder.build()).executeCommandsGracefully("Independent").getExecutedCommandNames())
-				.containsOnly("Independent");
+		assertThat(new CommandManager(builder.build()).executeCommandsGracefully("Independent").getExecutedCommands())
+				.containsOnly(new CommandClass("Independent", SuccessfulCommand.class.getName()));
 	}
 
 	@Test
@@ -117,8 +114,10 @@ public class CommandManagerTest {
 		builder.addCommand("B", SuccessfulCommand.class.getName());
 		builder.addMandatoryDependency("A2", "A1");
 
-		assertThat(CommandManager.executeCommands(builder.build()).getExecutedCommandNames()).containsSequence("A1",
-				"A2").contains("B");
+		assertThat(CommandManager.executeCommands(builder.build()).getExecutedCommands()).containsSequence(
+				new CommandClass("A1", SuccessfulCommand.class.getName()),
+				new CommandClass("A2", SuccessfulCommand.class.getName())).contains(
+				new CommandClass("B", SuccessfulCommand.class.getName()));
 	}
 
 	@Test
@@ -150,7 +149,7 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("Two", "One");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("Two")).getState()).isEqualTo(SimpleState.SUCCESS);
+		assertThat(commandManager.executeCommands(Lists.newArrayList("Two")).isSuccess()).isTrue();
 	}
 
 	@Test
@@ -163,11 +162,10 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("Warning", "Failure");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning")).getPartialResults())
-		.containsOnly(ResultState.success(), ResultState.warning("Warning!"));
+		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning")).getResultStates())
+				.containsOnly(ResultState.success(), ResultState.warning("Warning!"));
 
-		assertThat(
-				commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure")).getPartialResults())
+		assertThat(commandManager.executeCommands(ImmutableList.of("Success", "Warning", "Failure")).getResultStates())
 				.containsOnly(ResultState.failure("Fail!"));
 	}
 
