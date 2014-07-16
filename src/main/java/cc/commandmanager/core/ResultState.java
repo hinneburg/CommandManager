@@ -141,22 +141,6 @@ public abstract class ResultState {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || getClass() != obj.getClass()) {
-			return false;
-		}
-		ResultState that = (ResultState) obj;
-		if (isSuccess() && that.isSuccess()) {
-			return true;
-		} else {
-			return getMessage().equals(that.getMessage()) && getCause() == that.getCause();
-		}
-	}
-
-	@Override
 	public int hashCode() {
 		int result = 1;
 		if (!isSuccess()) {
@@ -189,6 +173,26 @@ public abstract class ResultState {
 			this.cause = cause;
 		}
 
+		/**
+		 * @return {@code true} if the given {@linkplain Object} corresponds the same class. Furthermore
+		 *         {@linkplain #getMessage()} and {@linkplain #getCause()} must return the same result.
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			WarningOrFailure that = (WarningOrFailure) obj;
+			final boolean hasSameMessage = getMessage().equals(that.getMessage());
+			if (!hasCause()) {
+				return hasSameMessage && !that.hasCause();
+			} else {
+				return hasSameMessage && getCause().equals(that.getCause());
+			}
+		}
 	}
 
 	/**

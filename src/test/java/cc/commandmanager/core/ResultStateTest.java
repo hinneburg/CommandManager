@@ -89,6 +89,8 @@ public class ResultStateTest {
 		assertThat(failure.equals(ResultState.failure("Different failure!"))).isFalse();
 		assertThat(warning.equals(ResultState.warning("Warning!", cause))).isTrue();
 		assertThat(failure.equals(ResultState.failure("Failure!", cause))).isTrue();
+		assertThat(warning.equals(ResultState.failure("Warning!", cause))).isFalse();
+		assertThat(failure.equals(ResultState.warning("Failure!", cause))).isFalse();
 	}
 
 	@Test
@@ -97,4 +99,5 @@ public class ResultStateTest {
 		assertThat(warning.hashCode() == ResultState.warning("Warning!", cause).hashCode());
 		assertThat(failure.hashCode() == ResultState.failure("Failure!", cause).hashCode());
 	}
+
 }
