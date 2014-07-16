@@ -19,7 +19,7 @@ import com.google.common.collect.Sets;
 
 /**
  * Manages controlled execution of {@linkplain Command}s which are represented by a {@linkplain CommandGraph}. Execution
- * success is reflected by a {@linkplain ComposedResult}.
+ * success is reflected by a {@linkplain ComposedResultState}.
  */
 public class CommandManager {
 
@@ -62,9 +62,10 @@ public class CommandManager {
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public ComposedResult executeAllCommands() {
+	public ComposedResultState executeAllCommands() {
 		return executeAllCommands(context);
 	}
 
@@ -77,9 +78,10 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public ComposedResult executeAllCommands(Context context) {
+	public ComposedResultState executeAllCommands(Context context) {
 		return executeOrderedCommands(commandGraph.topologicalOrderOfAllCommands(), context);
 	}
 
@@ -99,9 +101,10 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public ComposedResult executeConnectedComponentsContaining(Iterable<String> commandNames) {
+	public ComposedResultState executeConnectedComponentsContaining(Iterable<String> commandNames) {
 		return executeConnectedComponentsContaining(commandNames, context);
 	}
 
@@ -122,9 +125,10 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public ComposedResult executeConnectedComponentsContaining(Iterable<String> commandNames, Context context) {
+	public ComposedResultState executeConnectedComponentsContaining(Iterable<String> commandNames, Context context) {
 		Check.noNullElements(commandNames);
 
 		List<CommandClass> commands = Lists.newLinkedList();
@@ -164,10 +168,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommandsGracefully(String... commandNames) {
+	public ComposedResultState executeCommandsGracefully(String... commandNames) {
 		return executeCommandsGracefully(context, commandNames);
 	}
 
@@ -188,10 +193,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommandsGracefully(Context context, String... commandNames) {
+	public ComposedResultState executeCommandsGracefully(Context context, String... commandNames) {
 		return executeCommandsGracefully(Arrays.asList(commandNames), context);
 	}
 
@@ -211,10 +217,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommandsGracefully(Iterable<String> commandNames) {
+	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames) {
 		return executeCommandsGracefully(commandNames, context);
 	}
 
@@ -235,10 +242,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommandsGracefully(Iterable<String> commandNames, Context context) {
+	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames, Context context) {
 		Set<String> commandsAndTheirDependencies = Sets.newHashSet(Check.noNullElements(commandNames));
 		for (String command : commandNames) {
 			commandsAndTheirDependencies.addAll(successiveBeforeDependencies(command, new HashSet<String>()));
@@ -271,10 +279,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommands(String... commandNames) {
+	public ComposedResultState executeCommands(String... commandNames) {
 		return executeCommands(context, commandNames);
 	}
 
@@ -295,10 +304,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommands(Context context, String... commandNames) {
+	public ComposedResultState executeCommands(Context context, String... commandNames) {
 		return executeCommands(Arrays.asList(commandNames), context);
 	}
 
@@ -318,10 +328,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommands(Iterable<String> commandNames) {
+	public ComposedResultState executeCommands(Iterable<String> commandNames) {
 		return executeCommands(commandNames, context);
 	}
 
@@ -342,10 +353,11 @@ public class CommandManager {
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 * 
 	 */
-	public ComposedResult executeCommands(Iterable<String> commandNames, Context context) {
+	public ComposedResultState executeCommands(Iterable<String> commandNames, Context context) {
 		Check.noNullElements(Lists.newArrayList(commandNames), "commandNames");
 		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context);
 	}
@@ -364,9 +376,10 @@ public class CommandManager {
 	 * @throws IllegalStateOfArgumentException
 	 *             when the graph is empty.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public static ComposedResult executeCommands(CommandGraph graph) {
+	public static ComposedResultState executeCommands(CommandGraph graph) {
 		return executeCommands(graph, new Context());
 	}
 
@@ -383,9 +396,10 @@ public class CommandManager {
 	 * @throws IllegalStateOfArgumentException
 	 *             when the graph is empty.
 	 * 
-	 * @return {@linkplain ComposedResult} that reflects the overall success of the just executed {@linkplain Command}s.
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public static ComposedResult executeCommands(CommandGraph graph, Context context) {
+	public static ComposedResultState executeCommands(CommandGraph graph, Context context) {
 		Check.notNull(graph, "graph");
 		Check.stateIsTrue(!graph.topologicalOrderOfAllCommands().isEmpty(),
 				"graph must have at least one command in it");
@@ -399,18 +413,20 @@ public class CommandManager {
 	 * @param context
 	 * @return whether the execution was successful
 	 */
-	private static ComposedResult executeOrderedCommands(Iterable<CommandClass> commandNames, Context context) {
+	private static ComposedResultState executeOrderedCommands(Iterable<CommandClass> commandNames, Context context) {
 		Check.noNullElements(commandNames, "commandNames");
 		Check.stateIsTrue(!Iterables.isEmpty(commandNames), "commandNames must have at least one command name");
 		Check.notNull(context, "context");
 
-		ComposedResult result = new ComposedResult();
+		ImmutableList.Builder<ResultState> resultStates = ImmutableList.builder();
+		ImmutableList.Builder<CommandClass> executedCommands = ImmutableList.builder();
 		for (CommandClass command : commandNames) {
 			Command commandInstance = command.newInstance();
 			logger.info("Execute current command: " + commandInstance.getClass());
 			long startTime = System.currentTimeMillis();
 			ResultState resultState = commandInstance.execute(context);
-			result.addResult(command.getName(), resultState);
+			resultStates.add(resultState);
+			executedCommands.add(command);
 			if (resultState.isSuccess()) {
 				logger.info("Command " + commandInstance.getClass() + " successfully executed in "
 						+ (System.currentTimeMillis() - startTime) + " ms");
@@ -426,7 +442,7 @@ public class CommandManager {
 				break;
 			}
 		}
-		return result;
+		return new ComposedResultState(resultStates.build(), executedCommands.build());
 	}
 
 	private static List<String> commandNamesOf(Iterable<CommandClass> commands) {

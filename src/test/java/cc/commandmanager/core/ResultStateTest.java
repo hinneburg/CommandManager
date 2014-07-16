@@ -1,7 +1,6 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
-import net.sf.qualitycheck.exception.IllegalInstanceOfArgumentException;
 
 import org.junit.Test;
 
@@ -39,7 +38,7 @@ public class ResultStateTest {
 		assertThat(failure.getMessage()).isEqualTo("Failure!");
 	}
 
-	@Test(expected = IllegalInstanceOfArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testGetMessage_noWarningOrFailure() {
 		success.getMessage();
 	}
@@ -50,7 +49,7 @@ public class ResultStateTest {
 		assertThat(ResultState.warning("Warning!").hasCause()).isFalse();
 	}
 
-	@Test(expected = IllegalInstanceOfArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testHasCause_noWarningOrFailure() {
 		success.hasCause();
 	}
@@ -61,7 +60,7 @@ public class ResultStateTest {
 		assertThat(failure.getCause()).isEqualTo(cause);
 	}
 
-	@Test(expected = IllegalInstanceOfArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testGetCause_noWarningOrFailure() {
 		success.getCause();
 	}

@@ -89,23 +89,17 @@ public abstract class ResultState {
 	/**
 	 * @return whether this is a {@linkplain Success}
 	 */
-	public boolean isSuccess() {
-		return this instanceof Success;
-	}
+	public abstract boolean isSuccess();
 
 	/**
 	 * @return whether this is a {@linkplain Warning}
 	 */
-	public boolean isWarning() {
-		return this instanceof Warning;
-	}
+	public abstract boolean isWarning();
 
 	/**
 	 * @return whether this is a {@linkplain Failure}
 	 */
-	public boolean isFailure() {
-		return this instanceof Failure;
-	}
+	public abstract boolean isFailure();
 
 	/**
 	 * @return {@code true} if this {@linkplain Warning} or {@linkplain Failure} has a cause, {@code false} otherwise.
@@ -118,27 +112,21 @@ public abstract class ResultState {
 	}
 
 	/**
-	 * @return the message of this {@linkplain Warning} or {@linkplain Failure}.
+	 * @return the message of this {@linkplain ResultState}.
 	 * 
 	 * @throws IllegalInstanceOfArgumentException
-	 *             if this is not a {@linkplain Warning} or {@linkplain Failure}.
+	 *             if this is a {@linkplain Success}.
 	 */
-	public String getMessage() {
-		Check.instanceOf(WarningOrFailure.class, this);
-		return ((WarningOrFailure) this).message;
-	}
+	public abstract String getMessage();
 
 	/**
-	 * @return the cause of this {@linkplain Warning} or {@linkplain Failure}, or {@link null} if there is no cause.
+	 * @return the cause of this {@linkplain ResultState}, or {@link null} if there is no cause.
 	 * 
 	 * @throws IllegalInstanceOfArgumentException
-	 *             if this is not a {@linkplain Warning} or {@linkplain Failure}.
+	 *             if this is {@linkplain Success}.
 	 */
 	@Nullable
-	public Throwable getCause() {
-		Check.instanceOf(WarningOrFailure.class, this);
-		return ((WarningOrFailure) this).cause;
-	}
+	public abstract Throwable getCause();
 
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that has been executed successfully without any problems.
@@ -148,6 +136,32 @@ public abstract class ResultState {
 		@Override
 		public String toString() {
 			return "Execution completed successfully!";
+		}
+
+		@Override
+		public boolean isSuccess() {
+			return true;
+		}
+
+		@Override
+		public boolean isWarning() {
+			return false;
+		}
+
+		@Override
+		public boolean isFailure() {
+			return false;
+		}
+
+		@Override
+		public String getMessage() {
+			throw new IllegalStateException("Success states do not have a message.");
+		}
+
+		@Override
+		@Nullable
+		public Throwable getCause() {
+			throw new IllegalStateException("Success states do not have a cause.");
 		}
 
 	}
@@ -160,6 +174,17 @@ public abstract class ResultState {
 		protected WarningOrFailure(String message, @Nullable Throwable cause) {
 			this.message = Check.notNull(message, "message");
 			this.cause = cause;
+		}
+
+		@Override
+		public String getMessage() {
+			return message;
+		}
+
+		@Override
+		@Nullable
+		public Throwable getCause() {
+			return cause;
 		}
 
 		@Override
@@ -191,6 +216,7 @@ public abstract class ResultState {
 				return hasSameMessage && getCause().equals(that.getCause());
 			}
 		}
+
 	}
 
 	/**
@@ -208,6 +234,21 @@ public abstract class ResultState {
 			return "Execution completed with warnings: " + message;
 		}
 
+		@Override
+		public boolean isSuccess() {
+			return false;
+		}
+
+		@Override
+		public boolean isWarning() {
+			return true;
+		}
+
+		@Override
+		public boolean isFailure() {
+			return false;
+		}
+
 	}
 
 	/**
@@ -223,6 +264,21 @@ public abstract class ResultState {
 		@Override
 		public String toString() {
 			return "Execution failed: " + message;
+		}
+
+		@Override
+		public boolean isSuccess() {
+			return false;
+		}
+
+		@Override
+		public boolean isWarning() {
+			return false;
+		}
+
+		@Override
+		public boolean isFailure() {
+			return true;
 		}
 
 	}
