@@ -170,7 +170,7 @@ public abstract class ResultState {
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that has been executed successfully without any problems.
 	 */
-	public static class Success extends ResultState {
+	public static final class Success extends ResultState {
 
 		@Override
 		public String toString() {
@@ -195,7 +195,7 @@ public abstract class ResultState {
 	 * {@linkplain ResultState} of a {@linkplain Command} that faced non-critical problems during its execution. It
 	 * provides a message and a cause.
 	 */
-	public static class Warning extends WarningOrFailure {
+	public static final class Warning extends WarningOrFailure {
 
 		private Warning(String message, Throwable cause) {
 			super(message, cause);
@@ -212,7 +212,7 @@ public abstract class ResultState {
 	 * {@linkplain ResultState} of a {@linkplain Command} that faced critical problems and aborted its execution. It
 	 * provides a message and a cause.
 	 */
-	public static class Failure extends WarningOrFailure {
+	public static final class Failure extends WarningOrFailure {
 
 		public Failure(String message, Throwable cause) {
 			super(message, cause);
