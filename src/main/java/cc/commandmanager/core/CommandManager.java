@@ -1,6 +1,7 @@
 package cc.commandmanager.core;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +11,6 @@ import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -247,18 +247,26 @@ public class CommandManager {
 	 * 
 	 */
 	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames, Context context) {
-		Set<String> commandsAndTheirDependencies = Sets.newHashSet(Check.noNullElements(commandNames));
-		for (String command : commandNames) {
-			commandsAndTheirDependencies.addAll(successiveBeforeDependencies(command, new HashSet<String>()));
+		Check.noNullElements(commandNames);
+		List<CommandClass> commands = Lists.newLinkedList();
+		for (String commandName : commandNames) {
+			commands.add(commandGraph.getCommandClass(commandName));
 		}
-		return executeCommands(commandsAndTheirDependencies, context);
+
+		List<CommandClass> commandsAndTheirDependencies = Lists.newLinkedList(commands);
+		for (CommandClass command : commands) {
+			commandsAndTheirDependencies.addAll(successiveBeforeDependencies(command, new HashSet<CommandClass>()));
+		}
+		Collections.reverse(commandsAndTheirDependencies);
+		return executeOrderedCommands(commandsAndTheirDependencies, context);
 	}
 
-	private Set<String> successiveBeforeDependencies(String commandName, Iterable<String> accumulator) {
-		Set<String> result = Sets.newHashSet(accumulator);
-		result.addAll(commandNamesOf(commandGraph.getDependencies(commandName)));
-		for (CommandClass command : commandGraph.getDependencies(commandName)) {
-			result.addAll(successiveBeforeDependencies(command.getName(), result));
+	private Set<CommandClass> successiveBeforeDependencies(CommandClass command, Set<CommandClass> accumulator) {
+		Set<CommandClass> result = Sets.newHashSet(accumulator);
+		List<CommandClass> dependencies = commandGraph.getDependencies(command.getName());
+		result.addAll(dependencies);
+		for (CommandClass dependency : dependencies) {
+			result.addAll(successiveBeforeDependencies(dependency, result));
 		}
 		return result;
 	}
@@ -409,18 +417,18 @@ public class CommandManager {
 	/**
 	 * Executes the given ordered commands using the specified context.
 	 * 
-	 * @param commandNames
+	 * @param commands
 	 * @param context
 	 * @return whether the execution was successful
 	 */
-	private static ComposedResultState executeOrderedCommands(Iterable<CommandClass> commandNames, Context context) {
-		Check.noNullElements(commandNames, "commandNames");
-		Check.stateIsTrue(!Iterables.isEmpty(commandNames), "commandNames must have at least one command name");
+	private static ComposedResultState executeOrderedCommands(Iterable<CommandClass> commands, Context context) {
+		Check.noNullElements(commands, "commandNames");
+		Check.stateIsTrue(!Iterables.isEmpty(commands), "commandNames must have at least one command name");
 		Check.notNull(context, "context");
 
 		ImmutableList.Builder<ResultState> resultStates = ImmutableList.builder();
 		ImmutableList.Builder<CommandClass> executedCommands = ImmutableList.builder();
-		for (CommandClass command : commandNames) {
+		for (CommandClass command : commands) {
 			Command commandInstance = command.newInstance();
 			logger.info("Execute current command: " + commandInstance.getClass());
 			long startTime = System.currentTimeMillis();
@@ -443,17 +451,6 @@ public class CommandManager {
 			}
 		}
 		return new ComposedResultState(resultStates.build(), executedCommands.build());
-	}
-
-	private static List<String> commandNamesOf(Iterable<CommandClass> commands) {
-		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
-
-			@Override
-			public String apply(CommandClass command) {
-				return command.getName();
-			}
-
-		}));
 	}
 
 }

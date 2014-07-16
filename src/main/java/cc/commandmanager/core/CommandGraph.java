@@ -551,9 +551,31 @@ public class CommandGraph {
 	 */
 	public static class CommandGraphBuilder {
 
-		private Map<String, CommandClass> commandClasses = Maps.newHashMap();
-		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
-				DependencyEdge.class);
+		private final Map<String, CommandClass> commandClasses;
+		private final DirectedAcyclicGraph<CommandClass, DependencyEdge> graph;
+
+		/**
+		 * Creates a new empty {@linkplain CommandGraphBuilder}.
+		 */
+		public CommandGraphBuilder() {
+			commandClasses = Maps.newHashMap();
+			graph = new DirectedAcyclicGraph<CommandClass, CommandGraph.DependencyEdge>(DependencyEdge.class);
+		}
+
+		/**
+		 * Creates a new {@linkplain CommandGraphBuilder} and immediately adds all the given command classes as
+		 * vertices.
+		 * 
+		 * @param commands
+		 *            to add
+		 */
+		public CommandGraphBuilder(Iterable<CommandClass> commands) {
+			this();
+			Check.noNullElements(commands, "commands");
+			for (CommandClass command : commands) {
+				addCommand(command);
+			}
+		}
 
 		/**
 		 * @return A new and immutable {@linkplain CommandGraph} containing all commands and dependencies that have been
@@ -676,8 +698,8 @@ public class CommandGraph {
 		 * <ul>
 		 * <li>both, source and target have been added already
 		 * <li>the given edge is not already a member of the graph
-		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to {@code
-		 * targetName}, yet
+		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to
+		 * {@code targetName}, yet
 		 * <li>the edge does not induce a circular dependency.
 		 * </ul>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
