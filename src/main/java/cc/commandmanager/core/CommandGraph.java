@@ -250,6 +250,13 @@ public class CommandGraph {
 	}
 
 	/**
+	 * @return whether this {@linkplain CommandGraph} does not contain any vertices.
+	 */
+	public boolean isEmpty() {
+		return vertices.isEmpty();
+	}
+
+	/**
 	 * 
 	 * @param commandName
 	 * @return A {@code CommandClass} object having the given {@code commandName}.
