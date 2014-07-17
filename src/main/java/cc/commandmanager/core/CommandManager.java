@@ -41,8 +41,7 @@ public class CommandManager {
 	 *             when the graph is empty.
 	 */
 	public CommandManager(CommandGraph commandGraph) {
-		Check.stateIsTrue(!commandGraph.topologicalOrderOfAllCommands().isEmpty(),
-				"commandGraph must have at least one command in it");
+		Check.stateIsTrue(!commandGraph.isEmpty(), "commandGraph must have at least one command in it");
 		this.commandGraph = commandGraph;
 		context = new Context();
 	}
