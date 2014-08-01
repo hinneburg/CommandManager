@@ -1,5 +1,6 @@
 package cc.commandmanager.core;
 
+import static cc.commandmanager.testutils.Assertions.assertThatExecution;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
 import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
@@ -110,7 +111,8 @@ public class CommandManagerTest {
 
 		CommandManager commandManager = new CommandManager(commandGraphBuilder.build());
 
-		assertThat(commandManager.executeCommandsGracefully("Dependee1", "Dependee2").isSuccess()).isTrue();
+		assertThatExecution(commandManager.executeCommandsGracefully("Dependee1", "Dependee2"))
+				.isCompletedSuccessfully();
 	}
 
 	public static class GracefulDependency extends SimpleCommand {
@@ -178,7 +180,7 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("Two", "One");
 		commandManager = new CommandManager(builder.build());
 
-		assertThat(commandManager.executeCommands(Lists.newArrayList("Two")).isSuccess()).isTrue();
+		assertThatExecution(commandManager.executeCommands(Lists.newArrayList("Two"))).isCompletedSuccessfully();
 	}
 
 	@Test
