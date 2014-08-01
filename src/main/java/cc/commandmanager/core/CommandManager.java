@@ -408,8 +408,7 @@ public class CommandManager {
 	 */
 	public static ComposedResultState executeCommands(CommandGraph graph, Context context) {
 		Check.notNull(graph, "graph");
-		Check.stateIsTrue(!graph.topologicalOrderOfAllCommands().isEmpty(),
-				"graph must have at least one command in it");
+		Check.stateIsTrue(!graph.isEmpty(), "graph must have at least one command in it");
 		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context);
 	}
 
