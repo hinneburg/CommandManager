@@ -1,7 +1,6 @@
 package cc.commandmanager.core;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -252,12 +251,11 @@ public class CommandManager {
 			commands.add(commandGraph.getCommandClass(commandName));
 		}
 
-		List<CommandClass> commandsAndTheirDependencies = Lists.newLinkedList(commands);
+		Set<CommandClass> commandsAndTheirDependencies = Sets.newHashSet(commands);
 		for (CommandClass command : commands) {
 			commandsAndTheirDependencies.addAll(successiveBeforeDependencies(command, new HashSet<CommandClass>()));
 		}
-		Collections.reverse(commandsAndTheirDependencies);
-		return executeOrderedCommands(commandsAndTheirDependencies, context);
+		return executeOrderedCommands(commandGraph.topologicalOrderOf(commandsAndTheirDependencies), context);
 	}
 
 	private Set<CommandClass> successiveBeforeDependencies(CommandClass command, Set<CommandClass> accumulator) {

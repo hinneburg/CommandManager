@@ -1,6 +1,7 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Fail.fail;
 import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 
 import org.junit.Before;
@@ -96,6 +97,34 @@ public class CommandManagerTest {
 		builder.addCommand("From one another", SuccessfulCommand.class.getName());
 		assertThat(new CommandManager(builder.build()).executeCommandsGracefully("Independent").getExecutedCommands())
 				.containsOnly(new CommandClass("Independent", SuccessfulCommand.class.getName()));
+	}
+
+	@Test
+	public void testExecuteCommandsGracefully_dependenciesNotExecutedTwice() {
+		CommandGraphBuilder commandGraphBuilder = CommandGraph.builder();
+		commandGraphBuilder.addCommand("GracefulDependency", GracefulDependency.class.getName());
+		commandGraphBuilder.addCommand("Dependee1", DummyCommand.class.getName());
+		commandGraphBuilder.addCommand("Dependee2", DummyCommand.class.getName());
+		commandGraphBuilder.addMandatoryDependency("Dependee1", "GracefulDependency");
+		commandGraphBuilder.addMandatoryDependency("Dependee2", "GracefulDependency");
+
+		CommandManager commandManager = new CommandManager(commandGraphBuilder.build());
+
+		assertThat(commandManager.executeCommandsGracefully("Dependee1", "Dependee2").isSuccess()).isTrue();
+	}
+
+	public static class GracefulDependency extends SimpleCommand {
+
+		@Override
+		public ResultState execute(Context context) {
+			String commandName = GracefulDependency.class.getName();
+			if (context.containsKey(commandName)) {
+				fail(String.format("Command %s executed twice.", commandName));
+			}
+			context.bind(commandName, Boolean.TRUE);
+			return ResultState.success();
+		}
+
 	}
 
 	@Test
