@@ -11,7 +11,13 @@ CommandManager commandManager = new CommandManager(CommandGraph.fromXml("catalog
 commandManager.executeAllCommands();
 ```
 
+### Installation
 
+To install the CommandManager you can add it as a maven dependency. Until the binaries are hosted on a public maven repository, it is recommended to clone this repository, checkout the latest release and install it to your local maven repository by executing 
+
+```sh
+mvn install
+```
 
 ### Licensing
 
