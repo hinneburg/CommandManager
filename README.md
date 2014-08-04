@@ -19,6 +19,10 @@ To install the CommandManager you can add it as a maven dependency. Until the bi
 mvn install
 ```
 
+### Contribute
+
+In order to contribute you should fork the repository on [GitHub](https://github.com/hinneburg/CommandManager), commit your changes and create a pull request. Please mind the [coding rules](https://github.com/hinneburg/CommandManager/wiki/Coding-Rules) in the wiki.
+
 ### Licensing
 
 Please see the file called LICENSE.
