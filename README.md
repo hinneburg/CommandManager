@@ -23,6 +23,8 @@ mvn install
 
 In order to contribute you should fork the repository on [GitHub](https://github.com/hinneburg/CommandManager), commit your changes and create a pull request. Please mind the [coding rules](https://github.com/hinneburg/CommandManager/wiki/Coding-Rules) in the wiki.
 
+Feel free to submit bugs, feature requests or suggestions at any time. Best is to create a GitHub issue for this.
+
 ### Licensing
 
 Please see the file called LICENSE.
