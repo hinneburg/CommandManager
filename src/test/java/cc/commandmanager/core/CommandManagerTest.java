@@ -34,13 +34,6 @@ public class CommandManagerTest {
 	}
 
 	@Test
-	public void testExecuteAllCommandsUsesContext() {
-		Context context = new Context();
-		commandManager.executeAllCommands(context);
-		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
-	}
-
-	@Test
 	public void testExecuteCommands() {
 		assertThat(commandManager.executeCommands(Lists.newArrayList("Success", "Warning", "Failure")).isFailure())
 				.isTrue();
@@ -68,24 +61,9 @@ public class CommandManagerTest {
 	}
 
 	@Test
-	public void testExecuteCommandsUsesContext() {
-		Context context = new Context();
-		commandManager.executeCommands(Lists.newArrayList("Success"), context);
-		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
-	}
-
-	@Test
 	public void testExecuteConnectedComponentsContaining() {
 		assertThat(commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success")).getResultStates())
 				.containsOnly(ResultState.success(), ResultState.warning("Warning!"), ResultState.failure("Fail!"));
-	}
-
-	@Test
-	public void testExecuteConnectedComponentsContainingUsesContext() {
-		Context context = new Context();
-		commandManager.executeCommands(Lists.newArrayList("Success"), context);
-		commandManager.executeConnectedComponentsContaining(Lists.newArrayList("Success"));
-		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
 	}
 
 	@Test
@@ -130,14 +108,6 @@ public class CommandManagerTest {
 	}
 
 	@Test
-	public void testExecuteCommandsGracefullyUsesContext() {
-		Context context = new Context();
-		commandManager.executeCommands(Lists.newArrayList("Success"), context);
-		commandManager.executeCommandsGracefully(Lists.newArrayList("Success"));
-		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
-	}
-
-	@Test
 	public void testExecuteCommandsFromGraph() {
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 		builder.addCommand("A1", SuccessfulCommand.class.getName());
@@ -151,17 +121,6 @@ public class CommandManagerTest {
 				new CommandClass("B", SuccessfulCommand.class.getName()));
 	}
 
-	@Test
-	public void testExecuteCommandsFromGraphUsesContext() {
-		CommandGraphBuilder builder = new CommandGraphBuilder();
-		builder.addCommand("Success", SuccessfulCommand.class.getName());
-
-		Context context = new Context();
-		CommandManager.executeCommands(builder.build(), context);
-
-		assertThat(context.getInteger("answer to everything")).isEqualTo(42);
-	}
-
 	@Test(expected = CommandNotFoundException.class)
 	public void testExecuteCommands_commandNotFound() {
 		commandManager.executeCommands(Lists.newArrayList("Missing"));
@@ -173,11 +132,11 @@ public class CommandManagerTest {
 	}
 
 	@Test
-	public void testExecuteCommands_ignoresDependencies() {
+	public void testExecuteCommandsDoesNotExecuteBeforeDependenciesAutomatically() {
 		CommandGraphBuilder builder = new CommandGraphBuilder();
-		builder.addCommand("Two", SuccessfulCommand.class.getName());
-		builder.addCommand("One", WarningCommand.class.getName());
-		builder.addMandatoryDependency("Two", "One");
+		builder.addCommand("Success", SuccessfulCommand.class.getName());
+		builder.addCommand("Warning", WarningCommand.class.getName());
+		builder.addMandatoryDependency("Success", "Warning");
 		commandManager = new CommandManager(builder.build());
 
 		assertThatExecution(commandManager.executeCommands(Lists.newArrayList("Two"))).isCompletedSuccessfully();
@@ -214,9 +173,6 @@ public class CommandManagerTest {
 
 		@Override
 		public ResultState execute(Context context) {
-			if (!context.containsKey("answer to everything")) {
-				context.bind("answer to everything", 42);
-			}
 			return ResultState.success();
 		}
 	}
