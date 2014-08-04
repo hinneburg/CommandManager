@@ -10,3 +10,9 @@ A lean implementation of a command and chain of responsibility pattern mixture. 
 CommandManager commandManager = new CommandManager(CommandGraph.fromXml("catalog.xml"));
 commandManager.executeAllCommands();
 ```
+
+
+
+### Licensing
+
+Please see the file called LICENSE.
