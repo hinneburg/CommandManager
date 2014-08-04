@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <catalog>
-	<command className="cc.commandmanager.core.DummyCommand1" name="command" />
-	<command className="cc.commandmanager.core.DummyCommand2" name="after" />
-	<command className="cc.commandmanager.core.DummyCommand3" name="before" />
+	<command className="cc.commandmanager.core.integrationtests.DummyCommand1" name="command" />
+	<command className="cc.commandmanager.core.integrationtests.DummyCommand2" name="after" />
+	<command className="cc.commandmanager.core.integrationtests.DummyCommand3" name="before" />
 </catalog>
