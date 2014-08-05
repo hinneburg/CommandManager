@@ -127,7 +127,7 @@ public class CommandManagerTest {
 	}
 
 	@Test(expected = IllegalStateOfArgumentException.class)
-	public void testExecuteCommands_noCommandSpeficied() {
+	public void testExecuteCommands_noCommandSpecified() {
 		commandManager.executeCommands(Lists.<String> newArrayList());
 	}
 
