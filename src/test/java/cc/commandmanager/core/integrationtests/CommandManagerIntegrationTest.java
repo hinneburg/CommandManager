@@ -70,7 +70,7 @@ public class CommandManagerIntegrationTest {
 
         @SuppressWarnings("unchecked")
         List<Class<? extends Command>> executedCommands = context.get(EXECUTED_COMMANDS, List.class);
-        assertThat(executedCommands).containsExactly(DummyCommand1.class, DummyCommand2.class);
+        assertThat(executedCommands).containsExactly(DummyCommand3.class, DummyCommand1.class);
     }
 
     @Test
