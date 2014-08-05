@@ -139,7 +139,7 @@ public class CommandManagerTest {
 		builder.addMandatoryDependency("Success", "Warning");
 		commandManager = new CommandManager(builder.build());
 
-		assertThatExecution(commandManager.executeCommands(Lists.newArrayList("Two"))).isCompletedSuccessfully();
+		assertThatExecution(commandManager.executeCommands(Lists.newArrayList("Success"))).isCompletedSuccessfully();
 	}
 
 	@Test
