@@ -1,14 +1,20 @@
-# Ignore everything
+# Eclipse
 .project
 *.classpath
-*.jar
-*.class
 *.settings
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Maven
 target/
 etc/
-*.local.properties
-.gitignore*
-bin/
+log/
 
-# But not these files
+# Mac
+.DS_Store
+
+# Do not ignore these files
 !src/test/resources/*
