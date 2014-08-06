@@ -1,9 +1,5 @@
-package cc.commandmanager.core.integrationtests;
+package cc.commandmanager.core;
 
-import cc.commandmanager.core.Command;
-import cc.commandmanager.core.CommandGraph;
-import cc.commandmanager.core.CommandManager;
-import cc.commandmanager.core.Context;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
