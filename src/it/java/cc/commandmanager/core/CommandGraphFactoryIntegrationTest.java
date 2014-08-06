@@ -1,4 +1,4 @@
-package cc.commandmanager.core.integrationtests;
+package cc.commandmanager.core;
 
 import cc.commandmanager.core.CommandClass;
 import cc.commandmanager.core.CommandGraph;
@@ -50,27 +50,27 @@ public class CommandGraphFactoryIntegrationTest {
         Element documentRoot = catalogDocument.createElement("catalog");
 
         Element command1 = catalogDocument.createElement("command");
-        command1.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand1");
+        command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
         command1.setAttribute("name", "command");
         documentRoot.appendChild(command1);
 
         Element command2 = catalogDocument.createElement("command");
-        command2.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand2");
+        command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
         command2.setAttribute("name", "command2");
         documentRoot.appendChild(command2);
 
         Element command3 = catalogDocument.createElement("command");
-        command3.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand3");
+        command3.setAttribute("className", "cc.commandmanager.core.DummyCommand3");
         command3.setAttribute("name", "command3");
         documentRoot.appendChild(command3);
 
         Element command4 = catalogDocument.createElement("command");
-        command4.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand4");
+        command4.setAttribute("className", "cc.commandmanager.core.DummyCommand4");
         command4.setAttribute("name", "command4");
         documentRoot.appendChild(command4);
 
         Element command5 = catalogDocument.createElement("command");
-        command5.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand5");
+        command5.setAttribute("className", "cc.commandmanager.core.DummyCommand5");
         command5.setAttribute("name", "command5");
         documentRoot.appendChild(command5);
         catalogDocument.appendChild(documentRoot);
@@ -83,13 +83,13 @@ public class CommandGraphFactoryIntegrationTest {
         assertThat(graph.containsCommand("command5")).isTrue();
 
         assertThat(graph.getMandatoryDependencies("command")).containsOnly(
-                new CommandClass("command3", "cc.commandmanager.core.integrationtests.DummyCommand3"));
+                new CommandClass("command3", "cc.commandmanager.core.DummyCommand3"));
         assertThat(graph.getOptionalDependencies("command")).containsOnly(
-                new CommandClass("command5", "cc.commandmanager.core.integrationtests.DummyCommand5"));
+                new CommandClass("command5", "cc.commandmanager.core.DummyCommand5"));
         assertThat(graph.getMandatoryDependencies("command2")).containsOnly(
-                new CommandClass("command", "cc.commandmanager.core.integrationtests.DummyCommand1"));
+                new CommandClass("command", "cc.commandmanager.core.DummyCommand1"));
         assertThat(graph.getOptionalDependencies("command4")).containsOnly(
-                new CommandClass("command", "cc.commandmanager.core.integrationtests.DummyCommand1"));
+                new CommandClass("command", "cc.commandmanager.core.DummyCommand1"));
     }
 
     @Test
@@ -97,11 +97,11 @@ public class CommandGraphFactoryIntegrationTest {
         final File catalog = folder.newFile("catalog.xml");
         BufferedWriter output = new BufferedWriter(new FileWriter(catalog));
         output.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<catalog>\n"
-                + "<command name=\"command\" className=\"cc.commandmanager.core.integrationtests.DummyCommand1\"/>\n	"
-                + "<command name=\"command2\" className=\"cc.commandmanager.core.integrationtests.DummyCommand2\"/>\n"
-                + "<command name=\"command3\" className=\"cc.commandmanager.core.integrationtests.DummyCommand3\"/>\n"
-                + "<command name=\"command4\" className=\"cc.commandmanager.core.integrationtests.DummyCommand4\"/>\n"
-                + "<command name=\"command5\" className=\"cc.commandmanager.core.integrationtests.DummyCommand5\"/>\n" + "</catalog>");
+                + "<command name=\"command\" className=\"cc.commandmanager.core.DummyCommand1\"/>\n	"
+                + "<command name=\"command2\" className=\"cc.commandmanager.core.DummyCommand2\"/>\n"
+                + "<command name=\"command3\" className=\"cc.commandmanager.core.DummyCommand3\"/>\n"
+                + "<command name=\"command4\" className=\"cc.commandmanager.core.DummyCommand4\"/>\n"
+                + "<command name=\"command5\" className=\"cc.commandmanager.core.DummyCommand5\"/>\n" + "</catalog>");
         output.close();
 
         CommandGraph graph = CommandGraph.fromXml(catalog).get();
@@ -112,13 +112,13 @@ public class CommandGraphFactoryIntegrationTest {
         assertThat(graph.containsCommand("command5")).isTrue();
 
         assertThat(graph.getMandatoryDependencies("command")).containsOnly(
-                new CommandClass("command3", "cc.commandmanager.core.integrationtests.DummyCommand3"));
+                new CommandClass("command3", "cc.commandmanager.core.DummyCommand3"));
         assertThat(graph.getOptionalDependencies("command")).containsOnly(
-                new CommandClass("command5", "cc.commandmanager.core.integrationtests.DummyCommand5"));
+                new CommandClass("command5", "cc.commandmanager.core.DummyCommand5"));
         assertThat(graph.getMandatoryDependencies("command2")).containsOnly(
-                new CommandClass("command", "cc.commandmanager.core.integrationtests.DummyCommand1"));
+                new CommandClass("command", "cc.commandmanager.core.DummyCommand1"));
         assertThat(graph.getOptionalDependencies("command4")).containsOnly(
-                new CommandClass("command", "cc.commandmanager.core.integrationtests.DummyCommand1"));
+                new CommandClass("command", "cc.commandmanager.core.DummyCommand1"));
     }
 
     @Test
@@ -134,12 +134,12 @@ public class CommandGraphFactoryIntegrationTest {
         Element documentRoot = catalogDocument.createElement("catalog");
 
         Element command1 = catalogDocument.createElement("command");
-        command1.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand1");
+        command1.setAttribute("className", "cc.commandmanager.core.DummyCommand1");
         command1.setAttribute("name", "command");
         documentRoot.appendChild(command1);
 
         Element command2 = catalogDocument.createElement("command");
-        command2.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand2");
+        command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
         command2.setAttribute("name", "command");
         documentRoot.appendChild(command2);
         catalogDocument.appendChild(documentRoot);
@@ -176,7 +176,7 @@ public class CommandGraphFactoryIntegrationTest {
         Element documentRoot = catalogDocument.createElement("catalog");
 
         Element command2 = catalogDocument.createElement("command");
-        command2.setAttribute("className", "cc.commandmanager.core.integrationtests.DummyCommand2");
+        command2.setAttribute("className", "cc.commandmanager.core.DummyCommand2");
         command2.setAttribute("name", "command with missing dependency");
         documentRoot.appendChild(command2);
         catalogDocument.appendChild(documentRoot);

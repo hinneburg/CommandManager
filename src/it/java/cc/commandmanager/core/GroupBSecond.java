@@ -1,4 +1,4 @@
-package cc.commandmanager.core.integrationtests;
+package cc.commandmanager.core;
 
 import cc.commandmanager.core.Command;
 import cc.commandmanager.core.Context;

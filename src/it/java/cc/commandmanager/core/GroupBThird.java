@@ -1,4 +1,4 @@
-package cc.commandmanager.core.integrationtests;
+package cc.commandmanager.core;
 
 import cc.commandmanager.core.Command;
 import cc.commandmanager.core.Context;
@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Dummy {@link cc.commandmanager.core.Command} implementation with a before dependency on {@link cc.commandmanager.core.integrationtests.GroupBSecond}. {@link #execute(cc.commandmanager.core.Context)}
+ * Dummy {@link cc.commandmanager.core.Command} implementation with a before dependency on {@link cc.commandmanager.core.GroupBSecond}. {@link #execute(cc.commandmanager.core.Context)}
  * will bind a {@link Class} object corresponding to this class to the context. A {@link ClassCastException} will be
  * thrown if the context does not have a {@link List<Class<? extends  cc.commandmanager.core.Command >>}. The list should be bound to the context
- * with the key, specified in the {@link cc.commandmanager.core.integrationtests.CommandManagerIntegrationTest}.
+ * with the key, specified in the {@link cc.commandmanager.core.CommandManagerIntegrationTest}.
  */
 public final class GroupBThird extends SimpleCommand {
 
