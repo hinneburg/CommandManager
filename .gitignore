@@ -9,6 +9,7 @@ etc/
 *.local.properties
 .gitignore*
 bin/
+.idea/*
 
 # But not these files
 !src/test/resources/*
