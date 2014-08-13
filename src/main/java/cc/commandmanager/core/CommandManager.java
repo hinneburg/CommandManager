@@ -46,7 +46,7 @@ public class CommandManager {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return {@linkplain CommandGraph} object that was used to build this {@linkplain CommandManager}.
 	 */
 	public CommandGraph getCommandGraph() {
@@ -59,7 +59,7 @@ public class CommandManager {
 	 * optional dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
 	 */
@@ -72,10 +72,10 @@ public class CommandManager {
 	 * internal order of the graph. It will have no effect on the execution whether a {@link Command} is mandatory or
 	 * optional dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
-	 * 
+	 *
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
 	 */
@@ -90,15 +90,15 @@ public class CommandManager {
 	 * on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
 	 */
@@ -112,17 +112,17 @@ public class CommandManager {
 	 * components. It will have no effect on the execution whether a {@link Command} is mandatory or optional dependent
 	 * on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
 	 */
@@ -157,18 +157,18 @@ public class CommandManager {
 	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
 	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will
 	 * be created which will be passed to every {@linkplain Command}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommandsGracefully(String... commandNames) {
 		return executeCommandsGracefully(context, commandNames);
@@ -180,20 +180,20 @@ public class CommandManager {
 	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
 	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
 	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommandsGracefully(Context context, String... commandNames) {
 		return executeCommandsGracefully(Arrays.asList(commandNames), context);
@@ -206,18 +206,18 @@ public class CommandManager {
 	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
 	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will
 	 * be created which will be passed to every {@linkplain Command}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames) {
 		return executeCommandsGracefully(commandNames, context);
@@ -229,20 +229,20 @@ public class CommandManager {
 	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
 	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
 	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames, Context context) {
 		Check.noNullElements(commandNames);
@@ -275,18 +275,18 @@ public class CommandManager {
 	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommands(String... commandNames) {
 		return executeCommands(context, commandNames);
@@ -298,20 +298,20 @@ public class CommandManager {
 	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
 	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommands(Context context, String... commandNames) {
 		return executeCommands(Arrays.asList(commandNames), context);
@@ -324,18 +324,18 @@ public class CommandManager {
 	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommands(Iterable<String> commandNames) {
 		return executeCommands(commandNames, context);
@@ -347,20 +347,20 @@ public class CommandManager {
 	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
 	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
-	 * 
+	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
 	 *         underlying graph.
 	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
-	 * 
+	 *
 	 */
 	public ComposedResultState executeCommands(Iterable<String> commandNames, Context context) {
 		Check.noNullElements(commandNames, "commandNames");
@@ -374,13 +374,13 @@ public class CommandManager {
 	 * new context will be created which will be passed to every {@linkplain Command}. This is short for creating a new
 	 * {@linkplain CommandManager} with this {@linkplain CommandGraph} and calling {@linkplain #executeAllCommands}
 	 * afterwards.
-	 * 
+	 *
 	 * @param graph
 	 *            that is used to obtain all {@linkplain Command}s that can be executed.
-	 * 
+	 *
 	 * @throws IllegalStateOfArgumentException
 	 *             when the graph is empty.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
 	 */
@@ -394,13 +394,13 @@ public class CommandManager {
 	 * Execution will be aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
 	 * This is short for creating a new {@linkplain CommandManager} with this {@linkplain CommandGraph} and calling
 	 * {@linkplain #executeAllCommands} afterwards.
-	 * 
+	 *
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
-	 * 
+	 *
 	 * @throws IllegalStateOfArgumentException
 	 *             when the graph is empty.
-	 * 
+	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
 	 */
@@ -412,14 +412,14 @@ public class CommandManager {
 
 	/**
 	 * Executes the given ordered commands using the specified context.
-	 * 
+	 *
 	 * @param commands
 	 * @param context
 	 * @return whether the execution was successful
 	 */
 	private static ComposedResultState executeOrderedCommands(Iterable<CommandClass> commands, Context context) {
-		Check.noNullElements(commands, "commandNames");
-		Check.stateIsTrue(!Iterables.isEmpty(commands), "commandNames must have at least one command name");
+		Check.noNullElements(commands, "commands");
+		Check.stateIsTrue(!Iterables.isEmpty(commands), "commands must contain at least one command");
 		Check.notNull(context, "context");
 
 		ImmutableList.Builder<ResultState> resultStates = ImmutableList.builder();
