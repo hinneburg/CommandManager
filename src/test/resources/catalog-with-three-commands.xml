@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+	<command className="cc.commandmanager.core.commandimplementations.DummyCommand1" name="command" />
+	<command className="cc.commandmanager.core.commandimplementations.DummyCommand2" name="after" />
+	<command className="cc.commandmanager.core.commandimplementations.DummyCommand3" name="before" />
+</catalog>

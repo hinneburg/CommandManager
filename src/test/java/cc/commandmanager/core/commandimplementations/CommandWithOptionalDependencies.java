@@ -1,5 +1,8 @@
-package cc.commandmanager.core;
+package cc.commandmanager.core.commandimplementations;
 
+import cc.commandmanager.core.Command;
+import cc.commandmanager.core.Context;
+import cc.commandmanager.core.ResultState;
 import com.google.common.collect.Sets;
 
 import java.util.Collections;
