@@ -274,7 +274,7 @@ public class CommandGraphTest {
 	}
 
 	@Test(expected = CommandNotFoundException.class)
-	public void testTopologicalOrderOfGivenCommands_commandDoesNotExist() {
+	public void testTopologicalOrderOfGivenCommands_commandDoesNotExistInGraph() {
 		final CommandClass command0 = new CommandClass("0", "className.0");
 		CommandGraph graph = builder.build();
 		graph.topologicalOrderOf(command0);

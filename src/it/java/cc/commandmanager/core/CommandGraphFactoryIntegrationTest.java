@@ -20,6 +20,23 @@ import static org.fest.assertions.Fail.fail;
 
 public class CommandGraphFactoryIntegrationTest {
 
+    /*
+    [x] verify behavior of optional dependencies (command is not listed in catalog instantiated) -> differences:
+     - the type of dependency edge
+     - wenn command nicht im Graphen bereits hinzugefügt: DependencyAdded ist einfach MANDATORY_NOT_OVERWRITTEN und
+     der Vorgang geht weiter
+      (oder sonst irgendwas an
+      << if (graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL))) >>
+     nicht klappt
+    [x] dependency to nowhere
+    [ ] circular dependency
+    [ ] empty command name
+    [ ] empty command class name
+    [ ] multiple command classes for one command name
+    [ ] (optional) multiple command names for one command class is no problem
+    [ ] one dependency into nowhere
+     */
+
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
@@ -234,7 +251,7 @@ public class CommandGraphFactoryIntegrationTest {
         assertThat((DependencyAdded) optional.getNote()).isEqualTo(DependencyAdded.CYCLE_DETECTED);
     }
 
-    private File getResourceAsFile(String resource) {
+    private static File getResourceAsFile(String resource) {
         final URL url = CommandGraphFactoryIntegrationTest.class.getClassLoader().getResource(resource);
         if (url == null) {
             fail("resource \"" + resource + "\" could not be loaded");
