@@ -1,9 +1,5 @@
 package cc.commandmanager.core;
 
-import cc.commandmanager.core.CommandClass;
-import cc.commandmanager.core.CommandGraph;
-import cc.commandmanager.core.DependencyAdded;
-import cc.commandmanager.core.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -17,6 +13,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.Fail.fail;
@@ -214,6 +211,28 @@ public class CommandGraphFactoryIntegrationTest {
         Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
         assertThat(graph.isPresent()).isFalse();
         assertThat(graph.getNote().toString()).contains("Name or class name missing in element");
+    }
+
+    @Test
+    public void testBuilderDoesNotFailWhenCatalogLacksOptionalDependency() {
+        Optional<CommandGraph> optional = CommandGraph.fromXml(
+                getResourceAsFile("catalog-for-optional-dependency-test.xml"));
+        assertThat(optional.isPresent()).isTrue();
+
+        CommandGraph graph = optional.get();
+        assertThat(graph.containsCommand("CommandWithOptionalDependencies")).isTrue();
+        assertThat(graph.getDependencies("CommandWithOptionalDependencies"))
+                .excludes("Command in another project", "Command in yet another project");
+    }
+
+
+    private File getResourceAsFile(String resource) {
+        final URL url = CommandGraphFactoryIntegrationTest.class.getClassLoader().getResource(resource);
+        if (url == null) {
+            fail("resource \"" + resource + "\" could not be loaded");
+            return null;
+        }
+        return new File(url.getFile());
     }
 
 }
