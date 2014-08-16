@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+	<command className="cc.commandmanager.core.Cycle1" name="Cycle1" />
+	<command className="cc.commandmanager.core.Cycle2" name="Cycle2" />
+	<command className="cc.commandmanager.core.Cycle3" name="Cycle3" />
+</catalog>

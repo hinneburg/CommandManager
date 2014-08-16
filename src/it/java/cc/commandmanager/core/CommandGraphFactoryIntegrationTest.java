@@ -225,6 +225,14 @@ public class CommandGraphFactoryIntegrationTest {
                 .excludes("Command in another project", "Command in yet another project");
     }
 
+    @Test
+    public void testBuilderFailsOnCircularDependency() {
+        Optional<CommandGraph> optional = CommandGraph.fromXml(
+                getResourceAsFile("catalog-for-circular-dependency-check.xml"));
+
+        assertThat(optional.isPresent()).isFalse();
+        assertThat((DependencyAdded) optional.getNote()).isEqualTo(DependencyAdded.CYCLE_DETECTED);
+    }
 
     private File getResourceAsFile(String resource) {
         final URL url = CommandGraphFactoryIntegrationTest.class.getClassLoader().getResource(resource);
