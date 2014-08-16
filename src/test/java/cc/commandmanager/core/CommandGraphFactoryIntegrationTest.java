@@ -29,8 +29,10 @@ public class CommandGraphFactoryIntegrationTest {
       << if (graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL))) >>
      nicht klappt
     [x] dependency to nowhere
-    [ ] circular dependency
+    [x] circular dependency
+    [x] missing command name element
     [ ] empty command name
+    [ ] missing command class name element
     [ ] empty command class name
     [ ] multiple command classes for one command name
     [ ] (optional) multiple command names for one command class is no problem
@@ -248,16 +250,61 @@ public class CommandGraphFactoryIntegrationTest {
                 getResourceAsFile("catalog-for-circular-dependency-check.xml"));
 
         assertThat(optional.isPresent()).isFalse();
-        assertThat((DependencyAdded) optional.getNote()).isEqualTo(DependencyAdded.CYCLE_DETECTED);
+        if(noteIsInstanceOf(optional.getNote(), DependencyAdded.class)){
+            assertThat((DependencyAdded) optional.getNote()).isEqualTo(DependencyAdded.CYCLE_DETECTED);
+        }
+    }
+
+    @Test
+    public void testBuilderFailsOnMissingNameAttributeInCatalog() {
+        Optional<CommandGraph> optional = CommandGraph.fromXml(
+                getResourceAsFile("catalog-flawed-by-missing-name-attribute.xml"));
+
+        assertThat(optional.isPresent()).isFalse();
+        if(noteIsInstanceOf(optional.getNote(), String.class)) {
+            assertThat((String) optional.getNote()).contains("name");
+        }
+    }
+
+    @Test
+    public void testBuilderFailsOnMissingClassNameAttributeInCatalog() {
+        Optional<CommandGraph> optional = CommandGraph.fromXml(
+                getResourceAsFile("catalog-flawed-by-missing-classname-attribute.xml"));
+
+        assertThat(optional.isPresent()).isFalse();
+        if(noteIsInstanceOf(optional.getNote(), String.class)) {
+            assertThat((String) optional.getNote()).contains("class name");
+        }
+    }
+
+    @Test
+    public void testBuilderDoesNotFailOnEmptyNameAttributeInCatalog() {
+        Optional<CommandGraph> optional = CommandGraph.fromXml(
+                getResourceAsFile("catalog-with-empty-name-attribute.xml"));
+
+        assertThat(optional.isPresent()).isTrue();
+        assertThat(optional.get().containsCommand("")).isTrue();
+    }
+
+    @Test(expected = CommandNotInstantiableException.class)
+    public void testBuilderFailsOnEmptyClassNameAttributeInCatalog() {
+        CommandGraph.fromXml(getResourceAsFile("catalog-with-empty-classname-attribute.xml"));
     }
 
     private static File getResourceAsFile(String resource) {
         final URL url = CommandGraphFactoryIntegrationTest.class.getClassLoader().getResource(resource);
         if (url == null) {
             fail("resource \"" + resource + "\" could not be loaded");
-            return null;
         }
         return new File(url.getFile());
+    }
+
+    private static boolean noteIsInstanceOf(Object note, Class clazz) {
+        if (!(note.getClass().getName().equals(clazz.getName()))) {
+            fail("The note including the cause of build failure is of an unexpected class.\nExpected type: "
+                    + clazz.getName() + ". Actual note(" + note.getClass().getName() + "): " + note);
+        }
+        return true;
     }
 
 }
