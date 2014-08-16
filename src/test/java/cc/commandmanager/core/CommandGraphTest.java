@@ -58,6 +58,14 @@ public class CommandGraphTest {
 		assertThat(graph.containsCommand("not there")).isFalse();
 	}
 
+    @Test
+    public void testCommandNamesAreCaseAndSpaceSensitive() {
+        assertThat(graph.containsCommand("A")).isTrue();
+        assertThat(graph.containsCommand("a")).isFalse();
+        assertThat(graph.containsCommand(" A")).isFalse();
+        assertThat(graph.containsCommand("A ")).isFalse();
+    }
+
 	@Test
 	public void testGetCommandClass() {
 		assertThat(graph.getCommandClass("A")).isEqualTo(commandA);
