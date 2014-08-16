@@ -1,5 +1,6 @@
 package cc.commandmanager.core;
 
+import cc.commandmanager.core.commandimplementations.*;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,12 +1,9 @@
-package cc.commandmanager.core;
+package cc.commandmanager.core.commandimplementations;
 
 import java.util.List;
 import java.util.Set;
 
-import cc.commandmanager.core.Command;
-import cc.commandmanager.core.Context;
-import cc.commandmanager.core.ResultState;
-import cc.commandmanager.core.SimpleCommand;
+import cc.commandmanager.core.*;
 import com.google.common.collect.Sets;
 
 /**
