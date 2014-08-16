@@ -27,11 +27,11 @@ public class CommandManagerIntegrationTest {
 
     {
         URL catalogResource = CommandManagerIntegrationTest.class.getClassLoader().getResource(
-                "CommandManagerIntegrationTest-catalog.xml");
+                "catalog-with-three-commands.xml");
         if (catalogResource != null) {
             catalog = new File(catalogResource.getFile());
         } else {
-            throw new RuntimeException("No resource for CommandManagerIntegrationTest-catalog.xml could have been found.");
+            throw new RuntimeException("No resource for catalog-with-three-commands.xml could have been found.");
         }
     }
 
@@ -72,11 +72,11 @@ public class CommandManagerIntegrationTest {
     @Test
     public void testExecuteConnectedComponentsExecutesInRightOrder() {
         URL catalogResource = CommandManagerIntegrationTest.class.getClassLoader().getResource(
-                "CommandManagerIntegrationTest-connectedComponents-catalog.xml");
+                "catalog-for-connected-component-testing.xml");
         if (catalogResource != null) {
             commandManager = new CommandManager(CommandGraph.fromXml(new File(catalogResource.getFile())).get());
         } else {
-            fail("No resource for CommandManagerIntegrationTest-connectedComponents-catalog.xml could have been found.");
+            fail("No resource for catalog-for-connected-component-testing.xml could have been found.");
         }
         commandManager.executeConnectedComponentsContaining(Lists.newArrayList("GroupAFirst", "GroupCSecond"), context);
 
