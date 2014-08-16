@@ -20,25 +20,6 @@ import static org.fest.assertions.Fail.fail;
 
 public class CommandGraphFactoryIntegrationTest {
 
-    /*
-    [x] verify behavior of optional dependencies (command is not listed in catalog instantiated) -> differences:
-     - the type of dependency edge
-     - wenn command nicht im Graphen bereits hinzugefügt: DependencyAdded ist einfach MANDATORY_NOT_OVERWRITTEN und
-     der Vorgang geht weiter
-      (oder sonst irgendwas an
-      << if (graph.addDagEdge(source, target, new DependencyEdge(DependencyEdge.OPTIONAL))) >>
-     nicht klappt
-    [x] dependency to nowhere
-    [x] circular dependency
-    [x] missing command name element
-    [ ] empty command name
-    [ ] missing command class name element
-    [ ] empty command class name
-    [ ] multiple command classes for one command name
-    [ ] (optional) multiple command names for one command class is no problem
-    [ ] one dependency into nowhere
-     */
-
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
