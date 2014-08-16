@@ -37,8 +37,9 @@ public class CommandGraphBuilderTest {
 		assertThat(builder.addCommand("A", "className.A")).isTrue();
 		CommandGraph graph = builder.build();
 
-		assertThat(builder.addCommand("B", "className.B")).isTrue();
-		assertThat(builder.addMandatoryDependency("A", "B"));
+        // command and dependency should be added to builder but not to graph
+		builder.addCommand("B", "className.B");
+		builder.addMandatoryDependency("A", "B");
 
 		assertThat(graph.containsCommand("B")).isFalse();
 		assertThat(graph.getDependencies("A")).isEmpty();
