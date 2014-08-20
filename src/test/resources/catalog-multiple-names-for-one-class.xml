@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+    <command className="cc.commandmanager.core.commandimplementations.CommandWithoutAnyDependencies" name="tick" />
+    <command className="cc.commandmanager.core.commandimplementations.CommandWithoutAnyDependencies" name="trick" />
+    <command className="cc.commandmanager.core.commandimplementations.CommandWithoutAnyDependencies" name="track" />
+</catalog>

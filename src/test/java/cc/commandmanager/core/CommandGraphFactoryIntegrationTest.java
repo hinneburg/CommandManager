@@ -281,6 +281,14 @@ public class CommandGraphFactoryIntegrationTest {
         }
     }
 
+    @Test
+    public void builderDoesNotFailOnMutlipleAliases(){
+        CommandGraph graph = CommandGraph.fromXml(getResourceAsFile("catalog-multiple-names-for-one-class.xml")).get();
+        assertThat(graph.containsCommand("tick"));
+        assertThat(graph.containsCommand("trick"));
+        assertThat(graph.containsCommand("track"));
+    }
+
     private static File getResourceAsFile(String resource) {
         final URL url = CommandGraphFactoryIntegrationTest.class.getClassLoader().getResource(resource);
         if (url == null) {
