@@ -1,8 +1,10 @@
 package cc.commandmanager.core;
 
+import static junit.framework.TestCase.fail;
 import static org.fest.assertions.Assertions.assertThat;
 import net.sf.qualitycheck.exception.IllegalNullArgumentException;
 
+import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 import org.junit.Test;
 
 public class OptionalTest {
@@ -39,11 +41,22 @@ public class OptionalTest {
 		assertThat(optional.getOrNull()).isNull();
 	}
 
-	@Test(expected = IllegalNullArgumentException.class)
+	@Test(expected = IllegalStateOfArgumentException.class)
 	public void testGet_null() {
 		optional = new Optional<Object>(null);
 		optional.get();
 	}
+
+    @Test
+    public void testGet_null_noteIsShipped() {
+        optional = new Optional<Object>(null, "Something went wrong.");
+        try {
+            optional.get();
+            fail(IllegalStateOfArgumentException.class.getName() + " should have been thrown.");
+        } catch (IllegalStateOfArgumentException e) {
+            assertThat(e.getMessage()).contains("Something went wrong.");
+        }
+    }
 
 	@Test
 	public void testGetNote_notePresent() {
