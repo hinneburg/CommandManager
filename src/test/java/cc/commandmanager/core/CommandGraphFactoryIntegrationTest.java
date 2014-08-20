@@ -272,6 +272,15 @@ public class CommandGraphFactoryIntegrationTest {
         CommandGraph.fromXml(getResourceAsFile("catalog-with-empty-classname-attribute.xml"));
     }
 
+    @Test
+    public void builderFailsOnAmbiguousCatalogEntries() {
+        Optional<CommandGraph> graph = CommandGraph.fromXml(getResourceAsFile("catalog-flawed-by-ambiguity.xml"));
+        assertThat(graph.isPresent()).isFalse();
+        if (noteIsInstanceOf(graph.getNote(), String.class)) {
+            assertThat((String) graph.getNote()).contains("Duplicate command");
+        }
+    }
+
     private static File getResourceAsFile(String resource) {
         final URL url = CommandGraphFactoryIntegrationTest.class.getClassLoader().getResource(resource);
         if (url == null) {
