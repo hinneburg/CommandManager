@@ -37,7 +37,7 @@ public class CommandGraphBuilderTest {
 		assertThat(builder.addCommand("A", "className.A")).isTrue();
 		CommandGraph graph = builder.build();
 
-        // command and dependency should be added to builder but not to graph
+		// command and dependency should be added to builder but not to graph
 		builder.addCommand("B", "className.B");
 		builder.addMandatoryDependency("A", "B");
 
@@ -100,7 +100,7 @@ public class CommandGraphBuilderTest {
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
 		assertThat(graph.getMandatoryDependencies("Source")).isEmpty();
 		assertThat(graph.getOptionalDependencies("Source"))
-		.containsOnly(new CommandClass("Target", "className.Target"));
+				.containsOnly(new CommandClass("Target", "className.Target"));
 	}
 
 	@Test
@@ -113,7 +113,7 @@ public class CommandGraphBuilderTest {
 		assertThat(graph.getDependencies("Source")).containsOnly(new CommandClass("Target", "className.Target"));
 		assertThat(graph.getMandatoryDependencies("Source")).isEmpty();
 		assertThat(graph.getOptionalDependencies("Source"))
-		.containsOnly(new CommandClass("Target", "className.Target"));
+				.containsOnly(new CommandClass("Target", "className.Target"));
 	}
 
 	@Test
