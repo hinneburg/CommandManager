@@ -195,27 +195,27 @@ public class CommandGraph {
 			}
 
 			for (String beforeDependency : commandInstance.getOptionalBeforeDependencies()) {
-                // TODO currently, optional dependencies are seen from the graph building perspective,
-                // rather than from the executing perspective. This will change. See (#53)
-                if (builder.containsCommand(beforeDependency)) {
-                    DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
-                    if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-                        return new Optional<CommandGraph>(null, dependencyAdded);
-                    }
-                }
-            }
+				// TODO currently, optional dependencies are seen from the graph building perspective,
+				// rather than from the executing perspective. This will change. See (#53)
+				if (builder.containsCommand(beforeDependency)) {
+					DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
+					if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
+						return new Optional<CommandGraph>(null, dependencyAdded);
+					}
+				}
+			}
 
 			for (String afterDependency : commandInstance.getOptionalAfterDependencies()) {
-                // TODO currently, optional dependencies are seen from the graph building perspective,
-                // rather than from the executing perspective. This will change. See (#53)
-                if (builder.containsCommand(afterDependency)) {
-                    DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
-                    if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-                        return new Optional<CommandGraph>(null, dependencyAdded);
-                    }
-                }
-            }
-        }
+				// TODO currently, optional dependencies are seen from the graph building perspective,
+				// rather than from the executing perspective. This will change. See (#53)
+				if (builder.containsCommand(afterDependency)) {
+					DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
+					if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
+						return new Optional<CommandGraph>(null, dependencyAdded);
+					}
+				}
+			}
+		}
 
 		return new Optional<CommandGraph>(builder.build());
 	}

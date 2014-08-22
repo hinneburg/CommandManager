@@ -130,8 +130,8 @@ public class CommandManager {
 		Check.noNullElements(commandNames);
 
 		List<CommandClass> commands = Lists.newLinkedList();
-		for (CommandGraph graph : filterConnectedComponentsContaining(Sets.newHashSet(commandNames), commandGraph
-				.getConnectedComponents())) {
+		for (CommandGraph graph : filterConnectedComponentsContaining(Sets.newHashSet(commandNames),
+				commandGraph.getConnectedComponents())) {
 			commands.addAll(graph.topologicalOrderOfAllCommands());
 		}
 		return executeOrderedCommands(commands, context);

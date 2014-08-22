@@ -27,8 +27,8 @@ public class ComposedResultStateTest {
 
 	@Test
 	public void testGetOverallResultState_success_multipleExecutions() {
-		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, success, success), ImmutableList
-				.of(command, command, command));
+		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, success, success),
+				ImmutableList.of(command, command, command));
 		assertSuccess(result);
 	}
 
@@ -48,8 +48,8 @@ public class ComposedResultStateTest {
 
 	@Test
 	public void testGetOverallResultState_failure_successWarningAndFailure() {
-		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, warning, failure), ImmutableList
-				.of(command, command, command));
+		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, warning, failure),
+				ImmutableList.of(command, command, command));
 		assertFailure(result);
 	}
 
@@ -76,22 +76,22 @@ public class ComposedResultStateTest {
 
 	@Test
 	public void testGetResultStates() {
-		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, warning, failure), ImmutableList
-				.of(command, command, command));
+		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, warning, failure),
+				ImmutableList.of(command, command, command));
 		assertThat(result.getResultStates()).containsOnly(success, warning, failure);
 	}
 
 	@Test
 	public void testGetExecutedCommands() {
-		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, warning, failure), ImmutableList
-				.of(command, command, command));
+		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, warning, failure),
+				ImmutableList.of(command, command, command));
 		assertThat(result.getExecutedCommands()).containsOnly(command, command, command);
 	}
 
 	@Test
 	public void testGetMessage() {
-		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, failure, warning), ImmutableList
-				.of(command, command, command));
+		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, failure, warning),
+				ImmutableList.of(command, command, command));
 		assertThat(result.getMessage()).isEqualTo(failure.getMessage());
 	}
 
@@ -103,8 +103,8 @@ public class ComposedResultStateTest {
 
 	@Test
 	public void testGetCause() {
-		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, failure, warning), ImmutableList
-				.of(command, command, command));
+		ComposedResultState result = new ComposedResultState(ImmutableList.of(success, failure, warning),
+				ImmutableList.of(command, command, command));
 		assertThat(result.getCause()).isEqualTo(failure.getCause());
 	}
 

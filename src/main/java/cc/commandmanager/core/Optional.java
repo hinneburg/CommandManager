@@ -54,10 +54,10 @@ public class Optional<T> {
 	 *             if the value is not present
 	 */
 	public T get() {
-        Check.stateIsTrue(value != null, "You tried to access the value of this Optional which is not there.\n" +
-                "Note why it is not there: " + note);
-        return value;
-    }
+		Check.stateIsTrue(value != null, "You tried to access the value of this Optional which is not there.\n"
+				+ "Note why it is not there: " + note);
+		return value;
+	}
 
 	/**
 	 * @return the stored value or null if no value is stored
