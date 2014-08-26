@@ -95,9 +95,9 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -119,9 +119,9 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -162,9 +162,9 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -187,9 +187,9 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -211,9 +211,9 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -236,9 +236,9 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -280,9 +280,9 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -305,9 +305,9 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -329,9 +329,9 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -354,9 +354,9 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws {@linkplain CommandNotFoundException} if no command can be found for a given command name in the
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
 	 *         underlying graph.
-	 * @throws {@linkplain IllegalStateOfArgumentException} if no command is specified.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
