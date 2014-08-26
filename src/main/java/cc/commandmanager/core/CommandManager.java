@@ -260,7 +260,7 @@ public class CommandManager {
 
 	private Set<CommandClass> successiveBeforeDependencies(CommandClass command, Set<CommandClass> accumulator) {
 		Set<CommandClass> result = Sets.newHashSet(accumulator);
-		List<CommandClass> dependencies = commandGraph.getDependencies(command.getName());
+		Set<CommandClass> dependencies = commandGraph.getDependencies(command.getName());
 		result.addAll(dependencies);
 		for (CommandClass dependency : dependencies) {
 			result.addAll(successiveBeforeDependencies(dependency, result));
