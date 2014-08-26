@@ -1,7 +1,6 @@
 package cc.commandmanager.core;
 
 import static org.fest.assertions.Assertions.assertThat;
-import net.sf.qualitycheck.exception.IllegalInstanceOfArgumentException;
 
 import org.junit.Test;
 
@@ -39,7 +38,7 @@ public class ResultStateTest {
 		assertThat(failure.getMessage()).isEqualTo("Failure!");
 	}
 
-	@Test(expected = IllegalInstanceOfArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testGetMessage_noWarningOrFailure() {
 		success.getMessage();
 	}
@@ -50,7 +49,7 @@ public class ResultStateTest {
 		assertThat(ResultState.warning("Warning!").hasCause()).isFalse();
 	}
 
-	@Test(expected = IllegalInstanceOfArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testHasCause_noWarningOrFailure() {
 		success.hasCause();
 	}
@@ -61,7 +60,7 @@ public class ResultStateTest {
 		assertThat(failure.getCause()).isEqualTo(cause);
 	}
 
-	@Test(expected = IllegalInstanceOfArgumentException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testGetCause_noWarningOrFailure() {
 		success.getCause();
 	}
@@ -78,6 +77,28 @@ public class ResultStateTest {
 		ResultState state = ResultState.failure(cause);
 		assertThat(state.getMessage()).isEqualTo("Exception!");
 		assertThat(state.getCause()).isEqualTo(cause);
+	}
+
+	@Test
+	public void testEquals() {
+		assertThat(success.equals(ResultState.success())).isTrue();
+		assertThat(success.equals(warning)).isFalse();
+		assertThat(success.equals(failure)).isFalse();
+		assertThat(warning.equals(ResultState.warning("Different warning!"))).isFalse();
+		assertThat(failure.equals(ResultState.failure("Different failure!"))).isFalse();
+		assertThat(warning.equals(ResultState.warning("Warning!", cause))).isTrue();
+		assertThat(failure.equals(ResultState.failure("Failure!", cause))).isTrue();
+		assertThat(warning.equals(ResultState.failure("Warning!", cause))).isFalse();
+		assertThat(failure.equals(ResultState.warning("Failure!", cause))).isFalse();
+	}
+
+	@Test
+	public void testHashcode() {
+		assertThat(success.hashCode() == ResultState.success().hashCode());
+		assertThat(warning.hashCode() == ResultState.warning("Warning!", cause).hashCode());
+		assertThat(failure.hashCode() == ResultState.failure("Failure!", cause).hashCode());
+		assertThat(warning.hashCode() != ResultState.failure("Warning!", cause).hashCode());
+		assertThat(failure.hashCode() != ResultState.warning("Failure!", cause).hashCode());
 	}
 
 }

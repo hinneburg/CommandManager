@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
 
+import com.google.common.collect.ImmutableList;
+
 public class CommandGraphBuilderTest {
 
 	CommandGraphBuilder builder;
@@ -17,12 +19,27 @@ public class CommandGraphBuilderTest {
 	}
 
 	@Test
+	public void testCreateEmptyBuilder() {
+		CommandGraphBuilder builder = new CommandGraphBuilder();
+		assertThat(builder.build().topologicalOrderOfAllCommands()).isEmpty();
+	}
+
+	@Test
+	public void testCreateBuilderWithCommands() {
+		CommandClass commandA = new CommandClass("A", "A.class");
+		CommandClass commandB = new CommandClass("B", "B.class");
+		CommandGraphBuilder builder = new CommandGraphBuilder(ImmutableList.of(commandA, commandB));
+		assertThat(builder.build().topologicalOrderOfAllCommands()).containsOnly(commandA, commandB);
+	}
+
+	@Test
 	public void testCommandGraphIsImmutable() {
 		assertThat(builder.addCommand("A", "className.A")).isTrue();
 		CommandGraph graph = builder.build();
 
-		assertThat(builder.addCommand("B", "className.B")).isTrue();
-		assertThat(builder.addMandatoryDependency("A", "B"));
+		// command and dependency should be added to builder but not to graph
+		builder.addCommand("B", "className.B");
+		builder.addMandatoryDependency("A", "B");
 
 		assertThat(graph.containsCommand("B")).isFalse();
 		assertThat(graph.getDependencies("A")).isEmpty();

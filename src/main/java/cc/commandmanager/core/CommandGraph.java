@@ -3,11 +3,13 @@ package cc.commandmanager.core;
 import static com.google.common.base.Predicates.in;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -22,6 +24,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -83,7 +86,7 @@ public class CommandGraph {
 	 * <p>
 	 * Every command name must be unique. For problems with dom file handling, see <a
 	 * href="com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl">DocumentBuilderFactoryImpl</a>.
-	 * 
+	 *
 	 * @param catalogFile
 	 *            {@linkplain File} to be parsed. Must have a valid XML structure.
 	 * @return A new {@linkplain CommandGraph} if every command of the given catalog could be added to the graph. In
@@ -116,7 +119,7 @@ public class CommandGraph {
 	 * </ul>
 	 * An example catalog looks like this:<br>
 	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
-	 * 
+	 *
 	 * @param catalogDocument
 	 *            {@linkplain Document} to be parsed.
 	 * @return A new {@linkplain CommandGraph} if every command of the given catalog could be added to the graph. In
@@ -154,7 +157,7 @@ public class CommandGraph {
 	 * Create a new {@linkplain CommandGraph}. Build it of {@linkplain CommandClass} vertices obtained from the given
 	 * list and their mandatory and optional dependencies, respectively.
 	 * <p>
-	 * 
+	 *
 	 * @param commands
 	 *            the new graph will be built of.
 	 * @return A new {@linkplain CommandGraph} if every command of the given list could be added to the graph. In
@@ -173,35 +176,43 @@ public class CommandGraph {
 		}
 
 		// add dependencies
-		for (CommandClass commandClass : commands) {
-			Command command = commandClass.newInstance();
-			String commandName = commandClass.getName();
+		for (CommandClass command : commands) {
+			Command commandInstance = command.newInstance();
+			String commandName = command.getName();
 
-			for (String beforeDependency : command.getBeforeDependencies()) {
+			for (String beforeDependency : commandInstance.getBeforeDependencies()) {
 				DependencyAdded dependencyAdded = builder.addMandatoryDependency(commandName, beforeDependency);
 				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
 					return new Optional<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
-			for (String afterDependency : command.getAfterDependencies()) {
+			for (String afterDependency : commandInstance.getAfterDependencies()) {
 				DependencyAdded dependencyAdded = builder.addMandatoryDependency(afterDependency, commandName);
 				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
 					return new Optional<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
-			for (String beforeDependency : command.getOptionalBeforeDependencies()) {
-				DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
-				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-					return new Optional<CommandGraph>(null, dependencyAdded);
+			for (String beforeDependency : commandInstance.getOptionalBeforeDependencies()) {
+				// TODO currently, optional dependencies are seen from the graph building perspective,
+				// rather than from the executing perspective. This will change. See (#53)
+				if (builder.containsCommand(beforeDependency)) {
+					DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
+					if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
+						return new Optional<CommandGraph>(null, dependencyAdded);
+					}
 				}
 			}
 
-			for (String afterDependency : command.getOptionalAfterDependencies()) {
-				DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
-				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-					return new Optional<CommandGraph>(null, dependencyAdded);
+			for (String afterDependency : commandInstance.getOptionalAfterDependencies()) {
+				// TODO currently, optional dependencies are seen from the graph building perspective,
+				// rather than from the executing perspective. This will change. See (#53)
+				if (builder.containsCommand(afterDependency)) {
+					DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
+					if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
+						return new Optional<CommandGraph>(null, dependencyAdded);
+					}
 				}
 			}
 		}
@@ -247,7 +258,14 @@ public class CommandGraph {
 	}
 
 	/**
-	 * 
+	 * @return whether this {@linkplain CommandGraph} does not contain any vertices.
+	 */
+	public boolean isEmpty() {
+		return vertices.isEmpty();
+	}
+
+	/**
+	 *
 	 * @param commandName
 	 * @return A {@code CommandClass} object having the given {@code commandName}.
 	 * @throws CommandNotFoundException
@@ -261,7 +279,7 @@ public class CommandGraph {
 	/**
 	 * For a given {@code commandName} find all commands on which this command is dependent on. Mandatory dependencies
 	 * will be returned as well as optional dependencies.
-	 * 
+	 *
 	 * @param commandName
 	 * @return Commands on which the given command is dependent on. Commands are not explicitly ordered by their
 	 *         dependency type.
@@ -275,7 +293,7 @@ public class CommandGraph {
 
 	/**
 	 * For a given {@code commandName} find all commands on which this command is mandatorily dependent on.
-	 * 
+	 *
 	 * @param commandName
 	 * @return Commands on which the given command is mandatorily dependent on.
 	 * @throws CommandNotFoundException
@@ -288,7 +306,7 @@ public class CommandGraph {
 
 	/**
 	 * For a given {@code commandName} find all commands on which this command is optionally dependent on.
-	 * 
+	 *
 	 * @param commandName
 	 * @return Commands on which the given command is optionally dependent on.
 	 * @throws CommandNotFoundException
@@ -314,7 +332,7 @@ public class CommandGraph {
 	 * Arrange all commands of this {@link CommandGraph} in a topological order, meaning that if there exists a
 	 * dependency from command A to command B then command B is guaranteed to come before command A in the iteration
 	 * order.
-	 * 
+	 *
 	 * @return A topologically sorted list of {@link CommandClasses}es. This list will be immutable.
 	 */
 	public List<CommandClass> topologicalOrderOfAllCommands() {
@@ -322,10 +340,52 @@ public class CommandGraph {
 	}
 
 	/**
+	 * Arrange the specified commands in a topological order, meaning that if there exists a dependency from command A
+	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * the specified commands must exist in this graph.
+	 *
+	 * @param commandNames
+	 *            to be sorted.
+	 *
+	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 *
+	 * @throws CommandNotFoundException
+	 *             if at least one of the given commands cannot be found in this graph.
+	 */
+	public List<CommandClass> topologicalOrderOfNames(String... commandNames) {
+		return topologicalOrderOfNames(Arrays.asList(commandNames));
+	}
+
+	/**
+	 * Arrange the specified commands in a topological order, meaning that if there exists a dependency from command A
+	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * the specified commands must exist in this graph.
+	 *
+	 * @param commandNames
+	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
+	 *            null.
+	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 * @throws CommandNotFoundException
+	 *             if at least one of the given commands cannot be found in this graph.
+	 */
+	public List<CommandClass> topologicalOrderOfNames(Iterable<String> commandNames) {
+		Check.noNullElements(commandNames, "commandNames");
+		return topologicalOrderOf(Iterables.transform(commandNames, new Function<String, CommandClass>() {
+
+			@Override
+			@Nullable
+			public CommandClass apply(@Nullable String commandName) {
+				return getCommandClass(commandName);
+			}
+
+		}));
+	}
+
+	/**
 	 * Arrange the given commands in a topological order, meaning that if there exists a dependency from command A to
 	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
 	 * the given commands must exist in this graph.
-	 * 
+	 *
 	 * @param commands
 	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
 	 *            null.
@@ -347,7 +407,7 @@ public class CommandGraph {
 	 * Arrange the given commands in a topological order, meaning that if there exists a dependency from command A to
 	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
 	 * the given commands must exist in this graph.
-	 * 
+	 *
 	 * @param commands
 	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
 	 *            null.
@@ -356,7 +416,7 @@ public class CommandGraph {
 	 *             if at least one of the given commands cannot be found in this graph.
 	 */
 	public List<CommandClass> topologicalOrderOf(CommandClass... commands) {
-		return topologicalOrderOf(ImmutableList.copyOf(commands));
+		return topologicalOrderOf(Arrays.asList(commands));
 	}
 
 	private String checkGraphContains(String command) {
@@ -505,9 +565,31 @@ public class CommandGraph {
 	 */
 	public static class CommandGraphBuilder {
 
-		private Map<String, CommandClass> commandClasses = Maps.newHashMap();
-		private DirectedAcyclicGraph<CommandClass, DependencyEdge> graph = new DirectedAcyclicGraph<CommandClass, DependencyEdge>(
-				DependencyEdge.class);
+		private final Map<String, CommandClass> commandClasses;
+		private final DirectedAcyclicGraph<CommandClass, DependencyEdge> graph;
+
+		/**
+		 * Creates a new empty {@linkplain CommandGraphBuilder}.
+		 */
+		public CommandGraphBuilder() {
+			commandClasses = Maps.newHashMap();
+			graph = new DirectedAcyclicGraph<CommandClass, CommandGraph.DependencyEdge>(DependencyEdge.class);
+		}
+
+		/**
+		 * Creates a new {@linkplain CommandGraphBuilder} and immediately adds all the given command classes as
+		 * vertices.
+		 *
+		 * @param commands
+		 *            to add
+		 */
+		public CommandGraphBuilder(Iterable<CommandClass> commands) {
+			this();
+			Check.noNullElements(commands, "commands");
+			for (CommandClass command : commands) {
+				addCommand(command);
+			}
+		}
 
 		/**
 		 * @return A new and immutable {@linkplain CommandGraph} containing all commands and dependencies that have been
@@ -519,7 +601,7 @@ public class CommandGraph {
 
 		/**
 		 * Add a command with the given {@code name} and the given {@code className} to this builder.
-		 * 
+		 *
 		 * @param name
 		 *            must not be contained in this builder, yet.
 		 * @param className
@@ -533,7 +615,7 @@ public class CommandGraph {
 		/**
 		 * Add a command with the given {@code name} and the given {@code className} to this builder. The name of
 		 * {@code commandClass} must not be contained in this builder, yet.
-		 * 
+		 *
 		 * @param commandClass
 		 *            to add
 		 * @return {@code true} if the command could be added, {@code false} if the command could not be added because
@@ -567,7 +649,7 @@ public class CommandGraph {
 		 * </ul>
 		 * If an optional dependency between source and target already exists, the dependency state will be changed from
 		 * optional to mandatory.
-		 * 
+		 *
 		 * @param sourceName
 		 *            source of the newly created edge
 		 * @param targetName
@@ -592,7 +674,7 @@ public class CommandGraph {
 		 * </ul>
 		 * If an optional dependency between source and target already exists, the dependency state will be changed from
 		 * optional to mandatory.
-		 * 
+		 *
 		 * @param source
 		 *            source of the newly created edge
 		 * @param target
@@ -630,13 +712,13 @@ public class CommandGraph {
 		 * <ul>
 		 * <li>both, source and target have been added already
 		 * <li>the given edge is not already a member of the graph
-		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to {@code
-		 * targetName}, yet
+		 * <li>there has neither been added a mandatory nor an optional edge from {@code sourceName} to
+		 * {@code targetName}, yet
 		 * <li>the edge does not induce a circular dependency.
 		 * </ul>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
 		 * but remains mandatory.
-		 * 
+		 *
 		 * @param sourceName
 		 *            source of the newly created edge
 		 * @param targetName
@@ -661,7 +743,7 @@ public class CommandGraph {
 		 * </ul>
 		 * If a mandatory dependency between source and target already exists, the dependency state will not be changed
 		 * but remains mandatory.
-		 * 
+		 *
 		 * @param source
 		 *            source of the newly created edge
 		 * @param target

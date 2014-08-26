@@ -1,11 +1,8 @@
 package cc.commandmanager.core;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.qualitycheck.Check;
@@ -13,9 +10,6 @@ import net.sf.qualitycheck.exception.IllegalStateOfArgumentException;
 
 import org.apache.log4j.Logger;
 
-import cc.commandmanager.core.CommandGraph.CommandGraphBuilder;
-
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -23,11 +17,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
- * This class is used for the controlled execution of commands. Commands to be executed are declared in a catalog. Those
- * commands will be ordered and then executed.
- * <p>
- * This class executes specified initial commands needed for further tasks. Arguments will be parsed from command line
- * and may then be accessed.
+ * Manages controlled execution of {@linkplain Command}s which are represented by a {@linkplain CommandGraph}. Execution
+ * success is reflected by a {@linkplain ComposedResultState}.
  */
 public class CommandManager {
 
@@ -37,55 +28,25 @@ public class CommandManager {
 	private final CommandGraph commandGraph;
 
 	/**
-	 * Create a new {@link CommandManager}. Use the {@linkplain CommandGraph}, parsed from the given XML file. The
-	 * command graph specifies which commands which will be executed and in which order this will happen. A new
-	 * {@link Context} will be used to execute the commands with.
-	 * 
-	 * @param catalog
-	 *            see {@link CommandGraph#fromFile(File))} for specifications on the catalog file.
-	 */
-	public CommandManager(File catalog) {
-		this(catalog, new Context());
-	}
-
-	/**
-	 * Create a new {@link CommandManager}. Use the {@linkplain CommandGraph}, parsed from the given XML file. The
-	 * command graph specifies which commands which will be executed and in which order this will happen.
-	 * 
-	 * @param catalog
-	 *            see {@link CommandGraph#fromFile(File))} for specifications on the catalog file.
-	 * @param context
-	 *            information in the context will be used to execute the commands with.
-	 */
-	public CommandManager(File catalog, Context context) {
-		this(CommandGraph.fromXml(catalog).get(), context);
-	}
-
-	/**
-	 * Create a new {@link CommandManager}. A new {@link Context} will be used to execute the commands with.
-	 * 
 	 * @param commandGraph
-	 *            specifies which commands which will be executed and in which order this will happen.
+	 *            specifies which commands can be executed. The internal order of this graph will influence
+	 *            <ul>
+	 *            <li> {@linkplain #executeAllCommands}
+	 *            <li> {@linkplain #executeCommandsGracefully} and
+	 *            <li> {@linkplain #executeConnectedComponentsContaining} as well as their parameter variations.
+	 *            </ul>
+	 *            The graph must have at least one command in it.
+	 * @throws IllegalStateOfArgumentException
+	 *             when the graph is empty.
 	 */
 	public CommandManager(CommandGraph commandGraph) {
-		this(commandGraph, new Context());
+		Check.stateIsTrue(!commandGraph.isEmpty(), "commandGraph must have at least one command in it");
+		this.commandGraph = commandGraph;
+		context = new Context();
 	}
 
 	/**
-	 * Create a new {@link CommandManager}.
-	 * 
-	 * @param commandGraph
-	 *            specifies which commands which will be executed and in which order this will happen.
-	 * @param context
-	 *            information in the context will be used to execute the commands with.
-	 */
-	public CommandManager(CommandGraph commandGraph, Context context) {
-		this.commandGraph = Check.notNull(commandGraph, "commandGraph");
-		this.context = Check.notNull(context, "context");
-	}
-
-	/**
-	 * 
+	 *
 	 * @return {@linkplain CommandGraph} object that was used to build this {@linkplain CommandManager}.
 	 */
 	public CommandGraph getCommandGraph() {
@@ -93,56 +54,87 @@ public class CommandManager {
 	}
 
 	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
+	 * Execute all commands that are in the {@linkplain CommandGraph} of this {@linkplain CommandManager}. Respect the
+	 * internal order of the graph. It will have no effect on the execution whether a {@link Command} is mandatory or
+	 * optional dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
+	 * {@linkplain Command}.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public List<String> getOrderedCommands(Map<String, Set<String>> newCommandGraph) {
-		Check.notNull(newCommandGraph, "newCommandGraph");
-		return getOrderedCommands(newCommandGraph, Collections.<String> emptySet());
-	}
-
-	public List<String> getOrderedCommands(Map<String, Set<String>> newCommandGraph, Set<String> startCommands) {
-		Check.notNull(newCommandGraph, "newCommandGraph");
-		Check.notNull(startCommands, "startCommands");
-
-		CommandGraph graph = buildFromDependencies(newCommandGraph);
-		return getOrderedCommands(graph, startCommands, Collections.<String> emptySet());
+	public ComposedResultState executeAllCommands() {
+		return executeAllCommands(context);
 	}
 
 	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
-	 * 
-	 * @return An ordered {@linkplain List<String>} containing the commands of the catalog.
+	 * Execute all commands that are in the {@linkplain CommandGraph} of this {@linkplain CommandManager}. Respect the
+	 * internal order of the graph. It will have no effect on the execution whether a {@link Command} is mandatory or
+	 * optional dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}.
+	 *
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public List<String> getOrderedCommands() {
-		return getOrderedCommands(Collections.<String> emptySet(), Collections.<String> emptySet());
+	public ComposedResultState executeAllCommands(Context context) {
+		return executeOrderedCommands(commandGraph.topologicalOrderOfAllCommands(), context);
 	}
 
-	// TODO FOR NON-EMPTY END_COMMANDS THIS METHOD DOES NOT RETURN A CORRECT RESULT
-	// Remove parameter endCommands or implement this method to be truely applicable for end commands
-	// Consider, getOrderedCommands with end commands will not even be needed in CM1.0 (see #40)
 	/**
-	 * Returns a {@linkplain List<String>} with all commands of a given map of dependencies in an ordered sequence.
+	 * Find connected components in which the given command names are included. No command will be executed that is not
+	 * at least transitively connected to one of the given commands. Respect the internal order of the found connected
+	 * components. It will have no effect on the execution whether a {@link Command} is mandatory or optional dependent
+	 * on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
+	 * {@linkplain Command}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
 	 */
-	public List<String> getOrderedCommands(Set<String> startCommands, Set<String> endCommands) {
-		List<String> result = getOrderedCommands(commandGraph, startCommands, endCommands);
-		return result;
+	public ComposedResultState executeConnectedComponentsContaining(Iterable<String> commandNames) {
+		return executeConnectedComponentsContaining(commandNames, context);
 	}
 
-	private static List<String> getOrderedCommands(CommandGraph graph, Set<String> startCommands,
-			Set<String> endCommands) {
-		Check.notNull(startCommands, "startCommands");
-		Check.stateIsTrue(endCommands == null || endCommands.isEmpty(), IllegalStateOfArgumentException.class);
+	/**
+	 * Find connected components in which the given command names are included. No command will be executed that is not
+	 * at least transitively connected to one of the given commands. Respect the internal order of the found connected
+	 * components. It will have no effect on the execution whether a {@link Command} is mandatory or optional dependent
+	 * on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 */
+	public ComposedResultState executeConnectedComponentsContaining(Iterable<String> commandNames, Context context) {
+		Check.noNullElements(commandNames);
 
-		if (startCommands.isEmpty()) {
-			return Lists.newLinkedList(commandNamesOf(graph.topologicalOrderOfAllCommands()));
-		} else {
-			ImmutableList.Builder<CommandClass> remaining = ImmutableList.builder();
-			for (CommandGraph connectedComponent : filterConnectedComponentsContaining(startCommands, graph
-					.getConnectedComponents())) {
-				remaining.addAll(connectedComponent.topologicalOrderOfAllCommands());
-			}
-			return commandNamesOf(remaining.build());
+		List<CommandClass> commands = Lists.newLinkedList();
+		for (CommandGraph graph : filterConnectedComponentsContaining(Sets.newHashSet(commandNames),
+				commandGraph.getConnectedComponents())) {
+			commands.addAll(graph.topologicalOrderOfAllCommands());
 		}
+		return executeOrderedCommands(commands, context);
 	}
 
 	private static Set<CommandGraph> filterConnectedComponentsContaining(Set<String> startCommands,
@@ -158,74 +150,287 @@ public class CommandManager {
 		return result.build();
 	}
 
-	private static CommandGraph buildFromDependencies(Map<String, Set<String>> newCommandGraph) {
-		CommandGraphBuilder builder = new CommandGraphBuilder();
-		String noClassNameObtainable = "";
-		for (String command : newCommandGraph.keySet()) {
-			builder.addCommand(command, noClassNameObtainable);
-			for (String dependency : newCommandGraph.get(command)) {
-				DependencyAdded dependencyAdded = builder.addMandatoryDependency(command, dependency);
-				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-					throw new IllegalStateException(dependencyAdded.toString());
-				}
-			}
-		}
-		return builder.build();
+	/**
+	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
+	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
+	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
+	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
+	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will
+	 * be created which will be passed to every {@linkplain Command}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
+	 */
+	public ComposedResultState executeCommandsGracefully(String... commandNames) {
+		return executeCommandsGracefully(context, commandNames);
 	}
 
-	public Map<String, Set<String>> getDependencies() {
-		Map<String, Set<String>> result = new HashMap<String, Set<String>>();
-		for (CommandClass command : commandGraph.topologicalOrderOfAllCommands()) {
-			Collection<String> dependencies = commandNamesOf(commandGraph.getDependencies(command.getName()));
-			result.put(command.getName(), Sets.newHashSet(dependencies));
+	/**
+	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
+	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
+	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
+	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
+	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
+	 */
+	public ComposedResultState executeCommandsGracefully(Context context, String... commandNames) {
+		return executeCommandsGracefully(Arrays.asList(commandNames), context);
+	}
+
+	/**
+	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
+	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
+	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
+	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
+	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will
+	 * be created which will be passed to every {@linkplain Command}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
+	 */
+	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames) {
+		return executeCommandsGracefully(commandNames, context);
+	}
+
+	/**
+	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
+	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
+	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
+	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
+	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
+	 */
+	public ComposedResultState executeCommandsGracefully(Iterable<String> commandNames, Context context) {
+		Check.noNullElements(commandNames);
+		List<CommandClass> commands = Lists.newLinkedList();
+		for (String commandName : commandNames) {
+			commands.add(commandGraph.getCommandClass(commandName));
+		}
+
+		Set<CommandClass> commandsAndTheirDependencies = Sets.newHashSet(commands);
+		for (CommandClass command : commands) {
+			commandsAndTheirDependencies.addAll(successiveBeforeDependencies(command, new HashSet<CommandClass>()));
+		}
+		return executeOrderedCommands(commandGraph.topologicalOrderOf(commandsAndTheirDependencies), context);
+	}
+
+	private Set<CommandClass> successiveBeforeDependencies(CommandClass command, Set<CommandClass> accumulator) {
+		Set<CommandClass> result = Sets.newHashSet(accumulator);
+		Set<CommandClass> dependencies = commandGraph.getDependencies(command.getName());
+		result.addAll(dependencies);
+		for (CommandClass dependency : dependencies) {
+			result.addAll(successiveBeforeDependencies(dependency, result));
 		}
 		return result;
 	}
 
-	private static List<String> commandNamesOf(Iterable<CommandClass> commands) {
-		return ImmutableList.copyOf(Iterables.transform(commands, new Function<CommandClass, String>() {
-
-			@Override
-			public String apply(CommandClass command) {
-				return command.getName();
-			}
-
-		}));
+	/**
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
+	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
+	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
+	 * {@linkplain Command}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
+	 */
+	public ComposedResultState executeCommands(String... commandNames) {
+		return executeCommands(context, commandNames);
 	}
 
 	/**
-	 * Executes all commands, previously ordered by the commands' specifications.
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
+	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
+	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
 	 */
-	public void executeAllCommands() {
-		executeCommands(getOrderedCommands());
+	public ComposedResultState executeCommands(Context context, String... commandNames) {
+		return executeCommands(Arrays.asList(commandNames), context);
 	}
 
 	/**
-	 * Takes a {@linkplain List} of commands and executes them in the list's sequence
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
+	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
+	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
+	 * {@linkplain Command}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
 	 */
-	public void executeCommands(List<String> commands) {
-		Check.notNull(commands, "commands");
-		executeCommands(commands, context);
+	public ComposedResultState executeCommands(Iterable<String> commandNames) {
+		return executeCommands(commandNames, context);
 	}
 
 	/**
-	 * Takes a {@linkplain List} of commands and executes them in the list's sequence, using the specified
-	 * {@linkplain Context}
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
+	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
+	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * {@linkplain ResultState.Failure}.
+	 *
+	 * @param commandNames
+	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
+	 *            graph. Must not be empty. However, command names can be empty.
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @throws CommandNotFoundException if no command can be found for a given command name in the
+	 *         underlying graph.
+	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 *
 	 */
-	public void executeCommands(List<String> commands, Context localContext) {
-		Check.notNull(commands, "commands");
-		Check.notNull(localContext, "localContext");
+	public ComposedResultState executeCommands(Iterable<String> commandNames, Context context) {
+		Check.noNullElements(commandNames, "commandNames");
+		return executeOrderedCommands(commandGraph.topologicalOrderOfNames(commandNames), context);
+	}
 
-		for (String command : commands) {
-			if (!commandGraph.containsCommand(command)) {
-				logger.error("Command " + command
-						+ "could not be found in the command graph. Aborting execution of all commands.");
-				break;
-			}
-			Command commandInstance = commandGraph.getCommandClass(command).newInstance();
+	/**
+	 * Execute all commands that are in the given {@linkplain CommandGraph}. Respect the internal order of the graph. It
+	 * will have no effect on the execution whether a {@link Command} is mandatory or optional dependent on another one.
+	 * Execution will be aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A
+	 * new context will be created which will be passed to every {@linkplain Command}. This is short for creating a new
+	 * {@linkplain CommandManager} with this {@linkplain CommandGraph} and calling {@linkplain #executeAllCommands}
+	 * afterwards.
+	 *
+	 * @param graph
+	 *            that is used to obtain all {@linkplain Command}s that can be executed.
+	 *
+	 * @throws IllegalStateOfArgumentException
+	 *             when the graph is empty.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 */
+	public static ComposedResultState executeCommands(CommandGraph graph) {
+		return executeCommands(graph, new Context());
+	}
+
+	/**
+	 * Execute all commands that are in the given {@linkplain CommandGraph}. Respect the internal order of the graph. It
+	 * will have no effect on the execution whether a {@link Command} is mandatory or optional dependent on another one.
+	 * Execution will be aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
+	 * This is short for creating a new {@linkplain CommandManager} with this {@linkplain CommandGraph} and calling
+	 * {@linkplain #executeAllCommands} afterwards.
+	 *
+	 * @param context
+	 *            will be used as the argument for every executed {@linkplain Command}.
+	 *
+	 * @throws IllegalStateOfArgumentException
+	 *             when the graph is empty.
+	 *
+	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
+	 *         {@linkplain Command}s.
+	 */
+	public static ComposedResultState executeCommands(CommandGraph graph, Context context) {
+		Check.notNull(graph, "graph");
+		Check.stateIsTrue(!graph.isEmpty(), "graph must have at least one command in it");
+		return executeOrderedCommands(graph.topologicalOrderOfAllCommands(), context);
+	}
+
+	/**
+	 * Executes the given ordered commands using the specified context.
+	 *
+	 * @param commands
+	 * @param context
+	 * @return whether the execution was successful
+	 */
+	private static ComposedResultState executeOrderedCommands(Iterable<CommandClass> commands, Context context) {
+		Check.noNullElements(commands, "commands");
+		Check.stateIsTrue(!Iterables.isEmpty(commands), "commands must contain at least one command");
+		Check.notNull(context, "context");
+
+		ImmutableList.Builder<ResultState> resultStates = ImmutableList.builder();
+		ImmutableList.Builder<CommandClass> executedCommands = ImmutableList.builder();
+		for (CommandClass command : commands) {
+			Command commandInstance = command.newInstance();
 			logger.info("Execute current command: " + commandInstance.getClass());
 			long startTime = System.currentTimeMillis();
-			ResultState resultState = commandInstance.execute(localContext);
+			ResultState resultState = commandInstance.execute(context);
+			resultStates.add(resultState);
+			executedCommands.add(command);
 			if (resultState.isSuccess()) {
 				logger.info("Command " + commandInstance.getClass() + " successfully executed in "
 						+ (System.currentTimeMillis() - startTime) + " ms");
@@ -234,15 +439,14 @@ public class CommandManager {
 						+ (System.currentTimeMillis() - startTime) + " ms: " + resultState.getMessage() + " "
 						+ resultState.getCause());
 			} else {
-				String message = "Command " + commandInstance.getClass() + " failed to execute (took "
-						+ (System.currentTimeMillis() - startTime) + " ms): " + resultState.getMessage();
-				if (resultState.hasCause()) {
-					message += " " + resultState.getCause();
-				}
-				logger.error(message);
+				logger.error("Command " + commandInstance.getClass() + " failed to execute (took "
+						+ (System.currentTimeMillis() - startTime) + " ms): " + resultState.getMessage() + " "
+						+ resultState.getCause());
 				logger.error("Aborting execution of all commands.");
 				break;
 			}
 		}
+		return new ComposedResultState(resultStates.build(), executedCommands.build());
 	}
+
 }

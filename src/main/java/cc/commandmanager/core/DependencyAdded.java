@@ -53,7 +53,8 @@ public enum DependencyAdded {
 
 	/**
 	 * {@linkplain Set} of states indicating that adding the dependency was not successful because it violated the
-	 * contract of a {@linkplain CommandGraph}.
+	 * contract of a {@linkplain CommandGraph}. Difference of all {@linkplain cc.commandmanager.core.DependencyAdded}
+	 * states and {@linkplain cc.commandmanager.core.DependencyAdded#SUCCESS_STATES}.
 	 */
 	public static Set<DependencyAdded> FAILURE_STATES = Sets.difference(ImmutableSet.copyOf(DependencyAdded.values()),
 			SUCCESS_STATES).immutableCopy();

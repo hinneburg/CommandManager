@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+    <command className="cc.commandmanager.core.commandimplementations.GroupAFirst" name="GroupAFirst" />
+    <command className="cc.commandmanager.core.commandimplementations.GroupASecond" name="GroupASecond" />
+    <command className="cc.commandmanager.core.commandimplementations.GroupAThird" name="GroupAThird" />
+
+    <command className="cc.commandmanager.core.commandimplementations.GroupBFirst" name="GroupBFirst" />
+    <command className="cc.commandmanager.core.commandimplementations.GroupBSecond" name="GroupBSecond" />
+    <command className="cc.commandmanager.core.commandimplementations.GroupBThird" name="GroupBThird" />
+
+    <command className="cc.commandmanager.core.commandimplementations.GroupCFirst" name="GroupCFirst" />
+    <command className="cc.commandmanager.core.commandimplementations.GroupCSecond" name="GroupCSecond" />
+    <command className="cc.commandmanager.core.commandimplementations.GroupCThird" name="GroupCThird" />
+</catalog>

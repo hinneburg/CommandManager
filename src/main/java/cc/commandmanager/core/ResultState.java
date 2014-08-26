@@ -89,23 +89,17 @@ public abstract class ResultState {
 	/**
 	 * @return whether this is a {@linkplain Success}
 	 */
-	public boolean isSuccess() {
-		return this instanceof Success;
-	}
+	public abstract boolean isSuccess();
 
 	/**
 	 * @return whether this is a {@linkplain Warning}
 	 */
-	public boolean isWarning() {
-		return this instanceof Warning;
-	}
+	public abstract boolean isWarning();
 
 	/**
 	 * @return whether this is a {@linkplain Failure}
 	 */
-	public boolean isFailure() {
-		return this instanceof Failure;
-	}
+	public abstract boolean isFailure();
 
 	/**
 	 * @return {@code true} if this {@linkplain Warning} or {@linkplain Failure} has a cause, {@code false} otherwise.
@@ -118,41 +112,61 @@ public abstract class ResultState {
 	}
 
 	/**
-	 * @return the message of this {@linkplain Warning} or {@linkplain Failure}.
+	 * @return the message of this {@linkplain ResultState}.
 	 * 
 	 * @throws IllegalInstanceOfArgumentException
-	 *             if this is not a {@linkplain Warning} or {@linkplain Failure}.
+	 *             if this is a {@linkplain Success}.
 	 */
-	public String getMessage() {
-		Check.instanceOf(WarningOrFailure.class, this);
-		return ((WarningOrFailure) this).message;
-	}
+	public abstract String getMessage();
 
 	/**
-	 * @return the cause of this {@linkplain Warning} or {@linkplain Failure}, or {@link null} if there is no cause.
+	 * @return the cause of this {@linkplain ResultState}, or {@link null} if there is no cause.
 	 * 
 	 * @throws IllegalInstanceOfArgumentException
-	 *             if this is not a {@linkplain Warning} or {@linkplain Failure}.
+	 *             if this is {@linkplain Success}.
 	 */
 	@Nullable
-	public Throwable getCause() {
-		Check.instanceOf(WarningOrFailure.class, this);
-		return ((WarningOrFailure) this).cause;
-	}
+	public abstract Throwable getCause();
 
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that has been executed successfully without any problems.
 	 */
-	public static class Success extends ResultState {
+	public static final class Success extends ResultState {
 
 		@Override
 		public String toString() {
 			return "Execution completed successfully!";
 		}
 
+		@Override
+		public boolean isSuccess() {
+			return true;
+		}
+
+		@Override
+		public boolean isWarning() {
+			return false;
+		}
+
+		@Override
+		public boolean isFailure() {
+			return false;
+		}
+
+		@Override
+		public String getMessage() {
+			throw new IllegalStateException("Success states do not have a message.");
+		}
+
+		@Override
+		@Nullable
+		public Throwable getCause() {
+			throw new IllegalStateException("Success states do not have a cause.");
+		}
+
 	}
 
-	private static class WarningOrFailure extends ResultState {
+	private static abstract class WarningOrFailure extends ResultState {
 
 		protected final String message;
 		protected final Throwable cause;
@@ -162,13 +176,54 @@ public abstract class ResultState {
 			this.cause = cause;
 		}
 
+		@Override
+		public String getMessage() {
+			return message;
+		}
+
+		@Override
+		@Nullable
+		public Throwable getCause() {
+			return cause;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = 1;
+			final int prime = 31;
+			result = prime * result + getMessage().hashCode();
+			result = hasCause() ? prime * result + getCause().hashCode() : result;
+			return result;
+		}
+
+		/**
+		 * @return {@code true} if the given {@linkplain Object} corresponds the same class. Furthermore
+		 *         {@linkplain #getMessage()} and {@linkplain #getCause()} must return the same result.
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			WarningOrFailure that = (WarningOrFailure) obj;
+			final boolean hasSameMessage = getMessage().equals(that.getMessage());
+			if (!hasCause()) {
+				return hasSameMessage && !that.hasCause();
+			} else {
+				return hasSameMessage && getCause().equals(that.getCause());
+			}
+		}
+
 	}
 
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that faced non-critical problems during its execution. It
 	 * provides a message and a cause.
 	 */
-	public static class Warning extends WarningOrFailure {
+	public static final class Warning extends WarningOrFailure {
 
 		private Warning(String message, Throwable cause) {
 			super(message, cause);
@@ -179,13 +234,28 @@ public abstract class ResultState {
 			return "Execution completed with warnings: " + message;
 		}
 
+		@Override
+		public boolean isSuccess() {
+			return false;
+		}
+
+		@Override
+		public boolean isWarning() {
+			return true;
+		}
+
+		@Override
+		public boolean isFailure() {
+			return false;
+		}
+
 	}
 
 	/**
 	 * {@linkplain ResultState} of a {@linkplain Command} that faced critical problems and aborted its execution. It
 	 * provides a message and a cause.
 	 */
-	public static class Failure extends WarningOrFailure {
+	public static final class Failure extends WarningOrFailure {
 
 		public Failure(String message, Throwable cause) {
 			super(message, cause);
@@ -194,6 +264,21 @@ public abstract class ResultState {
 		@Override
 		public String toString() {
 			return "Execution failed: " + message;
+		}
+
+		@Override
+		public boolean isSuccess() {
+			return false;
+		}
+
+		@Override
+		public boolean isWarning() {
+			return false;
+		}
+
+		@Override
+		public boolean isFailure() {
+			return true;
 		}
 
 	}
