@@ -45,6 +45,22 @@ To install the CommandManager you can add it as a maven dependency. Until the bi
 mvn install
 ```
 
+### Logging
+
+The command manager uses [log4j](http://logging.apache.org/log4j/1.2/) to inform you about the command execution status. In order to work properly, log4j needs to be configured in a properties file that resides in the class path.
+
+An example `log4j.properties` file looks like this:
+```bash
+# Root logger option
+log4j.rootLogger=INFO, stdout
+
+# Direct log messages to stdout
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target=System.out
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+```
+
 ### Contribute
 
 In order to contribute you should fork the repository on [GitHub](https://github.com/hinneburg/CommandManager), commit your changes and create a pull request. Please mind the [coding rules](https://github.com/hinneburg/CommandManager/wiki/Coding-Rules) in the wiki.
