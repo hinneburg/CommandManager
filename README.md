@@ -4,10 +4,14 @@
 
 A lean implementation of a command and chain of responsibility pattern mixture. The command manager enables you to easily create applications that are customizable during run time. Commands and their dependencies are configured using an XML catalog and instantiated using reflection when they are executed.
 
-### Usage Example
+### Usage
 
+Commands are specified in an XML file called *catalog*. Every command in the catalog must correspond to a Java class available in the class path during run time. A `CommandManager` object is responsible for the execution of command graphs.
+
+The following three lines of code contain a simple usage example that loads a command graph from a catalog and executes all commands:
 ```java
-CommandManager commandManager = new CommandManager(CommandGraph.fromXml("catalog.xml"));
+CommandGraph commandGraph = CommandGraph.fromXml("catalog.xml");
+CommandManager commandManager = new CommandManager(commandGraph);
 commandManager.executeAllCommands();
 ```
 
