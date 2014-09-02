@@ -4,6 +4,14 @@ import java.util.Set;
 
 public interface Command {
 
+	/**
+	 * Method containing the actual operations that a command performs. The given context is used to read data from and
+	 * store data for other commands.
+	 * 
+	 * @param context
+	 *            to read from and write data to
+	 * @return whether the execution was successful
+	 */
 	ResultState execute(Context context);
 
 	/**
