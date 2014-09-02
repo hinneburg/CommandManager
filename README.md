@@ -8,7 +8,7 @@ A lean implementation of a command and chain of responsibility pattern mixture. 
 
 #### Command Execution
 
-Commands are specified in an XML file called *catalog*. Every command in the catalog must correspond to a Java class available in the class path during run time. A `CommandManager` object is responsible for the execution of command graphs.
+Commands are specified in an XML file called *catalog*. Every command in the catalog must correspond to a Java class available in the class path during run time. A `CommandManager` object is responsible for the execution of a command graph.
 
 The following three lines of code contain a simple usage example that loads a command graph from a catalog and executes all commands:
 ```java
