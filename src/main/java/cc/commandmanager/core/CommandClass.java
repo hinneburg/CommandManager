@@ -45,6 +45,9 @@ public class CommandClass {
 		return className;
 	}
 
+	/**
+	 * @return a new {@linkplain Command} object
+	 */
 	public Command newInstance() {
 		try {
 			return getClassForName(className).newInstance();
