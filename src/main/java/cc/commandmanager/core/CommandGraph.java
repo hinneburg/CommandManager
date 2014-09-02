@@ -33,11 +33,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
- * A graph to represent an amount of {@link Command}s and the dependency relationship between them. A
- * {@linkplain CommandGraph} contains a set V of {@link CommandClass} vertices and a set E of edges which represent
- * dependencies. Each dependency can either be mandatory or optional. Each edge e=(v1,v2) in E connects vertex v1 to
- * vertex v2. For more information about graphs and their related definitions see <a
- * href="http://mathworld.wolfram.com/Graph.html">Wolfram Mathworld</a>.
+ * A {@linkplain CommandGraph} is a graph of {@linkplain CommandClasse}s. Edges represent dependencies. Each dependency
+ * can either be mandatory or optional.
  * <p>
  * Furthermore instances of this graph are
  * <ul>
@@ -75,7 +72,7 @@ public class CommandGraph {
 	 * vertices and mandatory and optional dependencies, respectively.
 	 * <p>
 	 * Required node tag for every command entry in the given XML file is "command". Under those nodes the attributes
-	 * "name" and "className" are required.
+	 * "name" and "className" are required. Every command name must be unique.
 	 * <ul>
 	 * <li>"name" attribute represents the String alias under which a command can be found in this graph.
 	 * <li>"className" attribute contains the associated fully qualified name for this command as obtained by
@@ -84,14 +81,12 @@ public class CommandGraph {
 	 * An example catalog looks like this:<br>
 	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
 	 * <p>
-	 * Every command name must be unique. For problems with dom file handling, see <a
-	 * href="com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl">DocumentBuilderFactoryImpl</a>.
 	 *
 	 * @param catalogFile
 	 *            {@linkplain File} to be parsed. Must have a valid XML structure.
-	 * @return A new {@linkplain CommandGraph} if every command of the given catalog could be added to the graph. In
-	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
-	 *         of those two actions failed.
+	 * @return An {@linkplain Optional} that contains a {@linkplain CommandGraph} if every command of the given catalog
+	 *         could be added to the graph. In addition to that every dependency of every command must have been added
+	 *         to the graph. If any of those two actions failed, {@linkplain Optional#isPresent()} returns false.
 	 */
 	public static Optional<CommandGraph> fromXml(File catalogFile) {
 		Check.notNull(catalogFile, "catalogFile");
@@ -107,24 +102,7 @@ public class CommandGraph {
 	}
 
 	/**
-	 * Create a new {@linkplain CommandGraph}. Parse the given XML document by building a valid graph of
-	 * {@linkplain CommandClass} vertices and mandatory and optional dependencies, respectively.
-	 * <p>
-	 * Required node tag for every command entry in the given catalog document is "command". Under those nodes the
-	 * attributes "name" and "className" are required.
-	 * <ul>
-	 * <li>"name" attribute represents the String alias under which a command can be found in this graph.
-	 * <li>"className" attribute contains the associated fully qualified name for this command as obtained by
-	 * {@linkplain Class#getCanonicalName()}. Command classes must be an implementation of {@linkplain Command}.
-	 * </ul>
-	 * An example catalog looks like this:<br>
-	 * {@code <catalog> <command name="command" className="de.commandmanager.command"/> </catalog>}
-	 *
-	 * @param catalogDocument
-	 *            {@linkplain Document} to be parsed.
-	 * @return A new {@linkplain CommandGraph} if every command of the given catalog could be added to the graph. In
-	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
-	 *         of those two actions failed.
+	 * Loads a {@linkplain CommandGraph} from an XML {@linkplain Document}. See {@linkplain CommandGraph#fromXml(File)}.
 	 */
 	public static Optional<CommandGraph> fromDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument, "catalogDocument");
@@ -153,17 +131,6 @@ public class CommandGraph {
 		return commandElements;
 	}
 
-	/**
-	 * Create a new {@linkplain CommandGraph}. Build it of {@linkplain CommandClass} vertices obtained from the given
-	 * list and their mandatory and optional dependencies, respectively.
-	 * <p>
-	 *
-	 * @param commands
-	 *            the new graph will be built of.
-	 * @return A new {@linkplain CommandGraph} if every command of the given list could be added to the graph. In
-	 *         addition to that every dependency of every command must have been added to the graph. {@code null} If any
-	 *         of those two actions failed.
-	 */
 	private static Optional<CommandGraph> of(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		CommandGraphBuilder builder = new CommandGraphBuilder();
@@ -267,6 +234,7 @@ public class CommandGraph {
 	/**
 	 *
 	 * @param commandName
+	 *            of the {@linkplain CommandClass} to retrieve
 	 * @return A {@code CommandClass} object having the given {@code commandName}.
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
@@ -281,6 +249,7 @@ public class CommandGraph {
 	 * will be returned as well as optional dependencies.
 	 *
 	 * @param commandName
+	 *            to retrieve the dependencies of
 	 * @return Commands on which the given command is dependent on. Commands are not explicitly ordered by their
 	 *         dependency type.
 	 * @throws CommandNotFoundException
@@ -295,6 +264,7 @@ public class CommandGraph {
 	 * For a given {@code commandName} find all commands on which this command is mandatorily dependent on.
 	 *
 	 * @param commandName
+	 *            to retrieve the dependencies of
 	 * @return Commands on which the given command is mandatorily dependent on.
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
@@ -308,6 +278,7 @@ public class CommandGraph {
 	 * For a given {@code commandName} find all commands on which this command is optionally dependent on.
 	 *
 	 * @param commandName
+	 *            to retrieve the dependencies of
 	 * @return Commands on which the given command is optionally dependent on.
 	 * @throws CommandNotFoundException
 	 *             if no command can be found in this graph for the given {@code commandName}.
@@ -341,7 +312,7 @@ public class CommandGraph {
 
 	/**
 	 * Arrange the specified commands in a topological order, meaning that if there exists a dependency from command A
-	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Each of
 	 * the specified commands must exist in this graph.
 	 *
 	 * @param commandNames
@@ -358,13 +329,13 @@ public class CommandGraph {
 
 	/**
 	 * Arrange the specified commands in a topological order, meaning that if there exists a dependency from command A
-	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
+	 * to command B in this graph then command B is guaranteed to come before command A in the iteration order. Each of
 	 * the specified commands must exist in this graph.
 	 *
 	 * @param commandNames
-	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
-	 *            null.
-	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 *            to be sorted. Neither the {@linkplain Iterable} nor any of the contained {@linkplain CommandClass}es
+	 *            must be null.
+	 * @return A topologically sorted list of {@linkplain CommandClass}es. This list will be immutable.
 	 * @throws CommandNotFoundException
 	 *             if at least one of the given commands cannot be found in this graph.
 	 */
@@ -383,13 +354,13 @@ public class CommandGraph {
 
 	/**
 	 * Arrange the given commands in a topological order, meaning that if there exists a dependency from command A to
-	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
-	 * the given commands must exist in this graph.
+	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Each of the
+	 * given commands must exist in this graph.
 	 *
 	 * @param commands
-	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
-	 *            null.
-	 * @return A topologically sorted list of {@link CommandClass}es. This list will be immutable.
+	 *            to be sorted. Neither the {@linkplain Iterable} nor any of the contained {@linkplain CommandClass}es
+	 *            must be null.
+	 * @return A topologically sorted list of {@linkplain CommandClass}es. This list will be immutable.
 	 * @throws CommandNotFoundException
 	 *             if at least one of the given commands cannot be found in this graph.
 	 */
@@ -405,8 +376,8 @@ public class CommandGraph {
 
 	/**
 	 * Arrange the given commands in a topological order, meaning that if there exists a dependency from command A to
-	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Every of
-	 * the given commands must exist in this graph.
+	 * command B in this graph then command B is guaranteed to come before command A in the iteration order. Each of the
+	 * given commands must exist in this graph.
 	 *
 	 * @param commands
 	 *            to be sorted. Neither the {@link Iterable} nor any of the contained {@link CommandClass}es must be
@@ -427,11 +398,7 @@ public class CommandGraph {
 	}
 
 	/**
-	 * @see ConnectivityInspector#connectedSets()
-	 * @return An immutable set of all connected components in form of {@linkplain CommandGraph}s.
-	 *         <p>
-	 *         For more on maximally connected component, see <a
-	 *         href=http://www.nist.gov/dads/HTML/maximallyConnectedComponent.html>maximallyConnectedComponent</a>.
+	 * @return An immutable set of all maximally connected components in form of {@linkplain CommandGraph}s.
 	 */
 	public Set<CommandGraph> getConnectedComponents() {
 		if (connectedComponents == null) {
