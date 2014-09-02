@@ -2,6 +2,13 @@ package cc.commandmanager.core;
 
 import java.util.Set;
 
+/**
+ * A {@linkplain Command} is a single unit of an execution graph. It will be instantiated by the
+ * {@linkplain CommandManager}, who calls the {@linkplain Command#execute(Context)} method.
+ * <p>
+ * A given context will be passed on throughout the execution. It can be used to interchange data between the commands.
+ * Dependencies are specified through the {@code get*Dependencies()} methods.
+ */
 public interface Command {
 
 	/**
