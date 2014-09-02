@@ -31,6 +31,12 @@ Here is a sample catalog containing three commands:
 </catalog>
 ```
 
+#### Command Implementation
+
+A command implementation needs to implement the `Command` interface. The interface has a method called `execute(Context)`, which implements all operations that need to be done by the command. The given context will be used to read and write data which are interchanged with other commands.
+
+Dependencies between commands are currently specified by four other methods: `getBeforeDependencies()`, `getAfterDependencies()`, `getOptionalBeforeDependencies()`, and `getOptionalAfterDependencies()`. All these methods return a set of command names. Before-dependencies incorporate all commands that need to be executed before the current command. After-dependencies are required to be executed after the current command. Currently, optional dependencies have the effect that their absence at run time does not cause the catalog XML loading to crash.
+
 ### Installation
 
 To install the CommandManager you can add it as a maven dependency. Until the binaries are hosted on a public maven repository, it is recommended to clone this repository, checkout the latest release and install it to your local maven repository by executing 
