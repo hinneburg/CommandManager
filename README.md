@@ -6,6 +6,8 @@ A lean implementation of a command and chain of responsibility pattern mixture. 
 
 ### Usage
 
+#### Command Execution
+
 Commands are specified in an XML file called *catalog*. Every command in the catalog must correspond to a Java class available in the class path during run time. A `CommandManager` object is responsible for the execution of command graphs.
 
 The following three lines of code contain a simple usage example that loads a command graph from a catalog and executes all commands:
@@ -13,6 +15,20 @@ The following three lines of code contain a simple usage example that loads a co
 CommandGraph commandGraph = CommandGraph.fromXml("catalog.xml");
 CommandManager commandManager = new CommandManager(commandGraph);
 commandManager.executeAllCommands();
+```
+
+#### XML Catalog
+
+A catalog XML file contains a list of commands. Dependencies are currently specified in the command implementation, and not in the Catalog. Each command node is required to have a command name and a class name, which corresponds to the fully qualified Java class name.
+
+Here is a sample catalog containing three commands:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+	<command className="my.package.DummyCommand1" name="Command1" />
+	<command className="my.package.DummyCommand2" name="Command2" />
+	<command className="my.package.DummyCommand3" name="Command3" />
+</catalog>
 ```
 
 ### Installation
