@@ -9,15 +9,15 @@ import com.google.common.base.Objects;
 
 /**
  * Optional instance of type <b>T</b>. If the instance is not present you may receive a note why by calling
- * {@linkplain Optional#getNote()}.
+ * {@linkplain Try#getNote()}.
  * <p>
- * Mind that the stored value and note may not be immutable and thus {@linkplain Optional} is also not guaranteed to be
+ * Mind that the stored value and note may not be immutable and thus {@linkplain Try} is also not guaranteed to be
  * immutable.
  * 
  * @param <T>
  *            optional value type
  */
-public class Optional<T> {
+public class Try<T> {
 
 	private static final String EMPTY_MESSAGE = "";
 
@@ -25,16 +25,16 @@ public class Optional<T> {
 	private final Object note;
 
 	/**
-	 * Creates a new {@linkplain Optional} having the given value.
+	 * Creates a new {@linkplain Try} having the given value.
 	 * 
 	 * @param value
 	 */
-	public Optional(@Nullable T value) {
+	public Try(@Nullable T value) {
 		this(value, null);
 	}
 
 	/**
-	 * Creates a new {@linkplain Optional} having the given value and the given note. The note can be used to explain
+	 * Creates a new {@linkplain Try} having the given value and the given note. The note can be used to explain
 	 * why the value is missing.
 	 * 
 	 * @param value
@@ -42,7 +42,7 @@ public class Optional<T> {
 	 * @param note
 	 *            or null
 	 */
-	public Optional(@Nullable T value, @Nullable Object note) {
+	public Try(@Nullable T value, @Nullable Object note) {
 		this.value = value;
 		this.note = note == null ? EMPTY_MESSAGE : note;
 	}
@@ -103,10 +103,10 @@ public class Optional<T> {
 		if (obj == null) {
 			return false;
 		}
-		if (!(obj instanceof Optional)) {
+		if (!(obj instanceof Try)) {
 			return false;
 		}
-		Optional other = (Optional) obj;
+		Try other = (Try) obj;
 		if (note == null) {
 			if (other.note != null) {
 				return false;

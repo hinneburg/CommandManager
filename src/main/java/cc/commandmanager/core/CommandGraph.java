@@ -84,11 +84,11 @@ public class CommandGraph {
 	 *
 	 * @param catalogFile
 	 *            {@linkplain File} to be parsed. Must have a valid XML structure.
-	 * @return An {@linkplain Optional} that contains a {@linkplain CommandGraph} if every command of the given catalog
+	 * @return An {@linkplain Try} that contains a {@linkplain CommandGraph} if every command of the given catalog
 	 *         could be added to the graph. In addition to that every dependency of every command must have been added
-	 *         to the graph. If any of those two actions failed, {@linkplain Optional#isPresent()} returns false.
+	 *         to the graph. If any of those two actions failed, {@linkplain Try#isPresent()} returns false.
 	 */
-	public static Optional<CommandGraph> fromXml(File catalogFile) {
+	public static Try<CommandGraph> fromXml(File catalogFile) {
 		Check.notNull(catalogFile, "catalogFile");
 
 		Document document;
@@ -96,7 +96,7 @@ public class CommandGraph {
 			DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			document = documentBuilder.parse(catalogFile);
 		} catch (Exception e) {
-			return new Optional<CommandGraph>(null, e);
+			return new Try<CommandGraph>(null, e);
 		}
 		return CommandGraph.fromDocument(document);
 	}
@@ -104,7 +104,7 @@ public class CommandGraph {
 	/**
 	 * Loads a {@linkplain CommandGraph} from an XML {@linkplain Document}. See {@linkplain CommandGraph#fromXml(File)}.
 	 */
-	public static Optional<CommandGraph> fromDocument(Document catalogDocument) {
+	public static Try<CommandGraph> fromDocument(Document catalogDocument) {
 		Check.notNull(catalogDocument, "catalogDocument");
 
 		List<CommandClass> commands = Lists.newLinkedList();
@@ -113,7 +113,7 @@ public class CommandGraph {
 			if (element.hasAttribute(NAME) && element.hasAttribute(CLASS_NAME)) {
 				commands.add(new CommandClass(element.getAttribute(NAME), element.getAttribute(CLASS_NAME)));
 			} else {
-				return new Optional<CommandGraph>(null, "Name or class name missing in element: " + element);
+				return new Try<CommandGraph>(null, "Name or class name missing in element: " + element);
 			}
 		}
 		return CommandGraph.of(commands);
@@ -131,14 +131,14 @@ public class CommandGraph {
 		return commandElements;
 	}
 
-	private static Optional<CommandGraph> of(Iterable<CommandClass> commands) {
+	private static Try<CommandGraph> of(Iterable<CommandClass> commands) {
 		Check.noNullElements(commands, "commands");
 		CommandGraphBuilder builder = new CommandGraphBuilder();
 
 		// add commands
 		for (CommandClass command : commands) {
 			if (!builder.addCommand(command)) {
-				return new Optional<CommandGraph>(null, "Duplicate command: " + command);
+				return new Try<CommandGraph>(null, "Duplicate command: " + command);
 			}
 		}
 
@@ -150,14 +150,14 @@ public class CommandGraph {
 			for (String beforeDependency : commandInstance.getBeforeDependencies()) {
 				DependencyAdded dependencyAdded = builder.addMandatoryDependency(commandName, beforeDependency);
 				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-					return new Optional<CommandGraph>(null, dependencyAdded);
+					return new Try<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
 			for (String afterDependency : commandInstance.getAfterDependencies()) {
 				DependencyAdded dependencyAdded = builder.addMandatoryDependency(afterDependency, commandName);
 				if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-					return new Optional<CommandGraph>(null, dependencyAdded);
+					return new Try<CommandGraph>(null, dependencyAdded);
 				}
 			}
 
@@ -167,7 +167,7 @@ public class CommandGraph {
 				if (builder.containsCommand(beforeDependency)) {
 					DependencyAdded dependencyAdded = builder.addOptionalDependency(commandName, beforeDependency);
 					if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-						return new Optional<CommandGraph>(null, dependencyAdded);
+						return new Try<CommandGraph>(null, dependencyAdded);
 					}
 				}
 			}
@@ -178,13 +178,13 @@ public class CommandGraph {
 				if (builder.containsCommand(afterDependency)) {
 					DependencyAdded dependencyAdded = builder.addOptionalDependency(afterDependency, commandName);
 					if (dependencyAdded.isIn(DependencyAdded.FAILURE_STATES)) {
-						return new Optional<CommandGraph>(null, dependencyAdded);
+						return new Try<CommandGraph>(null, dependencyAdded);
 					}
 				}
 			}
 		}
 
-		return new Optional<CommandGraph>(builder.build());
+		return new Try<CommandGraph>(builder.build());
 	}
 
 	private CommandGraph(CommandGraphBuilder builder) {
