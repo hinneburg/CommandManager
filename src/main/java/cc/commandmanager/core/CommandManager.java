@@ -17,8 +17,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
- * Manages controlled execution of {@linkplain Command}s which are represented by a {@linkplain CommandGraph}. Execution
- * success is reflected by a {@linkplain ComposedResultState}.
+ * Manages execution of {@linkplain Command}s which are represented by a {@linkplain CommandGraph}. Execution success is
+ * reflected by a {@linkplain ComposedResultState}.
  */
 public class CommandManager {
 
@@ -55,8 +55,7 @@ public class CommandManager {
 
 	/**
 	 * Execute all commands that are in the {@linkplain CommandGraph} of this {@linkplain CommandManager}. Respect the
-	 * internal order of the graph. It will have no effect on the execution whether a {@link Command} is mandatory or
-	 * optional dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * internal order of the graph. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
 	 *
@@ -69,8 +68,7 @@ public class CommandManager {
 
 	/**
 	 * Execute all commands that are in the {@linkplain CommandGraph} of this {@linkplain CommandManager}. Respect the
-	 * internal order of the graph. It will have no effect on the execution whether a {@link Command} is mandatory or
-	 * optional dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * internal order of the graph. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
 	 *
 	 * @param context
@@ -86,8 +84,7 @@ public class CommandManager {
 	/**
 	 * Find connected components in which the given command names are included. No command will be executed that is not
 	 * at least transitively connected to one of the given commands. Respect the internal order of the found connected
-	 * components. It will have no effect on the execution whether a {@link Command} is mandatory or optional dependent
-	 * on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * components. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
 	 *
@@ -95,9 +92,10 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -109,8 +107,7 @@ public class CommandManager {
 	/**
 	 * Find connected components in which the given command names are included. No command will be executed that is not
 	 * at least transitively connected to one of the given commands. Respect the internal order of the found connected
-	 * components. It will have no effect on the execution whether a {@link Command} is mandatory or optional dependent
-	 * on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * components. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
 	 *
 	 * @param commandNames
@@ -119,9 +116,10 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -130,8 +128,8 @@ public class CommandManager {
 		Check.noNullElements(commandNames);
 
 		List<CommandClass> commands = Lists.newLinkedList();
-		for (CommandGraph graph : filterConnectedComponentsContaining(Sets.newHashSet(commandNames),
-				commandGraph.getConnectedComponents())) {
+		for (CommandGraph graph : filterConnectedComponentsContaining(Sets.newHashSet(commandNames), commandGraph
+				.getConnectedComponents())) {
 			commands.addAll(graph.topologicalOrderOfAllCommands());
 		}
 		return executeOrderedCommands(commands, context);
@@ -152,19 +150,19 @@ public class CommandManager {
 
 	/**
 	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
-	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
-	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
-	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
-	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will
-	 * be created which will be passed to every {@linkplain Command}.
+	 * {@linkplain Command}s that need to be executed before. Before-dependencies will be computed recursively. Respect
+	 * the internal order of all found {@linkplain Command}s. Execution will be aborted with the first
+	 * {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will be created which will be
+	 * passed to every {@linkplain Command}.
 	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -176,20 +174,20 @@ public class CommandManager {
 
 	/**
 	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
-	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
-	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
-	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
-	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
-	 *
+	 * {@linkplain Command}s that need to be executed before. Before-dependencies will be computed recursively. Respect
+	 * the internal order of all found {@linkplain Command}s. Execution will be aborted with the first
+	 * {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
+	 * 
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -201,19 +199,19 @@ public class CommandManager {
 
 	/**
 	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
-	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
-	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
-	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
-	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will
-	 * be created which will be passed to every {@linkplain Command}.
+	 * {@linkplain Command}s that need to be executed before. Before-dependencies will be computed recursively. Respect
+	 * the internal order of all found {@linkplain Command}s. Execution will be aborted with the first
+	 * {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A new context will be created which will be
+	 * passed to every {@linkplain Command}.
 	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -225,10 +223,9 @@ public class CommandManager {
 
 	/**
 	 * Execute the specified {@linkplain Command}s. Additionally, for every specified {@linkplain Command} find all
-	 * {@linkplain Command}s that need to be executed beforehand. I. e., before dependencies will be computed
-	 * recursively. Respect the internal order of all gracefully found {@linkplain Command}s. It will have no effect on
-	 * the execution whether a {@link Command} is mandatory or optional dependent on another one. Execution will be
-	 * aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
+	 * {@linkplain Command}s that need to be executed before. Before-dependencies will be computed recursively. Respect
+	 * the internal order of all found {@linkplain Command}s. Execution will be aborted with the first
+	 * {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
 	 *
 	 * @param commandNames
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
@@ -236,9 +233,10 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -269,10 +267,9 @@ public class CommandManager {
 	}
 
 	/**
-	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
-	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
-	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
-	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before-dependencies, i.e only the
+	 * specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
 	 *
@@ -280,9 +277,10 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -293,10 +291,9 @@ public class CommandManager {
 	}
 
 	/**
-	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
-	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
-	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
-	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies, i.e only the
+	 * specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
 	 *
 	 * @param commandNames
@@ -305,9 +302,10 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -318,10 +316,9 @@ public class CommandManager {
 	}
 
 	/**
-	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
-	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
-	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
-	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies, i.e only the
+	 * specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}. A new context will be created which will be passed to every
 	 * {@linkplain Command}.
 	 *
@@ -329,9 +326,10 @@ public class CommandManager {
 	 *            names of the {@linkplain Command}s as specified in the {@linkplain CommandClass}es in the underlying
 	 *            graph. Must not be empty. However, command names can be empty.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -342,10 +340,9 @@ public class CommandManager {
 	}
 
 	/**
-	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies. I. e, only
-	 * the specified {@linkplain Command}s will be executed. Respect the internal order of the specified
-	 * {@linkplain Command}s. It will have no effect on the execution whether a {@link Command} is mandatory or optional
-	 * dependent on another one. Execution will be aborted with the first {@linkplain Command} that returns a
+	 * In contrast to {@linkplain #executeCommandsGracefully} this method will ignore before dependencies, i.e only the
+	 * specified {@linkplain Command}s will be executed. Respect the internal order of the specified
+	 * {@linkplain Command}s. Execution will be aborted with the first {@linkplain Command} that returns a
 	 * {@linkplain ResultState.Failure}.
 	 *
 	 * @param commandNames
@@ -354,9 +351,10 @@ public class CommandManager {
 	 * @param context
 	 *            will be used as the argument for every executed {@linkplain Command}.
 	 *
-	 * @throws CommandNotFoundException if no command can be found for a given command name in the
-	 *         underlying graph.
-	 * @throws IllegalStateOfArgumentException if no command is specified.
+	 * @throws CommandNotFoundException
+	 *             if no command can be found for a given command name in the underlying graph.
+	 * @throws IllegalStateOfArgumentException
+	 *             if no command is specified.
 	 *
 	 * @return {@linkplain ComposedResultState} that reflects the overall success of the just executed
 	 *         {@linkplain Command}s.
@@ -368,8 +366,7 @@ public class CommandManager {
 	}
 
 	/**
-	 * Execute all commands that are in the given {@linkplain CommandGraph}. Respect the internal order of the graph. It
-	 * will have no effect on the execution whether a {@link Command} is mandatory or optional dependent on another one.
+	 * Execute all commands that are in the given {@linkplain CommandGraph}. Respect the internal order of the graph.
 	 * Execution will be aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}. A
 	 * new context will be created which will be passed to every {@linkplain Command}. This is short for creating a new
 	 * {@linkplain CommandManager} with this {@linkplain CommandGraph} and calling {@linkplain #executeAllCommands}
@@ -389,8 +386,7 @@ public class CommandManager {
 	}
 
 	/**
-	 * Execute all commands that are in the given {@linkplain CommandGraph}. Respect the internal order of the graph. It
-	 * will have no effect on the execution whether a {@link Command} is mandatory or optional dependent on another one.
+	 * Execute all commands that are in the given {@linkplain CommandGraph}. Respect the internal order of the graph.
 	 * Execution will be aborted with the first {@linkplain Command} that returns a {@linkplain ResultState.Failure}.
 	 * This is short for creating a new {@linkplain CommandManager} with this {@linkplain CommandGraph} and calling
 	 * {@linkplain #executeAllCommands} afterwards.

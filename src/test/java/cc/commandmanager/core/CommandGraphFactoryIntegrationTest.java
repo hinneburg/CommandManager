@@ -121,7 +121,7 @@ public class CommandGraphFactoryIntegrationTest {
 
 	@Test
 	public void testFromXmlFile_invalidXmlFile() throws IOException {
-		Optional<CommandGraph> graph = CommandGraph.fromXml(folder.newFile("invalidXmlFile.xml"));
+		Try<CommandGraph> graph = CommandGraph.fromXml(folder.newFile("invalidXmlFile.xml"));
 		assertThat(graph.isPresent()).isFalse();
 		assertThat(graph.getNote()).isInstanceOf(SAXParseException.class);
 	}
@@ -142,7 +142,7 @@ public class CommandGraphFactoryIntegrationTest {
 		documentRoot.appendChild(command2);
 		catalogDocument.appendChild(documentRoot);
 
-		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		Try<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
 		assertThat(graph.isPresent()).isFalse();
 		assertThat(graph.getNote().toString()).contains("Duplicate command");
 	}
@@ -163,7 +163,7 @@ public class CommandGraphFactoryIntegrationTest {
 		documentRoot.appendChild(command2);
 		catalogDocument.appendChild(documentRoot);
 
-		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		Try<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
 		assertThat(graph.isPresent()).isFalse();
 		assertThat(graph.getNote().toString()).contains("Duplicate command:");
 	}
@@ -179,7 +179,7 @@ public class CommandGraphFactoryIntegrationTest {
 		documentRoot.appendChild(command2);
 		catalogDocument.appendChild(documentRoot);
 
-		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		Try<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
 		assertThat(graph.isPresent()).isFalse();
 		assertThat(graph.getNote()).isEqualTo(DependencyAdded.COMMAND_MISSING);
 	}
@@ -194,7 +194,7 @@ public class CommandGraphFactoryIntegrationTest {
 		documentRoot.appendChild(commandWithoutName);
 		catalogDocument.appendChild(documentRoot);
 
-		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		Try<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
 		assertThat(graph.isPresent()).isFalse();
 		assertThat(graph.getNote().toString()).contains("Name or class name missing in element");
 	}
@@ -209,14 +209,14 @@ public class CommandGraphFactoryIntegrationTest {
 		documentRoot.appendChild(commandWithoutClassName);
 		catalogDocument.appendChild(documentRoot);
 
-		Optional<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
+		Try<CommandGraph> graph = CommandGraph.fromDocument(catalogDocument);
 		assertThat(graph.isPresent()).isFalse();
 		assertThat(graph.getNote().toString()).contains("Name or class name missing in element");
 	}
 
 	@Test
 	public void testBuilderDoesNotFailWhenCatalogLacksOptionalDependency() {
-		Optional<CommandGraph> optional = CommandGraph
+		Try<CommandGraph> optional = CommandGraph
 				.fromXml(getResourceAsFile("catalog-for-optional-dependency-test.xml"));
 		assertThat(optional.isPresent()).isTrue();
 
@@ -228,7 +228,7 @@ public class CommandGraphFactoryIntegrationTest {
 
 	@Test
 	public void testBuilderFailsOnCircularDependency() {
-		Optional<CommandGraph> optional = CommandGraph
+		Try<CommandGraph> optional = CommandGraph
 				.fromXml(getResourceAsFile("catalog-for-circular-dependency-check.xml"));
 
 		assertThat(optional.isPresent()).isFalse();
@@ -239,7 +239,7 @@ public class CommandGraphFactoryIntegrationTest {
 
 	@Test
 	public void testBuilderFailsOnMissingNameAttributeInCatalog() {
-		Optional<CommandGraph> optional = CommandGraph
+		Try<CommandGraph> optional = CommandGraph
 				.fromXml(getResourceAsFile("catalog-flawed-by-missing-name-attribute.xml"));
 
 		assertThat(optional.isPresent()).isFalse();
@@ -250,7 +250,7 @@ public class CommandGraphFactoryIntegrationTest {
 
 	@Test
 	public void testBuilderFailsOnMissingClassNameAttributeInCatalog() {
-		Optional<CommandGraph> optional = CommandGraph
+		Try<CommandGraph> optional = CommandGraph
 				.fromXml(getResourceAsFile("catalog-flawed-by-missing-classname-attribute.xml"));
 
 		assertThat(optional.isPresent()).isFalse();
@@ -261,7 +261,7 @@ public class CommandGraphFactoryIntegrationTest {
 
 	@Test
 	public void testBuilderDoesNotFailOnEmptyNameAttributeInCatalog() {
-		Optional<CommandGraph> optional = CommandGraph
+		Try<CommandGraph> optional = CommandGraph
 				.fromXml(getResourceAsFile("catalog-with-empty-name-attribute.xml"));
 
 		assertThat(optional.isPresent()).isTrue();
@@ -275,7 +275,7 @@ public class CommandGraphFactoryIntegrationTest {
 
 	@Test
 	public void builderFailsOnAmbiguousCatalogEntries() {
-		Optional<CommandGraph> graph = CommandGraph.fromXml(getResourceAsFile("catalog-flawed-by-ambiguity.xml"));
+		Try<CommandGraph> graph = CommandGraph.fromXml(getResourceAsFile("catalog-flawed-by-ambiguity.xml"));
 		assertThat(graph.isPresent()).isFalse();
 		if (noteIsInstanceOf(graph.getNote(), String.class)) {
 			assertThat((String) graph.getNote()).contains("Duplicate command");
