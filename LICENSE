@@ -672,3 +672,17 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <http://www.gnu.org/philosophy/why-not-lgpl.html>.
+
+Additional permissions under GNU GPL Version 3 Section 7:
+
+Additional permission relating to commands that extend the Command
+interfaces is required to properly use this project. Custom commands
+and their execution via the CommandManager are deemed to be separate 
+and independent programs and to not be covered works. Notwithstanding 
+anything to the contrary in the License, the License does not apply to 
+custom commands, you are not required to license custom commands under 
+the License, and you are granted a license to define and execute commands
+using the CommandManager. The owner of a command may freely choose the 
+license terms applicable to such command.
+
+
