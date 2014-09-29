@@ -69,4 +69,4 @@ Feel free to submit bugs, feature requests or suggestions at any time. Best is t
 
 ### Licensing
 
-Please see the file called LICENSE.
+This project is licensed under GPL 3. We grant additional permissions to license your own command implementations and their execution under a different license. Custom commands and their execution are deemed to be separate and independent programs and to not be covered works. For details please see the file called LICENSE.
