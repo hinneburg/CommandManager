@@ -680,5 +680,6 @@ interfaces: Custom commands - which implement the Command interface - are
 deemed to be separate and independent programs and to not be covered works.
 Notwithstanding anything to the contrary in the License, the License does not
 apply to custom commands, you are not required to license custom commands
-under the License, and you are granted a license to define commands. The
-owner of a command may freely choose the license terms applicable to such command.
+under the License, and you are granted a license to define, prepare, and 
+propagate commands. The owner of a command may freely choose the license
+terms applicable to such command.
